@@ -1,0 +1,422 @@
+<div class="row">
+  <div
+    class="col-md-3 collapse show"
+    id="collapseTwo"
+    aria-labelledby="headingTwo"
+    data-parent="#accordion"
+  >
+    <div class="card" style="background: #ffdbab">
+      <div
+        class="card-header border-bottom-0"
+        style="font-size: 12.3pt; padding: 9px"
+      >
+        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
+          &nbsp;&nbsp;<span class="fas fa-plus-square"></span>&nbsp;&nbsp;Add
+          New Product
+        </div>
+      </div>
+      <div class="card-body" style="padding: 15px">
+        <form name="frmsearch" [formGroup]="productForm">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-4">
+                  <p class="mb-0">
+                    Pr. Code<span class="mandatoryfiels">*</span>
+                  </p>
+                  <input
+                    type="text"
+                    id="product_code"
+                    name="product_code"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="product_code"
+                    [readonly]="editMode"
+                  />
+                  <div
+                    class="text-danger"
+                    *ngIf="
+                      f['product_code'].touched &&
+                      f['product_code'].hasError('required')
+                    "
+                  >
+                    Product Code is required
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <p class="mb-0">
+                    Product Name<span class="mandatoryfiels">*</span>
+                  </p>
+                  <input
+                    type="text"
+                    id="product_name"
+                    name="product_name"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="product_name"
+                  />
+                  <div
+                    class="text-danger"
+                    *ngIf="
+                      f['product_name'].touched &&
+                      f['product_name'].hasError('required')
+                    "
+                  >
+                    Product Name is required
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <p class="mb-0">Unit<span class="mandatoryfiels">*</span></p>
+                  <select
+                    id="unit"
+                    name="unit"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="unit"
+                  >
+                    <option value="">Select</option>
+                    <option value="CM">CM</option>
+                    <option value="MM">MM</option>
+                    <option value="Nos">Nos</option>
+                    <option value="Ltr">Ltr</option>
+                    <option value="Bdl">Bdl</option>
+                    <option value="m">Mtr</option>
+                    <option value="in">in</option>
+                    <option value="others">Others</option>
+                  </select>
+                  <div
+                    class="text-danger"
+                    *ngIf="f['unit'].touched && f['unit'].hasError('required')"
+                  >
+                    Unit Name is required
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <p class="mb-0">
+                    Prod Name in Reg Language<span class="mandatoryfiels"
+                      >*</span
+                    >
+                  </p>
+                  <input
+                    type="text"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="product_nameml"
+                    appMalayalamInput
+                  />
+                </div>
+                <div class="col-md-8">
+                  <p class="mb-0">
+                    Category<span class="mandatoryfiels">*</span>
+                  </p>
+                  <select
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    id="category"
+                    name="category"
+                    formControlName="category"
+                  >
+                    <option>Select</option>
+                    <option *ngFor="let cat of categories" [value]="cat.id">
+                      {{ cat.category_name }}
+                    </option>
+                  </select>
+                  <div
+                    class="text-danger"
+                    *ngIf="
+                      f['category'].touched &&
+                      f['category'].hasError('required')
+                    "
+                  >
+                    Category is required
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <p class="mb-0">Min. Qty</p>
+                  <input
+                    type="text"
+                    appNumbersOnly
+                    id="min_qty"
+                    name="min_qty"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="min_qty"
+                    inputmode="numeric"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <p class="mb-0">Max. Qty</p>
+                  <input
+                    type="text"
+                    appNumbersOnly
+                    id="max_qty"
+                    name="max_qty"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="max_qty"
+                    inputmode="decimal"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <p class="mb-0">
+                    Cost Amount<span class="mandatoryfiels">*</span>
+                  </p>
+                  <input
+                    type="text"
+                    id="cost_price"
+                    name="cost_price"
+                    inputmode="numeric"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="cost_price"
+                    appNumbersOnly
+                  />
+                  <div
+                    class="text-danger"
+                    *ngIf="
+                      f['cost_price'].touched &&
+                      f['cost_price'].hasError('required')
+                    "
+                  >
+                    Cost_price is required
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <p class="mb-0">MRP<span class="mandatoryfiels">*</span></p>
+                  <input
+                    type="text"
+                    inputmode="decimal"
+                    id="mrp"
+                    name="mrp"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="mrp"
+                    appNumbersOnly
+                  />
+                  <div
+                    class="text-danger"
+                    *ngIf="f['mrp'].touched && f['mrp'].hasError('required')"
+                  >
+                    Mrp is required
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <p class="mb-0">Gst%<span class="mandatoryfiels">*</span></p>
+                  <input
+                    type="text"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="gst_percent"
+                    
+                  />
+                </div>
+                <div class="col-md-3">
+                  <p class="mb-0">Sale<span class="mandatoryfiels">*</span></p>
+                   <select
+                    id="unit"
+                    name="unit"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="sale_item"
+                  >
+                    
+                    <option value="Y">Yes</option>
+                    <option value="N">No</option>
+                    
+                  </select>
+                  <div
+                    class="text-danger"
+                    *ngIf="f['sale_item'].touched && f['sale_item'].hasError('required')"
+                  >
+                    sale item is required
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <p class="mb-0">
+                   Hsn code
+                  </p>
+                  <input
+                    type="text"
+                    id="hsn_code"
+                    name="hsn_code"
+                    class="form-control mb-1"
+                    style="height: 28.5px; padding: 2px"
+                    formControlName="hsn_code"
+                   
+                  />
+                  
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mt-2 sbmt">
+                <button
+                  type="submit"
+                  name="master_search"
+                  id="master_search"
+                                    class="btn btn-theme waves-effect w-100 waves-effect waves-light btnsubmt"
+
+                  style="background: #d88e25"
+                  (click)="saveProduct()"
+                >
+                  <i class="fa fa-save mr-1"></i>
+                  {{ editMode ? "Update" : "Save" }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary w-100 waves-effect waves-light btnsubmt"
+                  (click)="resetForm()"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-9">
+    <div class="card">
+      <div
+        class="card-header border-bottom-0"
+        style="font-size: 12.3pt; padding: 9px"
+      >
+        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
+          &nbsp;&nbsp;<span class="fa fa-list"></span>&nbsp;&nbsp;Products List
+        </div>
+      </div>
+      <div class="card-body" style="padding: 15px">
+        <div class="table-responsive" style="margin: 0px">
+          <div class="table-container">
+            <!-- Filter -->
+            <div class="search-container">
+              <input
+                class="searchiput"
+                matInput
+                (keyup)="applyFilter($event)"
+                placeholder="Search..."
+              />
+            </div>
+            <table
+              mat-table
+              [dataSource]="dataSource"
+              matSort
+              class="custom-table"
+            >
+              <!-- Index Column -->
+              <ng-container matColumnDef="index">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let element; let i = index">
+                  {{ i + 1 }}
+                </td>
+              </ng-container>
+              <!-- P-Code -->
+              <ng-container matColumnDef="p-code">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  P-Code
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.product_code }}
+                </td>
+              </ng-container>
+              <!-- Product -->
+              <ng-container matColumnDef="product">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  Product
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.product_name }}
+                </td>
+              </ng-container>
+              <!-- Unit -->
+              <ng-container matColumnDef="Unit">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Unit</th>
+                <td mat-cell *matCellDef="let element">{{ element.unit }}</td>
+              </ng-container>
+              <!-- Category -->
+              <ng-container matColumnDef="Category">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  Category
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.category }}
+                </td>
+              </ng-container>
+              <!-- min_qty -->
+              <ng-container matColumnDef="Min.Qty">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  Min.Qty
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.min_qty }}
+                </td>
+              </ng-container>
+              <!-- Max-Qty -->
+              <ng-container matColumnDef="Max-Qty">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  Max-Qty
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.max_qty }}
+                </td>
+              </ng-container>
+              <!-- CPrice -->
+              <ng-container matColumnDef="CPrice">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  CPrice
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.cost_price }}
+                </td>
+              </ng-container>
+              <!-- MRP -->
+              <ng-container matColumnDef="MRP">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>MRP</th>
+                <td mat-cell *matCellDef="let element">{{ element.mrp }}</td>
+              </ng-container>
+              <!-- Action -->
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef>Action</th>
+                <td mat-cell *matCellDef="let element">
+                  <a
+                    (click)="editProduct(element)"
+                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
+                    data-toggle="tooltip"
+                    data-placement="top"
+                    title="Edit"
+                    data-original-title="Edit Details"
+                    ><i class="fa fa-edit"></i
+                  ></a>
+                  <a
+                    (click)="deleteProduct(element.id)"
+                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
+                    data-toggle="modal"
+                    data-placement="top"
+                    title="Delete Details"
+                    data-original-title="Delete"
+                    ><i class="fa fa-times"></i
+                  ></a>
+                </td>
+              </ng-container>
+              <!-- Header & Row -->
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <!-- No Data -->
+              <tr *matNoDataRow>
+                <td colspan="9" class="text-center">No products found</td>
+              </tr>
+            </table>
+            <!-- Pagination -->
+            <mat-paginator
+              [pageSize]="5"
+              [pageSizeOptions]="[5, 10, 20]"
+              showFirstLastButtons
+            >
+            </mat-paginator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

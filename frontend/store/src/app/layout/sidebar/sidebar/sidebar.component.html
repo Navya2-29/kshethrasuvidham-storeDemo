@@ -1,0 +1,76 @@
+<div class="left-side-menu" [class.compact]="!sidebarService.isOpen()">
+  <div class="slimscroll-menu">
+    <div id="sidebar-menu">
+      <ul class="metismenu" id="side-menu">
+        <li class="menu-title logomenu">
+          <a [routerLink]="['/dashboard']" class="logo text-center">
+            <span class="logo-lg">
+              <img
+                src="../../../../assets/images/logo.jpg"
+                alt=""
+                height="120"
+              />
+            </span>
+            <span class="logo-sm">
+              <img
+                src="../../../../assets/images/logo.jpg"
+                alt=""
+                height="120"
+              />
+            </span>
+          </a>
+        </li>
+
+        <ng-container *ngFor="let item of menuItems">
+          <li>
+            <a
+              class="waves-effect"
+              (click)="item.children ? toggleMenu(item.label) : null"
+              [routerLink]="!item.children ? item.route : null"
+            >
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </a>
+
+            <!-- Second Level -->
+            <ul
+              class="nav-second-level"
+              [class.open]="item.children && openMenu() === item.label"
+              [class.collapsed]="!sidebarService.isOpen()"
+            >
+              <ng-container *ngFor="let child of item.children">
+                <li>
+                  <a
+                    [routerLink]="child.route"
+                    (click)="
+                      child.children ? toggleSubMenu(child.label) : null;
+                      $event.preventDefault()
+                    "
+                  >
+                    <i class="remixicon-arrow-right-line"></i> {{ child.label }}
+                  </a>
+
+                  <!-- Third Level -->
+                  <ul
+                    class="nav-third-level"
+                    [class.open]="
+                      child.children && openSubMenu() === child.label
+                    "
+                    [class.collapsed]="!sidebarService.isOpen()"
+                  >
+                    <li *ngFor="let grandChild of child.children">
+                      <a [routerLink]="grandChild.route">
+                        <i class="fa fa-caret-right"></i> {{ grandChild.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ng-container>
+            </ul>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+</div>

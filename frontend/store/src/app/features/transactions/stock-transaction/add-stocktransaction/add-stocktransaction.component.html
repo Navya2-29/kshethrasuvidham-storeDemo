@@ -1,0 +1,159 @@
+<div class="row">
+  <div
+    class="col-md-3 collapse show"
+    id="collapseTwo"
+    aria-labelledby="headingTwo"
+    data-parent="#accordion"
+  >
+    <div
+      class="card"
+      style="
+        background: #fff2ca;
+        padding: 5px;
+        box-shadow: 1px 1px 25px silver;
+        border-radius: 10px;
+      "
+    >
+      <div class="card-body">
+        <form [formGroup]="transferForm">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-12">
+                  <p class="mb-0">Select Department to Transfer</p>
+                  <select class="form-control" formControlName="departmentId">
+                    <option value="">Select</option>
+                    <option *ngFor="let d of departments" [value]="d.id">
+                      {{ d.dept_name }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-12">
+                  <p class="mb-0">Quantity</p>
+                  <input
+                    type="number"
+                    formControlName="quantity"
+                    class="form-control mb-1"
+                    placeholder="Enter Quantity"
+                    style="height: 28.5px; padding: 2px"
+                  />
+                </div>
+                <div class="col-md-12">
+                  <p class="mb-0">Date of Transfer</p>
+                  <input
+                    type="date"
+                    formControlName="transferDate"
+                    class="form-control mb-1"
+                    placeholder="Enter Quantity"
+                    style="height: 28.5px; padding: 2px"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="form-group mt-1">
+                <button
+                  type="button"
+                  (click)="submitTransfer()"
+                  name="master_search"
+                  id="master_search"
+                  class="btn w-100 waves-effect waves-light"
+                  style="background: #d88e25"
+                >
+                  <i class="fa fa-paper-plane mr-1"></i>Transfer
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div
+        class="card-header border-bottom-0"
+        style="font-size: 12.3pt; padding: 9px"
+      >
+        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
+          &nbsp;&nbsp;<span class="fa fa-paper-plane"></span>&nbsp;&nbsp;
+          <span style="font-weight: 700">Product :{{ product.product_name }} | Code:{{ product.product_code }}</span>
+        </div>
+      </div>
+      <div class="card-body" style="padding: 15px">
+        <div class="table-responsive" style="margin: 0px">
+            <div class="table-container">
+              <!-- Filter -->
+              <div class="search-container">
+                <input
+                  class="searchiput"
+                  matInput
+                  (keyup)="applyFilter($event)"
+                  placeholder="Search..."
+                />
+              </div>
+              <table
+                mat-table
+                [dataSource]="dataSource"
+                matSort
+                class="custom-table"
+              >
+                <!-- Index Column -->
+                <ng-container matColumnDef="index">
+                  <th mat-header-cell *matHeaderCellDef>#</th>
+                  <td mat-cell *matCellDef="let element; let i = index">
+                    {{ i + 1 }}
+                  </td>
+                </ng-container>
+
+                <!-- Supplier ID -->
+                <ng-container matColumnDef="Department">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                     Department
+                  </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{element.store}}
+                  </td>
+                </ng-container>
+
+                <!-- Company Name -->
+                <ng-container matColumnDef="Available quantity">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    Available quantity
+                  </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.total_available }} {{ product.unit }}
+                  </td>
+                </ng-container>
+
+                
+
+               
+
+                <!-- Header & Row -->
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: displayedColumns"
+                ></tr>
+
+                <!-- No Data -->
+                <tr *matNoDataRow>
+                  <td colspan="3" class="text-center">No suppliers found</td>
+                </tr>
+              </table>
+
+              <!-- Pagination -->
+              <mat-paginator
+                [pageSize]="5"
+                [pageSizeOptions]="[5, 10, 20]"
+                showFirstLastButtons
+              >
+              </mat-paginator>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>

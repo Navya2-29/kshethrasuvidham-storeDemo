@@ -1,0 +1,167 @@
+<!-- 
+               
+                  <div class="row">
+					<div class="col-md-4">
+						<div class="card">
+							<div class="card-header">
+								<div class="card-title text-secondary"><span class="fa fa-solid fa-tags"></span>&nbsp;&nbsp;Stock Items</div>
+							</div>
+							<div class="card-body" style="background:rgba(240,255,0,.1);">
+								<table class="table">
+									<thead>
+										<tr style="background:#d88e25;color:white;">
+											<th style="width:50%;">Product</th>
+											<th style="width:30%;">Availability</th>
+											<th style="width:20%;"></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>Paper</td>
+											<td>250 bdl</td>
+											<td>
+											<a href="stock_item.html" class="btn  btn-theme-light btn-xs btn-icon waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="View Details" data-original-title="View Details"><i class="fa fa-eye"></i></a>
+											</td>
+										</tr>
+										<tr>
+											<td>Computer Keyboard</td>
+											<td>10 Nos</td>
+											<td>
+											<a href="stock_item.html" class="btn  btn-theme-light btn-xs btn-icon waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="View Details" data-original-title="View Details"><i class="fa fa-eye"></i></a>
+											</td>
+										</tr>
+										<tr>
+											<td>Table</td>
+											<td>75 Nos</td>
+											<td>
+											<a href="stock_item.html" class="btn  btn-theme-light btn-xs btn-icon waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="View Details" data-original-title="View Details"><i class="fa fa-eye"></i></a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+								<div>
+									<a href="stock_item.html" class="btn  btn-theme-light btn-xs btn-icon waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="View All Details" data-original-title="View Details" >View All &nbsp;&nbsp;<i class="fa fa-arrow-right"></i></a>
+								</div>
+							</div>
+							
+						</div>
+						<div class="card">
+							<div class="card-header">
+								<div class="card-title text-secondary"><span class="fa fa-search"></span>&nbsp;&nbsp;Search Items</div>
+							</div>
+							<form action="search_result.html" method="">
+							<div class="card-body">
+								<div class="form-group">
+                                       <label>Select Product</label>
+                                       <select class="selectpicker">
+                                          <option>Select</option>
+                                          <option value="AL">Water</option>
+                                          <option value="AR">Paper</option>
+                                          <option value="IL">Book</option>
+                                          <option value="IA">Novels</option>
+                                          <option value="KS">Short Stories</option>
+                                          <option value="KY">Table</option>
+                                          <option value="LA">Desk</option>
+                                       </select>
+                                </div>
+								<button type="submit" name="master_search" id="master_search" class="btn btn-secondary  w-50 waves-effect waves-light"><i class="fa fa-search mr-1"></i>Search</button>
+							</div>
+							</form>
+						</div>
+					</div>
+					<div class="col-md-8">
+						<div class="card">
+							<div class="card-header">
+								<div class="card-title text-secondary"><span class="fa fa-cart-plus"></span>&nbsp;&nbsp;Purchase</div>
+							</div>
+							<div class="card-body">
+								<canvas id="myChart"></canvas>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="row">
+								<div class="col-md-4">
+									<a href="report_purchase_product.html">
+									<div class="card line">
+										<div class="card-body">
+										<div style="text-align:center">
+											<img src="img/purchase.png" style="width:100%;">
+											<h5>ProductWise Reports</h5>
+										</div >	
+										</div>
+									</div>
+									</a>
+								</div>
+								<div class="col-md-4">
+									<a href="report_purchase_supplier.html">
+									<div class="card line">
+										<div class="card-body">
+										<div style="text-align:center">
+											<img src="img/supplierwise.png" style="width:100%;">
+											<h5>SupplierWise Reports</h5>
+										</div >	
+										</div>
+									</div>
+									</a>
+								</div>
+								<div class="col-md-4">
+									<a href="stock_item.html">
+									<div class="card line">
+										<div class="card-body">
+										<div style="text-align:center">
+											<img src="img/stock.png" style="width:100%;">
+											<h5>Stock Reports</h5>
+										</div >	
+										</div>
+									</div>
+									</a>
+								</div>
+							</div>
+							<div class="card">
+								<div class="card-header">
+									<div class="card-title text-secondary"><span class="fa fa-angle-double-right"></span>&nbsp;&nbsp;Categories</div>
+								</div>
+							<div class="row card-body">
+								<div class="col-md-4">
+									<a href="stock_item_category.html">
+										<div class="cat">
+											<div style="text-align:center"><h5>Electronics</h5></div >	
+										</div>
+									</a>
+								</div>
+								<div class="col-md-4">
+									<a href="stock_item_category.html">
+										<div class="cat">
+											<div style="text-align:center"><h5>Stationery</h5></div >	
+										</div>
+									</a>
+								</div>
+								<div class="col-md-4">
+									<a href="stock_item_category.html">
+										<div class="cat">
+											<div style="text-align:center"><h5>Equipments</h5></div >	
+										</div>
+									</a>
+								</div>
+								<div class="col-md-4">
+									<a href="stock_item_category.html">
+										<div class="cat">
+											<div style="text-align:center"><h5>Vegitables</h5></div >	
+										</div>
+									</a>
+								</div>
+								<div class="col-md-4">
+									<a href="stock_item_category.html">
+										<div class="cat">
+											<div style="text-align:center"><h5>Provisions</h5></div >	
+										</div>
+									</a>
+								</div>
+							</div>
+							</div>
+						</div>
+					</div>
+				</div> -->
+
+	<h1>coming soon</h1>		
+			

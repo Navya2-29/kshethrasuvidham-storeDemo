@@ -1,0 +1,226 @@
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div
+        class="card-header border-bottom-0"
+        style="font-size: 12.3pt; padding: 9px"
+      >
+        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
+          &nbsp;&nbsp;<span class="fa fa-list"></span>&nbsp;&nbsp;Department
+          List
+        </div>
+      </div>
+      <div class="card-body" style="padding: 15px">
+        <div class="table-responsive" style="margin: 0px">
+          <div class="table-container">
+            <!-- Filter -->
+            <div class="search-container">
+              <input
+                class="searchiput"
+                matInput
+                (keyup)="applyFilter($event)"
+                placeholder="Search..."
+              />
+            </div>
+            <table
+              mat-table
+              [dataSource]="dataSource"
+              matSort
+              class="custom-table"
+            >
+              <!-- Index Column -->
+              <ng-container matColumnDef="index">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let element; let i = index">
+                  {{ i + 1 }}
+                </td>
+              </ng-container>
+              <!-- code -->
+              <ng-container matColumnDef="code">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.dept_code }}
+                </td>
+              </ng-container>
+              <!-- department -->
+              <ng-container matColumnDef="department">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  Department
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.dept_name }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="department_ml">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                  Department(mal)
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.department_ml }}
+                </td>
+              </ng-container>
+              <!-- Action -->
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef>Action</th>
+                <td mat-cell *matCellDef="let element">
+                  <a
+                    (click)="editDepartment(element)"
+                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
+                    data-toggle="tooltip"
+                    data-placement="top"
+                    title="Edit"
+                    data-original-title="Edit Details"
+                    ><i class="fa fa-edit"></i
+                  ></a>
+                  <a
+                    (click)="deleteDepartment(element.id)"
+                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
+                    data-toggle="modal"
+                    data-placement="top"
+                    title="Delete Details"
+                    data-original-title="Delete"
+                    ><i class="fa fa-times"></i
+                  ></a>
+                </td>
+              </ng-container>
+              <!-- Header & Row -->
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <!-- No Data -->
+              <tr *matNoDataRow>
+                <td colspan="5" class="text-center">
+                  No Department data found
+                </td>
+              </tr>
+            </table>
+            <!-- Pagination -->
+            <mat-paginator
+              [pageSize]="5"
+              [pageSizeOptions]="[5, 10, 20]"
+              showFirstLastButtons
+            >
+            </mat-paginator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="col-md-4 collapse show department-lists"
+    id="collapseTwo"
+    aria-labelledby="headingTwo"
+    data-parent="#accordion"
+  >
+    <div class="card">
+      <div
+        class="card-header border-bottom-0"
+        style="font-size: 12.3pt; padding: 9px"
+      >
+        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
+          &nbsp;&nbsp;<span class="fas fa-plus-square"></span>&nbsp;&nbsp;{{
+            editMode ? "Edit Department" : "Add New Department"
+          }}
+        </div>
+      </div>
+      <div class="card-body" style="padding: 15px">
+        <form name="frmsearch" [formGroup]="departmentForm">
+          <div class="row">
+            <div class="col-md-12">
+              <table style="width: 100%">
+                <tr>
+                  <td>Dept. Code<span class="mandatoryfiels">*</span></td>
+                  <td>
+                    <input
+                      type="text"
+                      [readonly]="editMode"
+                      style="
+                        width: 90px;
+                        border: 1px solid silver;
+                        border-radius: 2.4px;
+                      "
+                      id="dept_code"
+                      name="dept_code"
+                      formControlName="dept_code"
+                    />
+                    <div
+                      class="error text-danger"
+                      *ngIf="
+                        f['dept_code'].touched &&
+                        f['dept_code'].hasError('required')
+                      "
+                    >
+                      Dept. Code is required
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Dept. Name<span class="mandatoryfiels">*</span></td>
+                  <td>
+                    <input
+                      type="text"
+                      id="dept_name"
+                      name="dept_name"
+                      style="border: 1px solid silver; border-radius: 2.4px"
+                      formControlName="dept_name"
+                    />
+                    <div
+                      class="error text-danger"
+                      *ngIf="
+                        f['dept_name'].touched &&
+                        f['dept_name'].hasError('required')
+                      "
+                    >
+                      Dept. Name is required
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Dept. Name(mal)<span class="mandatoryfiels">*</span></td>
+                  <td>
+                    <input
+                      type="text"
+                      id="dept_nameml"
+                      name="dept_nameml"
+                      style="border: 1px solid silver; border-radius: 2.4px"
+                      formControlName="dept_nameml"
+                    />
+                    <div
+                      class="error text-danger"
+                      *ngIf="
+                        f['dept_nameml'].touched &&
+                        f['dept_nameml'].hasError('required')
+                      "
+                    >
+                      Dept. Name(mal) is required
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mt-2 sbmt">
+                <button
+                  type="submit"
+                  name="master_search"
+                  id="master_search"
+                  class="btn btn-theme waves-effect w-100 waves-effect waves-light btnsubmt"
+                  (click)="saveDepartment()"
+                >
+                  <i class="fa fa-save mr-1"></i>
+                  {{ editMode ? "Update" : "Save" }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary w-100 waves-effect waves-light btnsubmt"
+                  (click)="resetForm()"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

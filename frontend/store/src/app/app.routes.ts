@@ -1,0 +1,133 @@
+import { ProductWiseComponent } from './features/reports/puchase-reports/product-wise/product-wise.component';
+import { Routes } from '@angular/router';
+import { DashboardComponent } from './features/dashboard/dashboard/dashboard.component';
+
+export const routes: Routes = [
+   // LOGIN (NO LAYOUT)
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login.component')
+        .then(m => m.LoginComponent),
+  },
+
+  // MAIN APP (WITH LAYOUT)
+  {
+    path: '',
+    loadComponent: () =>
+      import('./layout/layout/layout/layout.component')
+        .then(m => m.LayoutComponent),
+
+    children: [
+
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      // DASHBOARD
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard/dashboard.component')
+            .then(m => m.DashboardComponent),
+      },
+
+      // MASTER
+      {
+        path: 'master/productmaster',
+        loadComponent: () =>
+          import('./features/masters/productmaster/productmaster.component')
+            .then(m => m.ProductmasterComponent),
+      },
+      {
+        path: 'master/category',
+        loadComponent: () =>
+          import('./features/masters/categorymaster/categorymaster.component')
+            .then(m => m.CategorymasterComponent),
+      },
+      {
+        path: 'master/department',
+        loadComponent: () =>
+          import('./features/masters/departmentmaster/departmentmaster.component')
+            .then(m => m.DepartmentmasterComponent),
+      },
+      {
+        path: 'master/supplier',
+        loadComponent: () =>
+          import('./features/masters/suppliermaster/suppliermaster.component')
+            .then(m => m.SuppliermasterComponent),
+      },
+      {
+        path: 'master/book',
+        loadComponent: () =>
+          import('./features/masters/bookmaster/bookmaster.component')
+            .then(m => m.BookmasterComponent),
+      },
+
+      // TRANSACTIONS
+      {
+        path: 'transaction/stock-transfer',
+        loadComponent: () =>
+          import('./features/transactions/stock-transaction/stock-transfer/stock-transfer.component')
+            .then(m => m.StockTransferComponent),
+      },
+      {
+        path: 'transaction/stock-transfer/add',
+        loadComponent: () =>
+          import('./features/transactions/stock-transaction/add-stocktransaction/add-stocktransaction.component')
+            .then(m => m.AddStocktransactionComponent),
+      },
+      {
+        path: 'transaction/opening-stock',
+        loadComponent: () =>
+          import('./features/transactions/opening-stock/opening-stock.component')
+            .then(m => m.OpeningStockComponent),
+      },
+      {
+        path: 'transaction/order',
+        loadComponent: () =>
+          import('./features/transactions/order/order.component')
+            .then(m => m.OrderComponent),
+      },
+      {
+        path: 'transaction/purchase',
+        loadComponent: () =>
+          import('./features/transactions/purchase/purchase.component')
+            .then(m => m.PurchaseComponent),
+      },
+      {
+        path: 'transaction/sales',
+        loadComponent: () =>
+          import('./features/transactions/sales/sales.component')
+            .then(m => m.SalesComponent),
+      },
+
+      // REPORTS
+      {
+        path: 'report/purchase/product-wise',
+        loadComponent: () =>
+          import('./features/reports/puchase-reports/product-wise/product-wise.component')
+            .then(m => m.ProductWiseComponent),
+      },
+      {
+        path: 'report/purchase/supplier-wise',
+        loadComponent: () =>
+          import('./features/reports/puchase-reports/supplier-wise/supplier-wise.component')
+            .then(m => m.SupplierWiseComponent),
+      },
+      {
+        path: 'report/stock',
+        loadComponent: () =>
+          import('./features/reports/stock-report/stock-report.component')
+            .then(m => m.StockReportComponent),
+      },
+      {
+        path: 'report/stock-transfer',
+        loadComponent: () =>
+          import('./features/reports/stock-transfer/stock-transfer.component')
+            .then(m => m.StockTransferComponent),
+      },
+    ],
+  },
+
+  // WILDCARD
+  { path: '**', redirectTo: 'login' }
+];

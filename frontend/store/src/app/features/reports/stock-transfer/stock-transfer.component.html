@@ -1,0 +1,114 @@
+<div class="row">
+  <div
+    class="col-md-12 collapse show"
+    id="collapseTwo"
+    aria-labelledby="headingTwo"
+    data-parent="#accordion"
+  >
+    <div class="card">
+      <div class="card-header border-bottom-0">
+        <div class="card-title">
+          <span class="fa fa-share"></span>&nbsp;&nbsp;Stock Transfer Report
+        </div>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="productForm">
+          <div class="row">
+            <div class="col-sm-2">
+              <div class="form-group">
+                <label>Product Code</label>
+                <input
+                  formControlName="product_code"
+                  placeholder="Enter Product Code here"
+                />
+              </div>
+            </div>
+            <div class="col-sm-1">
+              <div class="form-group">
+                <label style="margin-top: 35px">OR</label>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label>Select Product</label>
+                <select
+                  class="form-control mb-1 selectproduct"
+                  formControlName="product_name"
+                >
+                  <option value="">Select</option>
+
+                  <option *ngFor="let p of products" [value]="p.product_name">
+                    {{ p.product_name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="">&nbsp;&nbsp;</label>
+                <button
+                  type="submit"
+                  class="btn btn-secondary w-100 waves-effect waves-light"
+                >
+                  <i class="fa fa-search mr-1"></i>Search
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" id="result">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header border-bottom-0">
+        <div class="card-title">
+          <span class="fa fa-list"></span>&nbsp;&nbsp;Paper
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table
+            id="basic-datatable"
+            class="table dt-responsive table-bordered nowrap"
+          >
+            <thead>
+              <tr>
+                <th class="text-center" style="width: 2%">#</th>
+                <th class="text-center" style="width: 2%">Product Code</th>
+                <th style="width: 41%">Product Name</th>
+                <th style="width: 25%">Department</th>
+                <th style="width: 5%">Category</th>
+                <th style="width: 4%">Quantity</th>
+                <th class="text-center" style="width: 8%">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of stockList; let i = index">
+  <td class="text-center">{{ i + 1 }}</td>
+  <td class="text-center">{{ item.product_code }}</td>
+  <td>{{ item.product_name }}</td>
+  <td>{{ item.department_name }}</td>
+  <td>{{ item.category_name }}</td>
+  <td>{{ item.quantity | number:'1.2-2' }}</td>
+                <td class="text-center">
+                  <!-- <a href="#" class="btn  btn-theme-light btn-xs btn-icon waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="View" data-original-title="View Details"><i class="fa fa-eye"></i></a> -->
+                  <a
+                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light"
+                    data-toggle="tooltip"
+                    data-placement="top"
+                    title="Transfer"
+                    data-original-title="Transfer"
+                    ><i class="fa fa-cart-plus"></i>&nbsp;
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

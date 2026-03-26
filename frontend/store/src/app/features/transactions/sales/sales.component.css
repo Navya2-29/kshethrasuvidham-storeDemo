@@ -1,0 +1,140 @@
+.toptable {
+  color: rgb(109, 106, 106);
+  font-size: 15px;
+}
+.tb1 {
+  height: 32.4px;
+  width: 81px;
+}
+.tb2 {
+  height: 32.4px;
+  width: 105px;
+}
+.select {
+  width: 150px;
+  height: 32.4px;
+  padding: 5px;
+}
+.tablehead {
+  background-color: gray;
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  height: 35px;
+}
+.action-col {
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+  width: 30px;
+  height: 25px;
+  border-radius: 3px;
+  background-color: antiquewhite;
+}
+.date {
+  height: 32.4px;
+  width: 112.5px;
+}
+.departmentdropdown {
+  width: 189px;
+  height: 32.4px;
+  padding: 5px;
+}
+.cgst {
+  font-size: 12px;
+  font-weight: 500;
+}
+.sgst {
+  font-size: 12px;
+  font-weight: 500;
+}
+.th {
+  background: white;
+}
+.row1-2 {
+  font-size: 14px;
+}
+.slcol {
+  width: 50px;
+  height: 32.4px;
+  padding: 5px;
+  text-align: right;
+}
+.qtycol {
+  width: 54px;
+  padding: 5px;
+  text-align: right;
+  height: 32px;
+}
+.unit {
+  width: 72px;
+  height: 32.4px;
+  padding: 5px;
+}
+.mrp {
+  width: 72px;
+  height: 32.4px;
+  padding: 5px;
+  text-align: right;
+}
+.productdropdown {
+  width: 180px;
+  height: 32.4px;
+  padding: 5px;
+  font-size: 14px;
+}
+.value-col {
+  width: 72px;
+  height: 32.4px;
+  padding: 5px;
+  text-align: right;
+}
+.total {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6c757d;
+}
+.total-amt {
+  clear: both;
+  width: 730.5px;
+  border: 0px solid red;
+  text-align: right;
+  font-weight: 500;
+  font-size: 12.3pt;
+  color: #6c757d;
+}
+.discount-amt {
+  width: 75.6px;
+  height: 32.4px;
+  padding: 5px;
+  text-align: right;
+}
+.gst-amt {
+  width: 72px;
+  height: 32.4px;
+  padding: 5px;
+  text-align: right;
+}
+.others-amt {
+  width: 72px;
+  height: 32.4px;
+  padding: 5px;
+  text-align: right;
+}
+.bill-amt {
+  width: 72px;
+  height: 32.4px;
+  padding: 5px;
+  text-align: right;
+  font-size: 15pt;
+  color: maroon;
+  font-weight: 600;
+}
+.save {
+  background-color: #d88e25;
+  color: white;
+}
+.mandatoryfiels{
+  color: red;
+}

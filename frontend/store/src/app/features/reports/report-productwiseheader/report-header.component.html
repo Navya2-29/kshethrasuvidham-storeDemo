@@ -1,0 +1,91 @@
+<div class="row">
+  <div
+    class="col-md-12 collapse show"
+    id="collapseTwo"
+    aria-labelledby="headingTwo"
+    data-parent="#accordion"
+  >
+    <div
+      class="card"
+      style="
+        background: #fff2ca;
+        padding: 5px;
+        box-shadow: 1px 1px 25px silver;
+        border-radius: 10px;
+        margin-top: -18px;
+      "
+    >
+      <div class="card-body">
+        <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-2">
+                  <p class="mb-0">Product Code</p>
+                  <input
+                    type="text"
+                    formControlName="product_code"
+                    class="form-control mb-1"
+                    placeholder="Enter Product Code"
+                    style="height: 28.5px; padding: 2px"
+                  />
+                </div>
+                <div class="col-md-1">
+                  <p class="mb-0 text-center">OR</p>
+                </div>
+                <div class="col-md-2">
+                  <p class="mb-0">Select Product</p>
+                  <select
+                    class="form-control mb-1" formControlName="product_name"
+                    style="height: 28.5px; padding: 2px"
+                  >
+                    <option>Select</option>
+                    <option *ngFor="let p of products" [value]="p.product_name">
+                      {{ p.product_name }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <p class="mb-0">From</p>
+                  <input
+                    type="date"
+					formControlName="from_date"
+                    style="
+                      height: 28.5px;
+                      padding: 2px;
+                      border: 1px solid silver;
+                    "
+                  />
+                </div>
+                <div class="col-md-2">
+                  <p class="mb-0">To</p>
+                  <input
+                    type="date"
+					formControlName="to_date"
+                    style="
+                      height: 28.5px;
+                      padding: 2px;
+                      border: 1px solid silver;
+                    "
+                  />
+                </div>
+                <div class="col-md-2">
+                  <button
+                    type="submit"
+                    name="master_search"
+                    id="master_search"
+                    class="btn w-100 waves-effect waves-light mt-2"
+                    style="background: #d88e25"
+                    
+                  >
+                    <i class="fa fa-search mr-1"></i>Search
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

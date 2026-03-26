@@ -1,0 +1,23 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { CategorymasterComponent } from './categorymaster.component';
+
+describe('CategorymasterComponent', () => {
+  let component: CategorymasterComponent;
+  let fixture: ComponentFixture<CategorymasterComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [CategorymasterComponent]
+    })
+    .compileComponents();
+    
+    fixture = TestBed.createComponent(CategorymasterComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
