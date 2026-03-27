@@ -39,7 +39,8 @@ export class LoginComponent {
       next: (res) => {
         localStorage.setItem('token', res.accessToken);
         localStorage.setItem('role', res.user.role);
-        localStorage.setItem('username',res.user.username)
+        localStorage.setItem('username',res.user.username);
+localStorage.setItem('userId',res.user.id.toString());
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

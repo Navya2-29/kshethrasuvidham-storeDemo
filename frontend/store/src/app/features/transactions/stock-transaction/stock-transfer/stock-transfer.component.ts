@@ -150,7 +150,7 @@ export class StockTransferComponent {
     });
   }
   movetoaddstocktransfer() {
-    this.router.navigate(['transcation/stocktransfer/add'], {
+    this.router.navigate(['transaction/stock-transfer/add'], {
       state: { product: this.selectedProduct },
     });
   }

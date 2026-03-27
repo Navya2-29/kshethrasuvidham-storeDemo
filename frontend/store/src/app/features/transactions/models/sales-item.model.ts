@@ -7,4 +7,5 @@ export interface SalesItem {
   cgst: number;
   sgst: number;
   amount: number;
+  gst_percent:number;
 }

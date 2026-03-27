@@ -21,11 +21,13 @@ export class SalesComponent {
 
   products: any[] = [];
   departments: any[] = [];
-
+  userId:string|null='';
   constructor(
     private fb: FormBuilder,
     private salesService: MasterService,
-  ) {}
+  ) {
+    this.userId=localStorage.getItem('userId')
+  }
 
   ngOnInit(): void {
     this.initForm();
@@ -41,7 +43,7 @@ export class SalesComponent {
       const chequeDate = this.form.get('cheque_date');
       const chequeNo = this.form.get('cheque_no');
 
-      if (mode === 'cheque') {
+      if (mode === 'ch') {
         chequeDate?.setValidators([Validators.required]);
         chequeNo?.setValidators([Validators.required]);
       } else {
@@ -62,7 +64,7 @@ export class SalesComponent {
     this.form = this.fb.group({
       order_no: [''],
       invoice_no: ['', Validators.required],
-      customer_name: ['', Validators.required],
+      customer_name: [''],
       department_id: ['', Validators.required],
       invoice_date: [today, Validators.required],
       customer_mob: ['', Validators.pattern(/^[0-9]{10}$/)],
@@ -73,7 +75,7 @@ export class SalesComponent {
       cheque_no: [''],
       total_amount: [0, Validators.required],
       discount_amount: [0],
-      // gst_amount: [0],
+ 
       other_charges: [0],
       bill_amount: [0, Validators.required],
     });
@@ -90,16 +92,51 @@ export class SalesComponent {
       unit: ['Nos', Validators.required],
       mrp: [0, Validators.required],
       cost_price: [0],
+      gst_percent:[0],
       cgst: [0],
       sgst: [0],
       amount: [0, Validators.required],
+      hsn_code: [''],
     });
   }
 
   addItem() {
-    this.items.push(this.createItem());
+if (this.canAddNewItem()) {
+      this.items.push(this.createItem());
+    } else {
+      alert(
+        'Please fill all required fields in the current row before adding a new item.',
+      );
+    }
+
+
+    
   }
 
+
+   canAddNewItem(): boolean {
+    if (this.items.length === 0) return true;
+
+    const lastIndex = this.items.length - 1;
+    const lastRow = this.items.at(lastIndex);
+
+    // Required fields in each row
+    const requiredFields = ['product_id', 'qty'];
+
+    for (let field of requiredFields) {
+      const control = lastRow.get(field);
+      if (
+        !control ||
+        control.invalid ||
+        control.value === '' ||
+        control.value === null
+      ) {
+        return false; // Last row is invalid, cannot add new row
+      }
+    }
+
+    return true; // Last row is valid, can add new row
+  }
   removeItem(index: number) {
     this.items.removeAt(index);
     this.calculateTotal();
@@ -108,7 +145,7 @@ export class SalesComponent {
   loadMasters() {
     // this.salesService.getProducts().subscribe(r => this.products = r);
     this.salesService.getDepartments().subscribe((r) => (this.departments = r));
-    console.log(this.products, this.departments);
+    // console.log(this.products, this.departments);
   }
 
   onDepartmentChange() {
@@ -126,6 +163,8 @@ export class SalesComponent {
         unit: product.unit,
         mrp: product.mrp,
         cost_price: product.cost_price,
+        gst_percent: product.gst_percent || 0, // ✅ ADD
+        hsn_code: product.hsn_code || '' 
       });
       this.calculateRow(index);
     }
@@ -133,16 +172,19 @@ export class SalesComponent {
   private round2(value: number): number {
     return Math.round((value + Number.EPSILON) * 100) / 100;
   }
-  calculateRow(i: number) {
+    calculateRow(i: number) {
     const row = this.items.at(i).value;
+
     const base = this.round2(row.qty * row.cost_price);
-    const cgst = this.round2(base * 0.09);
-    const sgst = this.round2(base * 0.09);
+
+    const gstPercent = Number(row.gst_percent || 0);
+    const cgstPercent = gstPercent / 2;
+    const sgstPercent = gstPercent / 2;
+
+    const cgst = this.round2((base * cgstPercent) / 100);
+    const sgst = this.round2((base * sgstPercent) / 100);
+
     const amount = this.round2(base + cgst + sgst);
-    // const base = row.qty * row.cost_price;
-    // const cgst = base * 0.09;
-    // const sgst = base * 0.09;
-    // const amount = base + cgst + sgst;
 
     this.items.at(i).patchValue(
       {
@@ -150,31 +192,33 @@ export class SalesComponent {
         sgst,
         amount,
       },
-      { emitEvent: false },
+      { emitEvent: false }
     );
+
     this.calculateTotal();
   }
 
-  calculateTotal() {
+ calculateTotal() {
     let subTotal = 0;
+
     this.items.controls.forEach((r) => {
       subTotal += Number(r.value.amount || 0);
     });
 
-    // const gst = subTotal * 0.18;
     const discount = Number(this.form.value.discount_amount || 0);
     const other = Number(this.form.value.other_charges || 0);
-    const bill = subTotal - discount + other;
+
+    const bill = this.round2(subTotal - discount + other);
 
     this.form.patchValue(
       {
-        sub_total: subTotal,
-        gst_amount: '0.00',
+        sub_total: this.round2(subTotal),
         bill_amount: bill,
       },
-      { emitEvent: false },
+      { emitEvent: false }
     );
   }
+
 
   save() {
     if (this.form.invalid) {
@@ -189,7 +233,7 @@ export class SalesComponent {
       department_id: this.form.value.department_id,
       customer_name: this.form.value.customer_name,
       customer_mobile: this.form.value.customer_mob,
-      created_by: 1,
+      created_by: this.userId,
       sub_total: this.form.value.sub_total,
       payment_mode: this.form.value.payment_mode,
       cheque_date: this.form.value.cheque_date,
@@ -207,6 +251,7 @@ export class SalesComponent {
         cgst: i.cgst,
         sgst: i.sgst,
         amount: i.amount,
+        gst_percent:i.gst_percent
       })),
     };
 
@@ -216,6 +261,7 @@ export class SalesComponent {
         this.initForm();
         this.items.clear();
         this.addItem();
+        this.loadNextInvoice()
       },
       error: (err) => {
         alert(err.error.message || 'Error saving sale');

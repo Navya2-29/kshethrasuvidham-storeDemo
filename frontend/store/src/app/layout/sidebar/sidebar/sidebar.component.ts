@@ -38,6 +38,7 @@ export class SidebarComponent {
       icon: 'remixicon-contacts-line',
       children: [
         {label:"Opening",route:'/transaction/opening-stock'},
+        {label:"Direct-entry",route:'/transaction/direct-entry'},
         {label:"Order",route:'/transaction/order'}, 
         { label: 'Purchase', route: '/transaction/purchase'},
         { label: 'Stock Transfer', route: '/transaction/stock-transfer'},

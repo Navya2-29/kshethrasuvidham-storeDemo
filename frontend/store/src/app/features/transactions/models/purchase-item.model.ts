@@ -9,4 +9,5 @@ export interface PurchaseItem {
   sgst: number;
   amount: number;
   hsn_code:string;
+  gst_percent:number;
 }

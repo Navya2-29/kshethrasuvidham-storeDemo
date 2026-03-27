@@ -12,6 +12,7 @@ export interface SalesHeader {
   gst_amount?: number;
   other_charges: number;
   bill_amount: number;
+  created_by:string;
 }
 
 export interface SalesPayload {

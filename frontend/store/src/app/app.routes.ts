@@ -82,6 +82,12 @@ export const routes: Routes = [
             .then(m => m.OpeningStockComponent),
       },
       {
+        path: 'transaction/direct-entry',
+        loadComponent: () =>
+          import('./features/transactions/direct-entry/direct-entry.component')
+            .then(m => m.DirectEntryComponent),
+      },
+      {
         path: 'transaction/order',
         loadComponent: () =>
           import('./features/transactions/order/order.component')

@@ -5,8 +5,8 @@
         <tr class="toptable">
           <td>Order No.</td>
           <td>Invoice No.<span class="mandatoryfiels">*</span></td>
-          <td>Customer<span class="mandatoryfiels">*</span></td>
-          <td>Mobile<span class="mandatoryfiels">*</span></td>
+          <td>Customer</td>
+          <td>Mobile</td>
           <td>Receipt Date<span class="mandatoryfiels">*</span></td>
           <td>Department<span class="mandatoryfiels">*</span></td>
         </tr>
@@ -64,8 +64,8 @@
           <th>Unit</th>
           <th>MRP</th>
           <th>CPrice</th>
-          <th>CGST<span class="cgst"> (9%)</span></th>
-          <th>SGST<span class="sgst"> (9%)</span></th>
+          <th>CGST</th>
+          <th>SGST</th>
           <th>Amount</th>
           <th class="th"></th>
         </tr>
@@ -158,7 +158,7 @@
                 required
               />
             </td>
-            <td style="vertical-align: middle">
+            <td style="vertical-align: middle" *ngIf="items.length > 1" >
               <a
                 class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
                 (click)="removeItem(i)"

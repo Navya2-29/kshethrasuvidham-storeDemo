@@ -4,10 +4,10 @@ export interface Purchase {
   order_no: string;
   invoice_no: string;
   supplier_id: number;
-  department_id: number;
+ 
   invoice_date: string;
   receipt_date: string;
-
+   created_by:string |null ;
   items: PurchaseItem[];
 
   total_amount: number;
