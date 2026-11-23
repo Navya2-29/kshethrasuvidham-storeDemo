@@ -1,4 +1,5 @@
-import { Directive, HostListener } from '@angular/core';
+import { Directive, HostListener, Optional, Self } from '@angular/core';
+import { NgControl } from '@angular/forms';
 
 @Directive({
   selector: '[appNumbersOnly]',
@@ -6,7 +7,8 @@ import { Directive, HostListener } from '@angular/core';
 })
 export class NumbersOnlyDirective {
 
-  
+  constructor(@Optional() @Self() private ngControl: NgControl) {}
+
   @HostListener('input', ['$event'])
   onInputChange(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -28,6 +30,14 @@ export class NumbersOnlyDirective {
       value = parts[0] + '.' + parts[1].substring(0, 3);
     }
 
-    input.value = value;
+    if (input.value !== value) {
+      input.value = value;
+    }
+
+    // Keep the reactive/template-driven form control in sync with the
+    // sanitized value - without this, formControlName still holds the
+    // pre-sanitized (unfiltered) value from this same input event, so
+    // validators run against stale data and appear to fire inconsistently.
+    this.ngControl?.control?.setValue(value, { emitEvent: true });
   }
 }

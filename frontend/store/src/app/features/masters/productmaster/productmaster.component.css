@@ -173,11 +173,133 @@ mat-paginator {
 }
 .sbmt{
   display: flex;
-  
+
   gap: 10px;
 }.btnsubmt{
   display: flex;
     flex:1;
   justify-content: center;
   width: 300px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgb(216 142 37 / 15%);
+  color: #6c757d;
+  border: 1px solid #d88e25;
+  border-radius: 14px;
+  padding: 2px 10px;
+  margin: 2px 4px 2px 0;
+  font-size: 12px;
+}
+.chip .fa-times {
+  cursor: pointer;
+  color: #d88e25;
+}
+.chip .fa-times:hover {
+  color: #a05f00;
+}
+
+/* =====================================================
+   PROFESSIONAL UI POLISH
+   Scoped under .productmaster-page (this component uses
+   ViewEncapsulation.None, so unscoped rules would leak into
+   every other master screen). Same colour palette as the
+   rest of the app - #d88e25 theme orange, #6c757d text grey,
+   #cfcfcf borders - nothing new introduced, no layout/column
+   changes, just consistent spacing, typography and states.
+===================================================== */
+.productmaster-page .card {
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.productmaster-page .card-title {
+  font-weight: 600;
+  color: #495057;
+}
+
+.productmaster-page .card-body p.mb-0 {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #495057;
+  margin-bottom: 5px !important;
+  letter-spacing: 0.2px;
+}
+
+.productmaster-page .card-body .row > div[class*='col-md'] {
+  margin-bottom: 12px;
+}
+
+.productmaster-page .form-control,
+.productmaster-page select.form-control {
+  height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #d4d5d5;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  color: #495057;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.productmaster-page .form-control:focus {
+  border-color: #d88e25;
+  outline: none;
+  box-shadow: 0 0 0 0.15rem rgb(216 142 37 / 25%);
+}
+
+.productmaster-page .form-control[readonly] {
+  background-color: #f4f4f4;
+  cursor: not-allowed;
+}
+
+.productmaster-page .text-danger {
+  font-size: 0.72rem;
+  margin-top: 3px;
+  display: block;
+}
+
+.productmaster-page .btnsubmt {
+  border-radius: 5px;
+  height: 36px;
+  font-weight: 600;
+  transition: filter 0.15s ease;
+}
+
+.productmaster-page .btnsubmt:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.productmaster-page hr {
+  border-top: 1px dashed #d4d5d5;
+  margin: 6px 0 14px;
+}
+
+/* Products list */
+.productmaster-page .mat-mdc-row:hover {
+  background-color: rgb(216 142 37 / 6%);
+}
+
+.productmaster-page .mat-mdc-row:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.productmaster-page .btn-theme-light,
+.productmaster-page .btn-info {
+  border-radius: 4px;
+}
+
+.productmaster-page .price-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.35;
+}
+.productmaster-page .price-cell b {
+  color: #6c757d;
+  font-weight: 600;
 }

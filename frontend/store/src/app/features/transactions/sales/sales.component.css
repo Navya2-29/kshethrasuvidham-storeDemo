@@ -1,140 +1,393 @@
-.toptable {
-  color: rgb(109, 106, 106);
-  font-size: 15px;
+/* =====================================================
+  
+   Header fixed + Footer fixed + Product rows scroll only
+
+===================================================== */
+
+/* ================= HOST (ONLY THIS COMPONENT) ================= */
+:host{
+  display:block;
+  height:calc(100vh - 170px);   /* adjust if navbar/header larger */
+  overflow:hidden;
+  background:#f4f7fa;
+  font-family:Arial, Helvetica, sans-serif;
 }
-.tb1 {
-  height: 32.4px;
-  width: 81px;
+
+/* ================= RESET INSIDE COMPONENT ================= */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
-.tb2 {
-  height: 32.4px;
-  width: 105px;
+
+/* ================= MAIN SCREEN ================= */
+.pos-screen{
+  height:100%;
+  display:grid;
+
+  /* Header / Product / Footer */
+  grid-template-rows:
+    58px
+    minmax(0,1fr)
+    105px;
+
+  gap:6px;
+  padding:6px;
+  overflow:hidden;
 }
-.select {
-  width: 150px;
-  height: 32.4px;
-  padding: 5px;
+
+/* ================= COMMON ================= */
+.field-box{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
 }
-.tablehead {
-  background-color: gray;
-  color: white;
-  font-size: 14px;
-  text-align: center;
-  height: 35px;
+
+.field-box label{
+  font-size:10px;
+  font-weight:700;
+  color:#475569;
+  padding-left:2px;
+  line-height:1;
 }
-.action-col {
-  justify-content: center;
-  display: inline-flex;
-  align-items: center;
-  margin-left: 5px;
-  width: 30px;
-  height: 25px;
-  border-radius: 3px;
-  background-color: antiquewhite;
+
+input,
+select,
+button{
+  width:100%;
+  min-height:32px;
+  border:1px solid #d1d5db;
+  border-radius:5px;
+  padding:0 6px;
+  font-size:12px;
+  outline:none;
+  background:#fff;
 }
-.date {
-  height: 32.4px;
-  width: 112.5px;
+
+input:focus,
+select:focus{
+  border-color:#2563eb;
 }
-.departmentdropdown {
-  width: 189px;
-  height: 32.4px;
-  padding: 5px;
+
+input[readonly]{
+  background:#f8fafc;
+  font-weight:700;
 }
-.cgst {
-  font-size: 12px;
-  font-weight: 500;
+.number{
+  text-align:right;
+  padding-right: 3px;
 }
-.sgst {
-  font-size: 12px;
-  font-weight: 500;
+
+/* ================= HEADER ================= */
+.header-bar{
+  display:grid;
+  grid-template-columns:
+    110px
+    120px
+    1fr
+    120px
+    140px
+    160px;
+
+  gap:6px;
+  min-height:58px;
 }
-.th {
-  background: white;
+
+/* ================= PRODUCT SECTION ================= */
+.product-panel{
+  min-height:0;
+  display:grid;
+
+  grid-template-rows:
+    30px
+    minmax(0,1fr);
+
+  gap:6px;
+  overflow:hidden;
 }
-.row1-2 {
-  font-size: 14px;
+
+/* ================= GRID ================= */
+.grid-head,
+.grid-row{
+  display:grid;
+  grid-template-columns:
+    35px
+    90px
+    1.8fr
+    1fr
+    1fr
+    60px
+    70px
+    75px
+    75px
+    55px
+    55px
+    95px
+    34px
+    34px;
+
+  gap:6px;
+  align-items:center;
 }
-.slcol {
-  width: 50px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
+
+.grid-head{
+  background:#1f2937;
+  color:#fff;
+  font-size:11px;
+  font-weight:700;
+  padding:0 6px;
+  border-radius:5px;
 }
-.qtycol {
-  width: 54px;
-  padding: 5px;
-  text-align: right;
-  height: 32px;
+
+/* ONLY PRODUCT ROWS SCROLL */
+.grid-body{
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:auto;
+
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:5px;
+  padding:4px;
 }
-.unit {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
+
+/* ROW */
+.grid-row{
+  padding:4px 0;
+  border-bottom:1px solid #eef2f7;
 }
-.mrp {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
+
+.grid-row:hover{
+  background:#f8fafc;
 }
-.productdropdown {
-  width: 180px;
-  height: 32.4px;
-  padding: 5px;
-  font-size: 14px;
+
+.grid-row input{
+  min-height:30px;
 }
-.value-col {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
+
+.row-no{
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
 }
-.total {
-  font-size: 14px;
-  font-weight: 600;
-  color: #6c757d;
+
+/* ================= BUTTONS ================= */
+.add-btn{
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  font-size:18px;
+  font-weight:700;
+  cursor:pointer;
 }
-.total-amt {
-  clear: both;
-  width: 730.5px;
-  border: 0px solid red;
-  text-align: right;
-  font-weight: 500;
-  font-size: 12.3pt;
-  color: #6c757d;
+
+.del-btn{
+  background:#ef4444;
+  color:#fff;
+  border:none;
+  font-size:18px;
+  font-weight:700;
+  cursor:pointer;
 }
-.discount-amt {
-  width: 75.6px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
+
+
+
+/* ================= FOOTER ================= */
+.footer-bar{
+  border:1px solid #d1d5db;
+  background:#fff;
+  border-radius:5px;
+  overflow:hidden;
 }
-.gst-amt {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
+
+/* each row */
+.footer-row{
+  border-top:1px solid #e5e7eb;
+  padding:4px 6px;
 }
-.others-amt {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
+
+/* =========================================
+ALL 3 ROWS SAME PRODUCT COLUMN WIDTH
+========================================= */
+.totals-grid{
+  display:grid;
+  grid-template-columns:
+    35px     /* # */
+    90px     /* code */
+    1.8fr    /* product */
+    1fr      /* author */
+    1fr      /* publisher */
+    60px     /* qty */
+    70px     /* unit */
+    75px     /* mrp */
+    75px     /* sp */
+    55px     /* cgst */
+    55px     /* sgst */
+    95px     /* amount */
+    34px     /* add */
+    34px;    /* delete */
+
+  gap:6px;
+  align-items:center;
 }
-.bill-amt {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
-  font-size: 15pt;
-  color: maroon;
-  font-weight: 600;
+
+/* textbox */
+.footer-bar input,
+.footer-bar select{
+  height:24px;
+  min-height:24px;
+  font-size:11px;
+  padding:0 4px;
+  border:1px solid #d1d5db;
 }
-.save {
-  background-color: #d88e25;
-  color: white;
+
+/* totals box */
+.totals-grid input{
+  background:#dbeafe;
+  text-align:right;
+  font-weight:700;
 }
-.mandatoryfiels{
-  color: red;
+
+/* labels TOTAL / DISCOUNT / PAYMENT */
+.footer-label{
+  height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:700;
+  
+  
+}
+
+/* bill amount final */
+.bill-box{
+  background:#dcfce7 !important;
+  font-weight:700;
+}
+
+/* save button under + column */
+.save-btn{
+  height:24px;
+  min-height:24px;
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  font-size:10px;
+  font-weight:700;
+  padding:0;
+  cursor:pointer;
+  width:100%;
+}
+/* Payment takes SP + CG + SG */
+.paymode-box{
+  grid-column:9 / span 3;
+}
+
+/* Bill amount in Amount column */
+.bill-box{
+  grid-column:12;
+  background:#dcfce7 !important;
+  font-weight:700;
+  text-align:right;
+}
+
+/* Save takes Add + Delete */
+.save-wide{
+  grid-column:13 / span 2;
+}
+.grid-row input[type="number"],
+.footer-bar input[type="number"]{
+  text-align:right;
+  padding-right:3px !important;
+  appearance:textfield;
+  -webkit-appearance:none;
+  -moz-appearance:textfield;
+}
+/* =====================================================
+   TABLET
+===================================================== */
+@media (max-width:1024px){
+
+  :host{
+    height:calc(100vh - 110px);
+  }
+
+  .header-bar{
+    grid-template-columns:repeat(3,1fr);
+    min-height:auto;
+  }
+
+  .footer-bar{
+    grid-template-columns:repeat(3,1fr);
+    min-height:auto;
+  }
+
+  .grid-head{
+    display:none;
+  }
+
+  .product-panel{
+    grid-template-rows:minmax(0,1fr);
+  }
+
+  .grid-row{
+    grid-template-columns:repeat(3,1fr);
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    padding:8px;
+    margin-bottom:8px;
+  }
+
+}
+
+/* =====================================================
+   MOBILE
+===================================================== */
+@media (max-width:576px){
+
+  :host{
+    height:calc(100vh - 110px);
+  }
+
+  .pos-screen{
+    grid-template-rows:
+      auto
+      minmax(0,1fr)
+      auto;
+  }
+
+  .header-bar{
+    grid-template-columns:1fr;
+  }
+
+  .footer-bar{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  .grid-head{
+    display:none;
+  }
+
+  .grid-row{
+    grid-template-columns:1fr;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    padding:8px;
+    margin-bottom:8px;
+  }
+
+  .save-btn{
+    min-height:46px;
+    font-size:15px;
+  }
+
+  .total-box{
+    min-height:42px;
+    font-size:22px;
+  }
+
 }

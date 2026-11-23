@@ -1,286 +1,210 @@
-<form [formGroup]="form" (ngSubmit)="save()">
-  <div class="row">
-    <div class="col-md-12 table-responsive" style="margin: 5px; padding: 0px">
-      <table id="basic-datatable" class="dt-responsive">
-        <tr class="toptable">
-          <td>Order No.</td>
-          <td>Invoice No.<span class="mandatoryfiels">*</span></td>
-          <td>Supplier code</td>
-          <td>Select Supplier<span class="mandatoryfiels">*</span></td>
-          <td>Invoice Date<span class="mandatoryfiels">*</span></td>
-          <td>Receipt Date<span class="mandatoryfiels">*</span></td>
-          <!-- <td>Department</td> -->
-        </tr>
-        <tr>
-          <td>
-            <input type="text" class="tb1" formControlName="order_no" />
-          </td>
-          <td>
-            <input type="text" class="tb2" formControlName="invoice_no" />
-          </td>
-          <td>
-            <input type="text" class="tb2" formControlName="supplier_code" (input)="onSupplierCodeChange()" />
-          </td>
-          <td>
-            <select class="select" formControlName="supplier_id">
-              <option value="">Select</option>
-              <option *ngFor="let s of filteredSuppliers" [value]="s.id">
-                {{ s.supplier_name }}
-              </option>
-            </select>
-          </td>
-          <td>
-            <input type="date" class="date" formControlName="invoice_date" />
-          </td>
-          <td>
-            <input type="date" class="date" formControlName="receipt_date" />
-          </td>
-          <!-- <td>
-            <select class="departmentdropdown" formControlName="department_id">
-              <option value="">Select</option>
-              <option *ngFor="let d of departments" [value]="d.id">
-                {{ d.dept_name }}
-              </option>
-            </select>
-          </td> -->
-        </tr>
-      </table>
+<form class="pos-screen" [formGroup]="form" (ngSubmit)="save()">
+  <!-- ================= HEADER ================= -->
+  <div class="header-bar">
+    <div class="field-box">
+      <label>Order No</label>
+      <input
+        type="text"
+        formControlName="order_no"
+        placeholder="Type to autofill"
+      />
+    </div>
+
+    <div class="field-box">
+      <label>Invoice No<span class="mandatoryfiels">*</span></label>
+      <input type="text" formControlName="invoice_no" />
+    </div>
+
+    <div class="field-box">
+      <label>Supplier Code</label>
+      <input
+        type="text"
+        formControlName="supplier_code"
+      />
+    </div>
+
+    <div class="field-box">
+      <label>Supplier<span class="mandatoryfiels">*</span></label>
+      <select formControlName="supplier_id">
+        <option value="">Select</option>
+        <option *ngFor="let s of filteredSuppliers" [value]="s.id">
+          {{ s.supplier_name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field-box">
+      <label>Invoice Date<span class="mandatoryfiels">*</span></label>
+      <input type="date" formControlName="invoice_date" />
+    </div>
+
+    <div class="field-box">
+      <label>Receipt Date<span class="mandatoryfiels">*</span></label>
+      <input type="date" formControlName="receipt_date" />
+    </div>
+
+    <div class="field-box" *ngIf="storeContext.selectedDepartment() as dept">
+      <label>Department</label>
+      <input type="text" [value]="dept.dept_name" readonly />
     </div>
   </div>
-  <br />
-  <div class="row">
-    <div class="col-md-12 table-responsive">
-      <table>
-        <tr class="tablehead">
-          <th>Sl.No</th>
-          <th>Product Name<span class="mandatoryfiels">*</span></th>
-          <th style="width: 54px">Hsn code</th>
-          <th style="width: 54px">Qty</th>
-          <th style="width: 54px">free qty</th>
-          <th>Unit</th>
-          <th>MRP</th>
-          <th>CPrice</th>
-          <th>CGST</th>
-          <th>SGST</th>
-          <th>Amount</th>
-          <th class="th"></th>
-        </tr>
-        <ng-container formArrayName="items">
-          <tr
-            class="row1-2"
-            *ngFor="let row of items.controls; let i = index"
-            [formGroupName]="i"
-          >
-            <td>
-              <input
-                type="number"
-                class="form-control1 slcol"
-                [value]="i + 1"
-                disabled
-                required
-              />
-            </td>
-            <td>
-              <select
-                class="form-control1 productdropdown"
-                formControlName="product_id"
-                (change)="onProductChange(i)"
-              >
-                <option value="">Select</option>
-                <option *ngFor="let p of products" [value]="p.id">
-                  {{ p.product_name }}
-                </option>
-              </select>
-            </td>
-            <td>
-              <input
-                type="text"
-                id="hsn_code"
-                class="form-control1 qtycol"
-                formControlName="hsn_code"
-                readonly
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                id="qty"
-                appNumbersOnly
-                inputmode="numeric"
-                class="form-control1 qtycol"
-                formControlName="qty"
-                (input)="calculateRow(i)"
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                id="qty"
-                appNumbersOnly
-                inputmode="numeric"
-                class="form-control1 qtycol"
-                formControlName="free_qty"
-              />
-            </td>
-            <td>
-              <select class="form-control1 unit" formControlName="unit">
-                 <option value="">Select</option>
-                    <option value="CM">CM</option>
-                    <option value="MM">MM</option>
-                    <option value="Nos">Nos</option>
-                    <option value="Ltr">Ltr</option>
-                    <option value="Bdl">Bdl</option>
-                    <option value="m">Mtr</option>
-                    <option value="in">in</option>
-                    <option value="others">Others</option>
-              </select>
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 mrp"
-                formControlName="mrp"
-                readonly
-                required
-                appNumbersOnly
-                inputmode="numeric"
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="cost_price"
-                readonly
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="cgst"
-                readonly
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="sgst"
-                readonly
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="amount"
-                readonly
-                required
-              />
-            </td>
-            <td style="vertical-align: middle" *ngIf="items.length > 1"  >
-              <a 
-                class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                (click)="removeItem(i)"
-                data-toggle="modal"
-                data-target="#deletemodal1"
-                data-placement="top"
-                title="Delete Details"
-                data-original-title="Delete"
-                ><i class="fa fa-times"></i
-              ></a>
-            </td>
-          </tr>
-        </ng-container>
-      </table>
-      <button
-        type="button"
-        class="btn btn-sm btn-primary mt-2"
-        (click)="addItem()"
+
+  <!-- ================= ITEMS ================= -->
+  <div class="product-panel">
+    <div class="grid-head" [class.bookstore]="isBookstore">
+      <div>#</div>
+      <div>Product</div>
+      <div *ngIf="isBookstore">Author</div>
+      <div *ngIf="isBookstore">Publisher</div>
+      <div>Qty</div>
+      <div>Free</div>
+      <div>Unit</div>
+      <div>MRP</div>
+      <div>Cost</div>
+      <div>Disc</div>
+      <div>CGST</div>
+      <div>SGST</div>
+      <div>Amt</div>
+      <div>+</div>
+      <div>X</div>
+    </div>
+
+    <div class="grid-body" formArrayName="items">
+      <div
+        class="grid-row"
+        [class.bookstore]="isBookstore"
+        *ngFor="let row of items.controls; let i = index"
+        [formGroupName]="i"
       >
-        + Add Item
-      </button>
-      <div class="total-amt">
-        <span class="total">Total:</span>
-        <span class="total-amt"> {{ form.value.total_amount }}</span>
+        <div class="row-no">{{ i + 1 }}</div>
+
+        <div class="product-cell">
+          <select formControlName="product_id" (change)="onProductChange(i)">
+            <option value="">Select Product</option>
+            <option
+              *ngFor="let p of products"
+              [value]="p.id"
+              [style.color]="isLowStock(p) ? '#dc2626' : null"
+            >
+              {{ isLowStock(p) ? '⚠ ' : '' }}{{ p.product_code }} - {{ p.product_name }}
+            </option>
+          </select>
+          <div class="row-hint" *ngIf="stockHint(i) as hint">{{ hint }}</div>
+          <div class="row-warning" *ngIf="minQtyWarning(i) as w" [title]="w">⚠ Below Min</div>
+          <div class="row-warning" *ngIf="maxQtyWarning(i) as w" [title]="w">⚠ At/Above Max</div>
+        </div>
+
+        <div *ngIf="isBookstore">
+          <select formControlName="author_id">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let a of rowProducts[i]?.authors" [ngValue]="a.id">
+              {{ a.author_name }}
+            </option>
+          </select>
+        </div>
+        <div *ngIf="isBookstore">
+          <select formControlName="publisher_id">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let p of rowProducts[i]?.publishers" [ngValue]="p.id">
+              {{ p.publisher_name }}
+            </option>
+          </select>
+        </div>
+
+        <input
+          type="text"
+          appNumbersOnly
+          inputmode="numeric"
+          formControlName="qty"
+          (input)="calculateRow(i)"
+          class="number"
+        />
+
+        <input
+          type="text"
+          appNumbersOnly
+          inputmode="numeric"
+          formControlName="free_qty"
+          class="number"
+        />
+
+        <select formControlName="unit">
+          <option value="">Select</option>
+          <option value="Nos">Nos</option>
+          <option value="Ltr">Ltr</option>
+          <option value="Bdl">Bdl</option>
+          <option value="others">Others</option>
+        </select>
+
+        <input type="text" formControlName="mrp" readonly class="number" />
+        <input type="text" formControlName="cost_price" readonly class="number" />
+
+        <input
+          type="text"
+          appNumbersOnly
+          inputmode="numeric"
+          formControlName="discount"
+          (input)="calculateRow(i)"
+          class="number"
+        />
+
+        <input type="text" formControlName="cgst" readonly class="number" />
+        <input type="text" formControlName="sgst" readonly class="number" />
+        <input type="text" formControlName="amount" readonly class="number" />
+
+        <button type="button" class="add-btn" (click)="addItem()">+</button>
+        <button
+          type="button"
+          class="del-btn"
+          [disabled]="items.length === 1"
+          (click)="removeItem(i)"
+        >
+          ×
+        </button>
       </div>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12 table-responsive">
-      <table>
-        <tr
-          style="
-            font-size: 0.9rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #6c757d;
-          "
-        >
-          <td style="width: 72px">Discount Amount</td>
-          <td>
-            <input
-              type="text"
-              appNumbersOnly
-              inputmode="numeric"
-              class="form-control1 discount-amt"
-              formControlName="discount_amount"
-              (input)="calculateTotal()"
-            />
-          </td>
-          <!-- <td Style="padding-left:9px;">GST (18%)</td> -->
-          <!-- <td>
-            <input
-              type="text"
-              class="form-control1 gst-amt"
-              formControlName="gst_amount" readonly
-            />
-          </td> -->
-          <td Style="padding-left:9px;">Others</td>
-          <td>
-            <input
-              type="text"
-              appNumbersOnly
-              inputmode="numeric"
-              class="form-control1 others-amt"
-              formControlName="other_charges"
-              (input)="calculateTotal()"
-            />
-          </td>
-          <td Style="padding-left:9px;">
-            Bill Amount<span class="mandatoryfiels">*</span>
-          </td>
-          <td>
-            <input
-              type="text"
-              class="form-control1 bill-amt"
-              formControlName="bill_amount"
-              readonly
-            />
-          </td>
-        </tr>
-      </table>
+
+  <!-- ================= FOOTER ================= -->
+  <div class="footer-bar">
+    <div class="footer-row footer-split">
+      <div class="totals-row">
+        <div class="footer-label">Discount Amount</div>
+        <input
+          type="text"
+          appNumbersOnly
+          inputmode="numeric"
+          formControlName="discount_amount"
+          (input)="calculateTotal()"
+        />
+
+        <div class="footer-label">Others</div>
+        <input
+          type="text"
+          appNumbersOnly
+          inputmode="numeric"
+          formControlName="other_charges"
+          (input)="calculateTotal()"
+        />
+
+        <div class="footer-label">Total</div>
+        <input formControlName="total_amount" readonly class="number" />
+      </div>
+
+      <div class="bill-column">
+        <div class="footer-label">Bill Amount</div>
+        <input formControlName="bill_amount" readonly class="bill-box" />
+
+        <div class="bill-actions">
+          <button type="submit" class="save-btn" [disabled]="isSaving">
+            {{ isSaving ? "Saving..." : (isEditMode ? "Update" : "Save") }}
+          </button>
+
+          <button type="button" class="list-btn" (click)="listAllpurchase()">
+            Purchase List
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="col-sm-12 mt-3">
-    <div class="">
-      <button type="submit" class="btn btn-theme waves-effect waves-light save">
-        <i class="remixicon-save-2-fill mr-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
-      </button>
-      <button type="button" class="btn btn-theme waves-effect waves-light save ml-5" (click)="listAllpurchase()">
-        List All purchase
-      </button>
-    </div>
-  </div>
-  <div
-    *ngIf="form.invalid || items.length === 0"
-    class="alert alert-danger mt-3"
-  >
-    <div *ngFor="let error of getFormValidationErrors()">• {{ error }}</div>
   </div>
 </form>

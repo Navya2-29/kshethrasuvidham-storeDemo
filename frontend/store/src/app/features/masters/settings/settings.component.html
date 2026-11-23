@@ -1,0 +1,87 @@
+<app-master-layout title="Details" formTitle="Client Configuration">
+  <!-- LEFT SIDE FORM -->
+
+  <div form>
+    <app-dynamic-form
+      [form]="form"
+      [fields]="fields"
+      [editMode]="true"
+      [loading]="loading"
+      (submit)="save($event)"
+      (cancel)="reset()"
+    >
+    </app-dynamic-form>
+  </div>
+  <div table>
+    <div class="right-panel">
+      <div class="preview-card">
+        <div class="profile-header">
+          <!-- LEFT: LOGO -->
+          <div class="logo-box">
+            <img
+              *ngIf="logoPreview || form.value.logo"
+              [src]="logoPreview || getLogoUrl(form.value.logo)"
+              class="logo"
+            />
+            <div *ngIf="!logoPreview" class="no-logo">No Logo</div>
+          </div>
+
+          <!-- CENTER: INFO -->
+          <div class="client-info">
+            <h3>{{ form.value.client_name || "Client Name" }}</h3>
+            <p>{{ form.value.email || "-" }}</p>
+            <p>{{ form.value.phone || "-" }}</p>
+          </div>
+
+          <!-- RIGHT: STATUS -->
+          <div class="status-box">
+            <span class="status-badge" [ngClass]="form.value.status">
+              {{ form.value.status || "ACTIVE" }}
+            </span>
+          </div>
+        </div>
+
+        <!-- INFO GRID -->
+        <div class="info-grid">
+          <div class="info-card">
+            <label>Address</label>
+            <span>{{ form.value.address || "-" }}</span>
+          </div>
+
+          <div class="info-card">
+            <label>Printer</label>
+            <span>{{ form.value.printer || "-" }}</span>
+          </div>
+
+          <div class="info-card">
+            <label>Departments</label>
+            <span>{{ form.value.department_count || 0 }}</span>
+          </div>
+
+          <div class="info-card">
+            <label>Version</label>
+            <span>{{ form.value.version_no || "-" }}</span>
+          </div>
+        </div>
+
+        <!-- DATE SECTION -->
+        <div class="date-section">
+          <div class="date-card">
+            <span>Installation Date</span>
+            <strong>{{ form.value.installation_date | date }}</strong>
+          </div>
+
+          <div class="date-card danger">
+            <span>Expiry Date</span>
+            <strong>{{ form.value.expiry_date | date }}</strong>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTON -->
+        <button class="update-btn" (click)="save(form.value)">
+          Save & Update Settings
+        </button>
+      </div>
+    </div>
+  </div>
+</app-master-layout>

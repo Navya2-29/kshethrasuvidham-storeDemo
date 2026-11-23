@@ -1,0 +1,28 @@
+<div class="cancel-dialog">
+  <h2>Cancel Purchase</h2>
+  <p>
+    You're about to cancel invoice <b>{{ data.invoice_no }}</b>. This will
+    reverse the stock it added. Please state the reason.
+  </p>
+
+  <textarea
+    rows="3"
+    placeholder="Reason for cancellation"
+    [(ngModel)]="reason"
+    autofocus
+  ></textarea>
+
+  <div class="cancel-dialog-actions">
+    <button type="button" class="btn-secondary" (click)="dismiss()">
+      Close
+    </button>
+    <button
+      type="button"
+      class="btn-danger"
+      [disabled]="!reason.trim()"
+      (click)="confirm()"
+    >
+      Cancel Purchase
+    </button>
+  </div>
+</div>

@@ -1,52 +1,98 @@
-import { Component, ViewEncapsulation } from '@angular/core';
 import {
-  FormBuilder,
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import {
+  NonNullableFormBuilder,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import { LoginRequest } from '../models/auth.model';
-
+import { CommonModule } from '@angular/common';
+import { AuthStateService } from '../../../core/services/auth/auth-state.service';
+import { finalize } from 'rxjs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SettingService } from '../../../core/services/setting/setting.service';
+import { SettingstoreService } from '../../../core/services/setting/settingstore.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule, MatProgressSpinnerModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
-  encapsulation: ViewEncapsulation.None,
 })
-export class LoginComponent {
-  loading = false;
+export class LoginComponent implements AfterViewInit {
+  @ViewChild('usernameInput')
+  private usernameInput!: ElementRef<HTMLInputElement>;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-  ) {}
+  @ViewChild('passwordInput')
+  private passwordInput!: ElementRef<HTMLInputElement>;
 
-  loginForm = this.fb.nonNullable.group({
+  // ---------------- Inject ----------------
+  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly authState = inject(AuthStateService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly settings = inject(SettingService);
+  private settingsStore = inject(SettingstoreService);
+  settings$ = this.settingsStore.settings$;
+  // ---------------- UI State ----------------
+  readonly loading = signal(false);
+  readonly hidePassword = signal(true);
+
+  // ---------------- Form ----------------
+  readonly loginForm = this.fb.group({
     username: ['', Validators.required],
     password: ['', Validators.required],
   });
 
-  login() {
-    if (this.loginForm.invalid) return;
+  // ---------------- Lifecycle ----------------
+  ngAfterViewInit(): void {
+    queueMicrotask(() => this.usernameInput?.nativeElement.focus());
+  }
 
-    this.loading = true;
-    const payload:LoginRequest = this.loginForm.getRawValue();
-    this.authService.login(payload).subscribe({
-      next: (res) => {
-        localStorage.setItem('token', res.accessToken);
-        localStorage.setItem('role', res.user.role);
-        localStorage.setItem('username',res.user.username);
-localStorage.setItem('userId',res.user.id.toString());
-        this.router.navigate(['/dashboard']);
-      },
-      error: (err) => {
-        alert(err.error?.message || 'Login failed');
-        this.loading = false;
-      },
-    });
+  // ---------------- Actions ----------------
+  togglePassword(): void {
+    this.hidePassword.update((v) => !v);
+  }
+
+  focusPassword(): void {
+    this.passwordInput?.nativeElement.focus();
+  }
+
+  onLogin(): void {
+    if (this.loading()) return;
+
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    this.loading.set(true);
+
+    this.authService
+      .login(this.loginForm.getRawValue())
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (response) => {
+          this.authState.setAuth(response);
+          this.router.navigateByUrl('/dashboard');
+        },
+      });
+  }
+
+  getImageUrl(path: string) {
+    return this.settings.getLogoUrl(path);
   }
 }

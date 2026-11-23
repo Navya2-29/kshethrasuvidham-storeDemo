@@ -1,0 +1,146 @@
+:host {
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #1f2937;
+  color: #fff;
+}
+
+.dialog-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.dialog-header .code {
+  color: #d88e25;
+  margin-right: 4px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dialog-body {
+  padding: 16px 18px;
+  min-width: 520px;
+}
+
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 30px;
+  color: #94a3b8;
+}
+
+.error-state {
+  color: #ef4444;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  border: 1px solid silver;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 10px 4px;
+  box-shadow: 0 0 10px silver inset;
+}
+
+.stat-card h1 {
+  font-weight: 600;
+  color: maroon;
+  font-size: 18px;
+  margin: 0;
+}
+
+.stat-card h4 {
+  font-weight: 400;
+  font-size: 12px;
+  margin: 4px 0 0;
+  color: #495057;
+}
+
+.stat-card.highlight h1 {
+  color: #d88e25;
+}
+
+.table-wrap {
+  max-height: 40vh;
+  overflow: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stock-table th {
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 700;
+  font-size: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.stock-table td {
+  font-size: 13px;
+  color: #495057;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 7px 10px;
+}
+
+.stock-table .number {
+  text-align: right;
+}
+
+.stock-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.total-row td {
+  font-weight: 700;
+  background: #fdf4e7;
+  border-top: 2px solid #d88e25;
+  border-bottom: none;
+}
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+}

@@ -1,4 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
+@import './assets/styles/theme.css';
+
 body{
     margin: 0;
     padding: 0;
@@ -7,3 +9,31 @@ body{
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+.snackbar-error .mdc-snackbar__surface {
+  background-color: var(--color-error) !important;
+  color: #fff !important;
+}
+
+/* text color */
+.snackbar-error .mdc-snackbar__label {
+  color: #fff !important;
+}
+
+/* action button */
+.snackbar-error .mat-mdc-button {
+  color: #fff !important;
+}
+
+.snackbar-success .mdc-snackbar__surface {
+  background-color: var(--color-success) !important;
+  color: #fff !important;
+}
+input.ng-invalid.ng-touched,
+input.ng-invalid.ng-dirty,
+select.ng-invalid.ng-touched,
+select.ng-invalid.ng-dirty {
+  border: 1px solid red !important;
+  outline: none;
+}

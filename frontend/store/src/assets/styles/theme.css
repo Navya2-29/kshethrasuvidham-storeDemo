@@ -1,0 +1,41 @@
+/*
+  Central design tokens for the whole application.
+  Every component should read colors/radii/shadows from these variables
+  instead of hardcoding hex values, so the palette can later be swapped
+  from the Settings page by overriding these custom properties on :root.
+*/
+:root {
+  /* Brand palette */
+  --color-primary: #0f172a;
+  --color-primary-light: #1e293b;
+  --color-primary-lighter: #334155;
+  --color-accent: #f1b90b;
+  --color-accent-dark: #d1aa10;
+
+  /* Surfaces */
+  --color-surface: #f8f5ea;
+  --color-surface-shadow-dark: #d8d3c4;
+  --color-surface-shadow-light: #ffffff;
+
+  /* Text */
+  --color-text: #1e1e1e;
+  --color-text-muted: #777777;
+  --color-text-inverse: #f8f5ea;
+
+  /* Feedback */
+  --color-error: #921007;
+  --color-success: #147b2a;
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 25px;
+  --radius-full: 50%;
+
+  /* Elevation */
+  --shadow-elevated: 0 25px 45px rgba(0, 0, 0, 0.25);
+  --shadow-soft: 10px 10px 20px var(--color-surface-shadow-dark),
+    -10px -10px 20px var(--color-surface-shadow-light);
+  --shadow-soft-inset: inset 5px 5px 10px var(--color-surface-shadow-dark),
+    inset -5px -5px 10px var(--color-surface-shadow-light);
+}

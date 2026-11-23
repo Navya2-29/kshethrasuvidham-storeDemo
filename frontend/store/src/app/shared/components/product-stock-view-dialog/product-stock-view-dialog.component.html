@@ -1,0 +1,78 @@
+<div class="dialog-header">
+  <h2>
+    <span class="code" *ngIf="summary.productCode">{{ summary.productCode }} |</span>
+    {{ summary.productName || data.productName }}
+  </h2>
+  <button type="button" class="close-btn" title="Close" (click)="close()">
+    <i class="fa fa-times"></i>
+  </button>
+</div>
+
+<div class="dialog-body">
+  <div class="loading-state" *ngIf="loading">Loading stock details...</div>
+  <div class="error-state" *ngIf="error && !loading">Failed to load stock details.</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <h1>{{ summary.openingStock || 0 }}</h1>
+        <h4>Opening Stock</h4>
+      </div>
+      <div class="stat-card">
+        <h1>{{ summary.purchase?.total || 0 }}</h1>
+        <h4>Purchase</h4>
+      </div>
+      <div class="stat-card">
+        <h1>{{ summary.directEntry || 0 }}</h1>
+        <h4>Direct Entry</h4>
+      </div>
+      <div class="stat-card">
+        <h1>{{ summary.sales || 0 }}</h1>
+        <h4>Sales</h4>
+      </div>
+      <div class="stat-card highlight">
+        <h1>{{ summary.qtyInHand || 0 }}</h1>
+        <h4>Qty In Hand</h4>
+      </div>
+      <div class="stat-card highlight">
+        <h1>{{ totalAvailable }}</h1>
+        <h4>Total Stock</h4>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="stock-table">
+        <thead>
+          <tr>
+            <th>Location</th>
+            <th class="number">Qty</th>
+            <th class="number">Free Qty</th>
+            <th class="number">Damaged</th>
+            <th class="number">Available</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let loc of locations">
+            <td>{{ loc.store }}</td>
+            <td class="number">{{ loc.qty }}</td>
+            <td class="number">{{ loc.free_qty }}</td>
+            <td class="number">{{ loc.damaged_qty }}</td>
+            <td class="number">{{ loc.total_available }}</td>
+          </tr>
+          <tr *ngIf="!locations.length">
+            <td colspan="5" class="no-data">No stock records found</td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="locations.length">
+          <tr class="total-row">
+            <td>Total</td>
+            <td class="number">{{ totalQty }}</td>
+            <td class="number">{{ totalFreeQty }}</td>
+            <td class="number">{{ totalDamagedQty }}</td>
+            <td class="number">{{ totalAvailable }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </ng-container>
+</div>

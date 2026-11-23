@@ -1,0 +1,40 @@
+<div class="row g-4">
+
+  <!-- LEFT FORM -->
+  <div class="col-md-5 addsupplier">
+    <div class="card">
+
+      <div
+        class="card-header border-bottom-0"
+        style="font-size: 12.3pt; padding: 9px"
+      >
+        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
+          &nbsp;&nbsp;<span class="fas fa-plus-square"></span>&nbsp;&nbsp;{{formTitle}}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <ng-content select="[form]"></ng-content>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT TABLE -->
+  <div class="col-md-7 supplier-lists">
+    <div class="card">
+      <div class="card-header">
+         <div class="card-title" style="font-size: 12.3pt; padding: 0px">
+          &nbsp;&nbsp;<span class="fa fa-list"></span>&nbsp;&nbsp;
+          {{title}}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <ng-content select="[table]"></ng-content>
+      </div>
+
+    </div>
+  </div>
+
+</div>

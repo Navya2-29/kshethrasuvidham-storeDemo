@@ -1,3 +1,28 @@
 h4{
     padding-left:3%;
 }
+.notification-ticker {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  padding: 8px 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.ticker-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll-left 15s linear infinite;
+  font-weight: 500;
+  color: #9a3412;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

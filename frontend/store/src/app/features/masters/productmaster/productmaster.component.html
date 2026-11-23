@@ -1,6 +1,6 @@
-<div class="row">
+﻿<div class="row productmaster-page">
   <div
-    class="col-md-3 collapse show"
+    class="col-md-4 collapse show"
     id="collapseTwo"
     aria-labelledby="headingTwo"
     data-parent="#accordion"
@@ -29,7 +29,6 @@
                     id="product_code"
                     name="product_code"
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     formControlName="product_code"
                     [readonly]="editMode"
                   />
@@ -52,7 +51,6 @@
                     id="product_name"
                     name="product_name"
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     formControlName="product_name"
                   />
                   <div
@@ -65,23 +63,39 @@
                     Product Name is required
                   </div>
                 </div>
+
+                <div class="col-md-8">
+                  <p class="mb-0">
+                    Prod Name(Mal)<span class="mandatoryfiels">*</span>
+                  </p>
+                  <input
+                    type="text"
+                    class="form-control mb-1"
+                    formControlName="product_nameml"
+                    appMalayalamInput
+                  />
+                  <div
+                    class="text-danger"
+                    *ngIf="
+                      f['product_nameml'].touched &&
+                      f['product_nameml'].hasError('required')
+                    "
+                  >
+                    Product Name(Mal)is required
+                  </div>
+                </div>
                 <div class="col-md-4">
                   <p class="mb-0">Unit<span class="mandatoryfiels">*</span></p>
                   <select
                     id="unit"
                     name="unit"
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     formControlName="unit"
                   >
                     <option value="">Select</option>
-                    <option value="CM">CM</option>
-                    <option value="MM">MM</option>
                     <option value="Nos">Nos</option>
                     <option value="Ltr">Ltr</option>
                     <option value="Bdl">Bdl</option>
-                    <option value="m">Mtr</option>
-                    <option value="in">in</option>
                     <option value="others">Others</option>
                   </select>
                   <div
@@ -93,25 +107,10 @@
                 </div>
                 <div class="col-md-8">
                   <p class="mb-0">
-                    Prod Name in Reg Language<span class="mandatoryfiels"
-                      >*</span
-                    >
-                  </p>
-                  <input
-                    type="text"
-                    class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
-                    formControlName="product_nameml"
-                    appMalayalamInput
-                  />
-                </div>
-                <div class="col-md-8">
-                  <p class="mb-0">
                     Category<span class="mandatoryfiels">*</span>
                   </p>
                   <select
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     id="category"
                     name="category"
                     formControlName="category"
@@ -131,33 +130,17 @@
                     Category is required
                   </div>
                 </div>
-                <div class="col-md-3">
-                  <p class="mb-0">Min. Qty</p>
-                  <input
-                    type="text"
-                    appNumbersOnly
-                    id="min_qty"
-                    name="min_qty"
-                    class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
-                    formControlName="min_qty"
-                    inputmode="numeric"
-                  />
-                </div>
-                <div class="col-md-3">
-                  <p class="mb-0">Max. Qty</p>
-                  <input
-                    type="text"
-                    appNumbersOnly
-                    id="max_qty"
-                    name="max_qty"
-                    class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
-                    formControlName="max_qty"
-                    inputmode="decimal"
-                  />
-                </div>
                 <div class="col-md-4">
+                  <p class="mb-0">Hsn code</p>
+                  <input
+                    type="text"
+                    id="hsn_code"
+                    name="hsn_code"
+                    class="form-control mb-1"
+                    formControlName="hsn_code"
+                  />
+                </div>
+                <div class="col-md-6">
                   <p class="mb-0">
                     Cost Amount<span class="mandatoryfiels">*</span>
                   </p>
@@ -167,7 +150,6 @@
                     name="cost_price"
                     inputmode="numeric"
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     formControlName="cost_price"
                     appNumbersOnly
                   />
@@ -180,8 +162,16 @@
                   >
                     Cost_price is required
                   </div>
+                  <ng-container *ngIf="pricesTouched()">
+                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanSelling']">
+                      Cost Price must be less than Selling Price
+                    </div>
+                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanMrp']">
+                      Cost Price must be less than MRP
+                    </div>
+                  </ng-container>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-6">
                   <p class="mb-0">MRP<span class="mandatoryfiels">*</span></p>
                   <input
                     type="text"
@@ -189,7 +179,6 @@
                     id="mrp"
                     name="mrp"
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     formControlName="mrp"
                     appNumbersOnly
                   />
@@ -199,53 +188,184 @@
                   >
                     Mrp is required
                   </div>
+                  <ng-container *ngIf="pricesTouched()">
+                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanMrp']">
+                      MRP must be greater than Cost Price
+                    </div>
+                    <div class="text-danger" *ngIf="productForm.errors?.['sellingNotLessThanMrp']">
+                      MRP must be greater than Selling Price
+                    </div>
+                  </ng-container>
                 </div>
-                <div class="col-md-3">
-                  <p class="mb-0">Gst%<span class="mandatoryfiels">*</span></p>
+
+                <div class="col-md-6">
+                  <p class="mb-0">
+                    Selling Price<span class="mandatoryfiels">*</span>
+                  </p>
+                  <input
+                    type="text"
+                    inputmode="decimal"
+                    class="form-control mb-1"
+                    formControlName="selling_price"
+                    appNumbersOnly
+                  />
+                  <div
+                    class="text-danger"
+                    *ngIf="
+                      f['selling_price'].touched &&
+                      f['selling_price'].hasError('required')
+                    "
+                  >
+                    Selling price is required
+                  </div>
+                  <ng-container *ngIf="pricesTouched()">
+                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanSelling']">
+                      Selling price must be greater than Cost Price
+                    </div>
+                    <div class="text-danger" *ngIf="productForm.errors?.['sellingNotLessThanMrp']">
+                      Selling price must be less than MRP
+                    </div>
+                  </ng-container>
+                </div>
+                <div class="col-md-6">
+                  <p class="mb-0">Gst%</p>
                   <input
                     type="text"
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     formControlName="gst_percent"
-                    
+                    appNumbersOnly
+                  />
+                  <div class="text-danger" *ngIf="f['gst_percent'].touched && (f['gst_percent'].hasError('min') || f['gst_percent'].hasError('max'))">
+                    GST % must be between 0 and 100
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <p class="mb-0">Min. Qty</p>
+                  <input
+                    type="text"
+                    appNumbersOnly
+                    id="min_qty"
+                    name="min_qty"
+                    class="form-control mb-1"
+                    formControlName="min_qty"
+                    inputmode="numeric"
                   />
                 </div>
-                <div class="col-md-3">
+
+                <div class="col-md-4">
+                  <p class="mb-0">Max. Qty</p>
+                  <input
+                    type="text"
+                    appNumbersOnly
+                    id="max_qty"
+                    name="max_qty"
+                    class="form-control mb-1"
+                    formControlName="max_qty"
+                    inputmode="decimal"
+                  />
+                  <div class="text-danger" *ngIf="productForm.errors?.['minQtyGreaterThanMax']">
+                    Min. Qty cannot be greater than Max. Qty
+                  </div>
+                </div>
+                <div class="col-md-4">
                   <p class="mb-0">Sale<span class="mandatoryfiels">*</span></p>
-                   <select
+                  <select
                     id="unit"
                     name="unit"
                     class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
                     formControlName="sale_item"
                   >
-                    
+                    <option value="">Select</option>
                     <option value="Y">Yes</option>
                     <option value="N">No</option>
-                    
                   </select>
                   <div
                     class="text-danger"
-                    *ngIf="f['sale_item'].touched && f['sale_item'].hasError('required')"
+                    *ngIf="
+                      f['sale_item'].touched &&
+                      f['sale_item'].hasError('required')
+                    "
                   >
                     sale item is required
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <p class="mb-0">
-                   Hsn code
-                  </p>
-                  <input
-                    type="text"
-                    id="hsn_code"
-                    name="hsn_code"
-                    class="form-control mb-1"
-                    style="height: 28.5px; padding: 2px"
-                    formControlName="hsn_code"
-                   
-                  />
-                  
-                </div>
+
+                <ng-container *ngIf="isBookstore">
+                  <div class="col-md-12">
+                    <hr />
+                  </div>
+
+                  <!-- AUTHORS (multi) -->
+                  <div class="col-md-10">
+                    <p class="mb-0">
+                      Author<span class="mandatoryfiels">*</span>
+                    </p>
+                    <select class="form-control mb-1" [(ngModel)]="pickedAuthorId" [ngModelOptions]="{standalone: true}">
+                      <option [ngValue]="null">Select Author</option>
+                      <option *ngFor="let a of authors" [ngValue]="a.id">
+                        {{ a.author_name }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-2 mt-3">
+                    <button
+                      type="button"
+                      class="btn btn-success btn-sm"
+                      (click)="addAuthor()"
+                      title="Add Author"
+                    >
+                      <i class="fa fa-plus"></i>
+                    </button>
+                  </div>
+                  <div class="col-md-12 mb-1">
+                    <span class="chip" *ngFor="let a of selectedAuthors">
+                      {{ a.author_name }}
+                      <i class="fa fa-times" (click)="removeAuthor(a.id)" title="Remove"></i>
+                    </span>
+                  </div>
+                  <div
+                    class="text-danger"
+                    *ngIf="f['author_ids'].touched && f['author_ids'].hasError('required')"
+                  >
+                    At least one author is required
+                  </div>
+
+                  <!-- PUBLISHERS (multi) -->
+                  <div class="col-md-10">
+                    <p class="mb-0">
+                      Publisher<span class="mandatoryfiels">*</span>
+                    </p>
+                    <select class="form-control mb-1" [(ngModel)]="pickedPublisherId" [ngModelOptions]="{standalone: true}">
+                      <option [ngValue]="null">Select Publisher</option>
+                      <option *ngFor="let p of publishers" [ngValue]="p.id">
+                        {{ p.publisher_name }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-2 mt-3">
+                    <button
+                      type="button"
+                      class="btn btn-success btn-sm"
+                      (click)="addPublisher()"
+                      title="Add Publisher"
+                    >
+                      <i class="fa fa-plus"></i>
+                    </button>
+                  </div>
+                  <div class="col-md-12 mb-1">
+                    <span class="chip" *ngFor="let p of selectedPublishers">
+                      {{ p.publisher_name }}
+                      <i class="fa fa-times" (click)="removePublisher(p.id)" title="Remove"></i>
+                    </span>
+                  </div>
+                  <div
+                    class="text-danger"
+                    *ngIf="f['publisher_ids'].touched && f['publisher_ids'].hasError('required')"
+                  >
+                    At least one publisher is required
+                  </div>
+                </ng-container>
               </div>
             </div>
             <div class="col-md-6">
@@ -254,8 +374,7 @@
                   type="submit"
                   name="master_search"
                   id="master_search"
-                                    class="btn btn-theme waves-effect w-100 waves-effect waves-light btnsubmt"
-
+                  class="btn btn-theme waves-effect w-100 waves-effect waves-light btnsubmt"
                   style="background: #d88e25"
                   (click)="saveProduct()"
                 >
@@ -276,7 +395,7 @@
       </div>
     </div>
   </div>
-  <div class="col-md-9">
+  <div class="col-md-8">
     <div class="card">
       <div
         class="card-header border-bottom-0"
@@ -289,8 +408,34 @@
       <div class="card-body" style="padding: 15px">
         <div class="table-responsive" style="margin: 0px">
           <div class="table-container">
-            <!-- Filter -->
+            <!-- Filter + Export -->
             <div class="search-container">
+              <button
+                type="button"
+                class="btn btn-success btn-sm mr-2"
+                (click)="exportCsv()"
+                title="Export the currently visible product list to CSV"
+              >
+                <i class="fa fa-download mr-1"></i>CSV
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm mr-2"
+                [disabled]="exportingReport"
+                (click)="exportPdfReport()"
+                title="Download full product report (active + inactive) as PDF"
+              >
+                <i class="fa fa-file-pdf-o mr-1"></i>{{ exportingReport ? 'Working...' : 'PDF Report' }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary btn-sm mr-2"
+                [disabled]="exportingReport"
+                (click)="exportExcelReport()"
+                title="Download full product report (active + inactive) as Excel"
+              >
+                <i class="fa fa-file-excel-o mr-1"></i>{{ exportingReport ? 'Working...' : 'Excel Report' }}
+              </button>
               <input
                 class="searchiput"
                 matInput
@@ -302,6 +447,8 @@
               mat-table
               [dataSource]="dataSource"
               matSort
+              matSortActive="p-code"
+              matSortDirection="asc"
               class="custom-table"
             >
               <!-- Index Column -->
@@ -326,13 +473,14 @@
                   Product
                 </th>
                 <td mat-cell *matCellDef="let element">
-                  {{ element.product_name }}
+                  <b> {{ element.product_name }}</b>
+                  <ng-container *ngIf="element.publishers?.length">
+                    <br /><i>{{ joinNames(element.publishers, 'publisher_name') }}</i>
+                  </ng-container>
+                  <ng-container *ngIf="element.authors?.length">
+                    <br />{{ joinNames(element.authors, 'author_name') }}
+                  </ng-container>
                 </td>
-              </ng-container>
-              <!-- Unit -->
-              <ng-container matColumnDef="Unit">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Unit</th>
-                <td mat-cell *matCellDef="let element">{{ element.unit }}</td>
               </ng-container>
               <!-- Category -->
               <ng-container matColumnDef="Category">
@@ -343,37 +491,16 @@
                   {{ element.category }}
                 </td>
               </ng-container>
-              <!-- min_qty -->
-              <ng-container matColumnDef="Min.Qty">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Min.Qty
-                </th>
+              <!-- Price (Cost / Selling / MRP combined) -->
+              <ng-container matColumnDef="Price">
+                <th mat-header-cell *matHeaderCellDef>Price</th>
                 <td mat-cell *matCellDef="let element">
-                  {{ element.min_qty }}
+                  <div class="price-cell">
+                    <span><b>Cost:</b> {{ element.cost_price }}</span>
+                    <span><b>Selling:</b> {{ element.selling_price }}</span>
+                    <span><b>MRP:</b> {{ element.mrp }}</span>
+                  </div>
                 </td>
-              </ng-container>
-              <!-- Max-Qty -->
-              <ng-container matColumnDef="Max-Qty">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Max-Qty
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.max_qty }}
-                </td>
-              </ng-container>
-              <!-- CPrice -->
-              <ng-container matColumnDef="CPrice">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  CPrice
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.cost_price }}
-                </td>
-              </ng-container>
-              <!-- MRP -->
-              <ng-container matColumnDef="MRP">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>MRP</th>
-                <td mat-cell *matCellDef="let element">{{ element.mrp }}</td>
               </ng-container>
               <!-- Action -->
               <ng-container matColumnDef="action">
@@ -397,6 +524,13 @@
                     data-original-title="Delete"
                     ><i class="fa fa-times"></i
                   ></a>
+                  <a
+                    (click)="viewProductStock(element)"
+                    class="btn btn-info btn-xs btn-icon"
+                    title="View Stock"
+                  >
+                    <i class="fa fa-eye"></i>
+                  </a>
                 </td>
               </ng-container>
               <!-- Header & Row -->

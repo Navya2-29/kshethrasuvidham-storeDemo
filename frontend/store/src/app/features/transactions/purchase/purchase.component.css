@@ -1,140 +1,387 @@
-.toptable {
-  color: rgb(109, 106, 106);
-  font-size: 15px;
+/* =====================================================
+   Purchase page - same POS-style layout as Sales:
+   fixed header + footer, only the item grid scrolls.
+===================================================== */
+
+:host {
+  display: block;
+  height: calc(100vh - 170px);
+  overflow: hidden;
+  background: #f4f7fa;
+  font-family: Arial, Helvetica, sans-serif;
 }
-.tb1 {
-  height: 32.4px;
-  width: 81px;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-.tb2 {
-  height: 32.4px;
-  width: 105px;
+
+.pos-screen {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 58px minmax(0, 1fr) 104px;
+  gap: 6px;
+  padding: 6px;
+  overflow: hidden;
 }
-.select {
-  width: 150px;
-  height: 32.4px;
-  padding: 5px;
+
+/* ================= COMMON ================= */
+.field-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-.tablehead {
-  background-color: gray;
-  color: white;
-  font-size: 14px;
-  text-align: center;
-  height: 35px;
+
+.field-box label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  padding-left: 2px;
+  line-height: 1;
 }
-.action-col {
-  justify-content: center;
-  display: inline-flex;
-  align-items: center;
-  margin-left: 5px;
-  width: 30px;
-  height: 25px;
-  border-radius: 3px;
-  background-color: antiquewhite;
-}
-.date {
-  height: 32.4px;
-  width: 112.5px;
-}
-.departmentdropdown {
-  width: 189px;
-  height: 32.4px;
-  padding: 5px;
-}
-.cgst {
+
+input,
+select,
+button {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  padding: 0 6px;
   font-size: 12px;
-  font-weight: 500;
+  outline: none;
+  background: #fff;
 }
-.sgst {
-  font-size: 12px;
-  font-weight: 500;
+
+input:focus,
+select:focus {
+  border-color: #2563eb;
 }
-.th {
-  background: white;
+
+input[readonly] {
+  background: #f8fafc;
+  font-weight: 700;
 }
-.row1-2 {
-  font-size: 14px;
-}
-.slcol {
-  width: 50px;
-  height: 32.4px;
-  padding: 5px;
+
+.number {
   text-align: right;
+  padding-right: 4px;
 }
-.qtycol {
-  width: 54px;
-  padding: 5px;
-  text-align: right;
-  height: 32px;
-}
-.unit {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-}
-.mrp {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
-}
-.productdropdown {
-  width: 180px;
-  height: 32.4px;
-  padding: 5px;
-  font-size: 14px;
-}
-.value-col {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
-}
-.total {
-  font-size: 14px;
-  font-weight: 600;
-  color: #6c757d;
-}
-.total-amt {
-  clear: both;
-  width: 730.5px;
-  border: 0px solid red;
-  text-align: right;
-  font-weight: 500;
-  font-size: 12.3pt;
-  color: #6c757d;
-}
-.discount-amt {
-  width: 75.6px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
-}
-.gst-amt {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
-}
-.others-amt {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
-}
-.bill-amt {
-  width: 72px;
-  height: 32.4px;
-  padding: 5px;
-  text-align: right;
-  font-size: 15pt;
-  color: maroon;
-  font-weight: 600;
-}
-.save {
-  background-color: #d88e25;
-  color: white;
-}
-.mandatoryfiels{
+
+.mandatoryfiels {
   color: red;
+}
+
+/* ================= HEADER ================= */
+.header-bar {
+  display: grid;
+  grid-template-columns: 100px 110px 90px 1fr 120px 120px 130px;
+  gap: 6px;
+  min-height: 58px;
+}
+
+/* ================= PRODUCT SECTION ================= */
+.product-panel {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 28px minmax(0, 1fr);
+  gap: 6px;
+  overflow: hidden;
+}
+
+.grid-head,
+.grid-row {
+  display: grid;
+  grid-template-columns:
+    30px
+    1.6fr
+    55px
+    50px
+    60px
+    65px
+    65px
+    65px
+    55px
+    55px
+    55px
+    85px
+    30px
+    30px;
+  gap: 5px;
+  align-items: center;
+}
+
+.grid-head.bookstore,
+.grid-row.bookstore {
+  grid-template-columns:
+    30px
+    1.4fr
+    1fr
+    1fr
+    55px
+    50px
+    60px
+    65px
+    65px
+    65px
+    55px
+    55px
+    85px
+    30px
+    30px;
+}
+
+.grid-head {
+  background: #1f2937;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 6px;
+  border-radius: 5px;
+}
+
+.grid-body {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  padding: 4px;
+}
+
+.grid-row {
+  padding: 4px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.row-hint {
+  font-size: 9px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 1px 2px 0;
+}
+
+.row-warning {
+  font-size: 9px;
+  font-weight: 700;
+  color: #b45309;
+  background: #fef3c7;
+  border-radius: 3px;
+  text-align: center;
+  margin-top: 2px;
+  cursor: help;
+}
+
+.grid-row:hover {
+  background: #f8fafc;
+}
+
+.grid-row input,
+.grid-row select {
+  min-height: 28px;
+  font-size: 11px;
+}
+
+.row-no {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ================= BUTTONS ================= */
+.add-btn {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 28px;
+}
+
+.del-btn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 28px;
+}
+
+.del-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ================= FOOTER ================= */
+.footer-bar {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.footer-row {
+  padding: 8px 10px;
+  height: 100%;
+}
+
+.footer-split {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  height: 100%;
+}
+
+.totals-row {
+  display: grid;
+  grid-template-columns: repeat(3, auto minmax(90px, 120px));
+  gap: 8px 10px;
+  align-items: center;
+}
+
+.footer-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+
+.totals-row input {
+  background: #dbeafe;
+  text-align: right;
+  font-weight: 700;
+}
+
+/* Bill Amount + Save/Purchase-List stacked underneath it, right-aligned */
+.bill-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.bill-column .footer-label {
+  justify-content: flex-start;
+  padding-right: 0;
+}
+
+.bill-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.bill-actions button {
+  flex: 1;
+}
+
+.bill-box {
+  background: #dcfce7 !important;
+  font-weight: 700;
+  color: #166534;
+}
+
+.save-btn {
+  background: #d88e25;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.list-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+@media (max-width: 1200px) {
+  :host {
+    height: calc(100vh - 110px);
+  }
+
+  .pos-screen {
+    grid-template-rows: 58px minmax(0, 1fr) 160px;
+  }
+
+  .header-bar {
+    grid-template-columns: repeat(3, 1fr);
+    min-height: auto;
+  }
+
+  .footer-split {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bill-column {
+    width: 100%;
+  }
+
+  .grid-head {
+    display: none;
+  }
+
+  .product-panel {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .grid-row,
+  .grid-row.bookstore {
+    grid-template-columns: repeat(3, 1fr);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .pos-screen {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .header-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .totals-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .grid-row,
+  .grid-row.bookstore {
+    grid-template-columns: 1fr;
+  }
+
+  .bill-actions {
+    flex-direction: column;
+  }
+
+  .save-btn,
+  .list-btn {
+    min-height: 42px;
+    font-size: 14px;
+  }
 }

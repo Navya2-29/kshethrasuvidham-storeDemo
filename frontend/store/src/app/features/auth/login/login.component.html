@@ -1,39 +1,99 @@
- <div class="loginpage" style="background-image: url('assets/images/bg3.jpg');background-size:cover;">
- <div class="account-pages mt-5 mb-5">
-         <div class="container">
-			<div class="row justify-content-center">
-				<div class="col-md-6 col-lg-4 col-xl-4">
-                  <div class="card">
-                     <div class="card-body pl-3 pr-3 pt-1 pb-1">
-                        <div class="text-center w-75 m-auto">
-                          <br> <a href="index.html"> <span><img src="assets/images/logo.jpg" alt="" width="100" height="100"></span> </a><br>
-                           <h4 class="mb-2 mt-1">Signin</h4>
-                          
-                        </div>
-                         <form [formGroup]="loginForm">
-                           <div class="form-group mb-2">
-                              <label for="emailaddress">Email Id</label>
-                              <input class="form-control" type="email" id="emailid" formControlName="username" name="emailid" required="" placeholder="Enter your Email Id">
-                           </div>
-                           <div class="form-group mb-3">
-                              <label for="password">Password</label>
-                              <input class="form-control" type="password" required="" id="password" formControlName="password" name="password"  placeholder="Enter your password">
-                           </div>
-                           <div class="form-group mb-0 text-center">
-                              <button class="btn btn-theme btn-block" type="button" (click)=" login()"> Log In </button>
-                           </div>
-                           <div class="form-group mt-2 text-center"> <a href="forgot_password.html" class="text-bold text-black ml-1">Forgot your password?</a> </div>
-                        </form>
-                     </div>
-                     <!-- end card-body -->
-                  </div>
-                  <!-- end card -->
-               </div>
-             
-               <!-- end col -->
-            </div>
-            <!-- end row -->
-         </div>
-         <!-- end container -->
+<div class="login-page" *ngIf="settings$ | async as settings">
+  <!-- BRAND / ART PANEL -->
+  <div class="brand-panel">
+    <div class="brand-panel__shape brand-panel__shape--1"></div>
+    <div class="brand-panel__shape brand-panel__shape--2"></div>
+    <div class="brand-panel__shape brand-panel__shape--3"></div>
+
+    <div class="brand-panel__content">
+      <div class="brand-emblem">
+        <img
+          [src]="settings?.logo ? getImageUrl(settings.logo) : 'assets/logo.png'"
+          alt="Logo"
+        />
       </div>
+      <h1 class="brand-name">{{ settings.client_name }}</h1>
+      <p class="brand-tagline">Store Management System</p>
+    </div>
+  </div>
+
+  <!-- LOGIN FORM PANEL -->
+  <div class="form-panel">
+    <form class="login-card" [formGroup]="loginForm">
+      <div class="login-card__overlay" *ngIf="loading()">
+        <mat-progress-spinner diameter="42" mode="indeterminate"></mat-progress-spinner>
       </div>
+
+      <div class="login-card__logo">
+        <img
+          [src]="settings?.logo ? getImageUrl(settings.logo) : 'assets/logo.png'"
+          alt="Logo"
+        />
+      </div>
+
+      <h2 class="login-card__title">Welcome Back</h2>
+      <p class="login-card__subtitle">Sign in to continue</p>
+
+      <div class="field">
+        <label class="field__label" for="username">Username</label>
+        <div class="field__control">
+          <span class="material-icons field__icon">person</span>
+          <input
+            id="username"
+            #usernameInput
+            type="text"
+            class="field__input"
+            placeholder="Enter your username"
+            formControlName="username"
+            (keydown.enter)="focusPassword()"
+          />
+        </div>
+        <span
+          class="field__error"
+          *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+        >
+          Username is required
+        </span>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="password">Password</label>
+        <div class="field__control">
+          <span class="material-icons field__icon">lock</span>
+          <input
+            id="password"
+            #passwordInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            class="field__input"
+            placeholder="Enter your password"
+            formControlName="password"
+            (keydown.enter)="onLogin()"
+          />
+          <button
+            type="button"
+            class="field__toggle"
+            tabindex="-1"
+            (click)="togglePassword()"
+          >
+            <span class="material-icons">{{ hidePassword() ? "visibility_off" : "visibility" }}</span>
+          </button>
+        </div>
+        <span
+          class="field__error"
+          *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        >
+          Password is required
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="login-card__submit"
+        [disabled]="loading()"
+        (click)="onLogin()"
+      >
+        {{ loading() ? "Signing in…" : "Login" }}
+      </button>
+    </form>
+  </div>
+</div>

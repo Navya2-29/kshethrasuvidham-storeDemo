@@ -1,7 +1,21 @@
 .left-side-menu {
   width: 260px;
   transition: width 0.3s ease;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.left-side-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-side-menu::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.left-side-menu::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
 }
 
 .left-side-menu.compact {

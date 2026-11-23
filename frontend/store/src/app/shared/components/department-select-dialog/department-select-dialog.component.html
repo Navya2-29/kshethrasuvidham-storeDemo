@@ -1,0 +1,29 @@
+<div class="dept-dialog">
+  <h2>Select Department</h2>
+  <p>Choose the department you're working in for this session.</p>
+
+  <ul class="dept-list">
+    <li *ngFor="let d of departments">
+      <label>
+        <input
+          type="radio"
+          name="department"
+          [value]="d.id"
+          [(ngModel)]="selectedId"
+        />
+        {{ d.dept_name }}
+      </label>
+    </li>
+  </ul>
+
+  <div class="dept-dialog-actions">
+    <button
+      type="button"
+      class="btn btn-theme waves-effect waves-light"
+      [disabled]="selectedId == null"
+      (click)="confirm()"
+    >
+      Continue
+    </button>
+  </div>
+</div>

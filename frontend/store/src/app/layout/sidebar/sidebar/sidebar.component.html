@@ -3,22 +3,24 @@
     <div id="sidebar-menu">
       <ul class="metismenu" id="side-menu">
         <li class="menu-title logomenu">
+           <ng-container *ngIf="settings$ | async as settings">
           <a [routerLink]="['/dashboard']" class="logo text-center">
-            <span class="logo-lg">
+            <span class="logo-lg" >
               <img
-                src="../../../../assets/images/logo.jpg"
+                 [src]="settings?.logo ? getImageUrl(settings.logo) : 'assets/default-logo.png'"
                 alt=""
                 height="120"
               />
             </span>
-            <span class="logo-sm">
+            <span class="logo-sm" >
               <img
-                src="../../../../assets/images/logo.jpg"
+                  [src]="settings?.logo ? getImageUrl(settings.logo) : 'assets/default-logo.png'"
                 alt=""
                 height="120"
               />
             </span>
           </a>
+          </ng-container>
         </li>
 
         <ng-container *ngFor="let item of menuItems">
@@ -31,7 +33,6 @@
               <i [class]="item.icon"></i>
               <span>{{ item.label }}</span>
             </a>
-
             <!-- Second Level -->
             <ul
               class="nav-second-level"
@@ -39,7 +40,7 @@
               [class.collapsed]="!sidebarService.isOpen()"
             >
               <ng-container *ngFor="let child of item.children">
-                <li>
+                <li *ngIf="(!child.bookstoreOnly || isBookstore()) && (!child.multiDepartmentOnly || storeContext.isMultiDepartment())">
                   <a
                     [routerLink]="child.route"
                     (click)="

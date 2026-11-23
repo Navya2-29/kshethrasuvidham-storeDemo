@@ -1,0 +1,37 @@
+/* Save/Reset button styling to match every other master screen in the app
+   (Department, Product, Supplier, Category, User, Settings) - same orange
+   theme colour, same icon, same layout, instead of the plain Bootstrap
+   green/grey buttons this screen had. */
+.btn-theme {
+  color: #fff;
+  background-color: #d88e25;
+  border-color: #d88e25;
+}
+.btn-theme:hover {
+  color: #fff;
+  background-color: #c47f1f;
+  border-color: #c47f1f;
+}
+.btn-theme:not(:disabled):not(.disabled).active:focus,
+.btn-theme:not(:disabled):not(.disabled):active:focus,
+.show > .btn-theme.dropdown-toggle:focus {
+  -webkit-box-shadow: 0 0 0 0.15rem rgb(136 4 17 / 50%);
+  box-shadow: 0 0 0 0.15rem rgb(136 4 17 / 50%);
+}
+.btn-theme:not(:disabled):not(.disabled).active,
+.btn-theme:not(:disabled):not(.disabled):active,
+.show > .btn-theme.dropdown-toggle {
+  color: #fff;
+  background-color: #790812;
+  border-color: #790812;
+}
+
+.btnsubmt {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mandatoryfiels {
+  color: red;
+}

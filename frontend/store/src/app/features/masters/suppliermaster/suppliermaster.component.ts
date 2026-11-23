@@ -1,176 +1,150 @@
-import { Component, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Supplier } from '../models/supplier.model';
 import { MasterService } from '../../../core/services/masters/master.service';
-import { CommonModule } from '@angular/common';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { SUPPLIER_FIELDS } from '../models/supplier.fields';
+import { DynamicFormComponent } from '../../../shared/components/dynamic-form/dynamic-form.component';
+import { DynamicTableComponent } from '../../../shared/components/dynamic-table/dynamic-table.component';
+import { FieldConfig } from '../models/field-config.model';
+import { SUPPLIER_COLUMNS } from '../models/supplier-columns';
+import { MasterLayoutComponent } from '../master-layout/master-layout.component';
 import { Subject, takeUntil } from 'rxjs';
-import { NumbersOnlyDirective } from '../../../shared/directives/numbers-only.directive';
 @Component({
   selector: 'app-suppliermaster',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
-    CommonModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTableModule,
-    MatFormFieldModule,
-    MatPaginatorModule,
-    MatInputModule,
-    MatSortModule,
-    NumbersOnlyDirective,
+  
+    DynamicTableComponent,
+    MasterLayoutComponent,
+    DynamicFormComponent,
+    
   ],
   templateUrl: './suppliermaster.component.html',
   styleUrl: './suppliermaster.component.css',
   encapsulation: ViewEncapsulation.None,
 })
-export class SuppliermasterComponent {
-  // ------------------------------
-  //  Table Configuration
-  // ------------------------------
+export class SuppliermasterComponent implements OnInit, OnDestroy {
+ form!: FormGroup;
 
-  displayedColumns: string[] = [
-    'index',
-    'supplier_code',
-    'supplier_name',
-    'mobile_number',
-    'action',
-  ];
-  dataSource = new MatTableDataSource<Supplier>([]);
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  fields: FieldConfig[] = SUPPLIER_FIELDS;
+  columns = SUPPLIER_COLUMNS;
+
   suppliers: Supplier[] = [];
-  loading = false;
-  editMode = false;
-  editId?: number;
-  errorMessage = '';
-  private destroy$ = new Subject<void>();
-  // ------------------------------ // Reactive Form // ------------------------------
 
-  supplierForm = this.fb.nonNullable.group({
-    supplier_code: [
-      '',
-      [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)],
-    ],
-    supplier_name: ['', Validators.required],
-    contact_person: [''],
-    mobile_number: [
-      '',
-      [Validators.required, Validators.pattern(/^[0-9]{10}$/)],
-    ],
-    office_number: [''],
-    address: [''],
-    email: ['', Validators.email],
-    website: [''],
-    gst_number: ['', [Validators.pattern(/^[A-Z0-9]{15}$/)]],
-  });
+  editMode = false;
+  private editId: number | null = null;
+
+  loading = false;
+
+  private destroy$ = new Subject<void>();
+
   constructor(
     private fb: FormBuilder,
-    private masterService: MasterService,
+    private masterService: MasterService
   ) {}
+
+  //  INIT
   ngOnInit(): void {
+    this.buildForm();
     this.loadSuppliers();
   }
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+
+  //  BUILD FORM (Dynamic)
+  buildForm() {
+    const group: any = {};
+
+    this.fields.forEach(field => {
+      const validators = [];
+
+      if (field.required) validators.push(Validators.required);
+      if (field.pattern) validators.push(Validators.pattern(field.pattern));
+      if (field.type === 'email') validators.push(Validators.email);
+
+      group[field.name] = ['', validators];
+    });
+
+    this.form = this.fb.group(group);
   }
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-  loadSuppliers(): void {
-    this.masterService
-      .getSuppliers()
+
+  //  LOAD DATA
+  loadSuppliers() {
+    this.masterService.getSuppliers()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (suppliers: Supplier[]) => {
-          this.dataSource.data = suppliers;
-        },
-        error: (err) => {
-          console.error('Error loading suppliers:', err);
-        },
+        next: (res) => this.suppliers = res,
+        error: (err) => console.error(err)
       });
   }
 
-  saveSupplier(): void {
-    console.log(this.supplierForm.getRawValue());
-    if (this.supplierForm.invalid) {
-      this.supplierForm.markAllAsTouched();
-      return;
-    }
+  //  SAVE / UPDATE
+  save(data: any) {
+    if (this.loading) return;
     this.loading = true;
-    const payload: Supplier = this.supplierForm.getRawValue();
-    if (this.editMode && this.editId) {
-      this.masterService.updateSupplier(this.editId, payload).subscribe({
-        next: () => {
-          this.afterSave('Supplier updated successfully');
-        },
-        error: (err) => {
-          const message = err?.error?.message || 'Error saving supplier';
-          alert(message);
-          this.loading = false;
-        },
-      });
-    } else {
-      this.masterService.addSupplier(payload).subscribe({
-        next: () => {
-          this.afterSave('Supplier added successfully');
-        },
-        error: (err) => {
-          const message = err?.error?.message || 'Error saving supplier';
-          alert(message);
-          this.loading = false;
-        },
-      });
-    }
-  }
 
-  editSupplier(supplier: Supplier): void {
-    console.log(supplier, 'sdsss');
-    this.editMode = true;
-    this.editId = supplier.id;
-    this.supplierForm.patchValue({ ...supplier });
-    this.supplierForm.controls.supplier_code.disable();
-  }
-  deleteSupplier(id: number): void {
-    if (!confirm('Are you sure you want to delete this supplier?')) {
-      return;
-    }
-    this.masterService
-      .deleteSupplier(id)
+    const request$ = this.editMode && this.editId
+      ? this.masterService.updateSupplier(this.editId, data)
+      : this.masterService.addSupplier(data);
+
+    request$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => this.loadSuppliers(),
-        error: (err) => console.error('Delete error:', err),
+        next: () => this.afterSave(),
+        error: () => {
+          
+          this.loading = false;
+        }
       });
   }
-  resetForm(): void {
-    this.supplierForm.reset();
-    this.editMode = false;
-    this.editId = undefined;
-    this.supplierForm.controls.supplier_code.enable();
+
+  //  EDIT
+  editSupplier(data: Supplier) {
+    this.editMode = true;
+    this.editId = data.id ?? null;
+
+    this.form.patchValue(data);
   }
 
-  private afterSave(message: string): void {
-    alert(message);
-    this.resetForm();
+  //  DELETE
+  deleteSupplier(id: number) {
+    if (!confirm('Delete this supplier?')) return;
+
+    this.loading = true;
+
+    this.masterService.deleteSupplier(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loadSuppliers();
+          this.loading = false;
+        },
+        error: () => {
+         
+          this.loading = false;
+        }
+      });
+  }
+
+  //  AFTER SAVE
+  afterSave() {
+    this.reset();
     this.loadSuppliers();
     this.loading = false;
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+  //  RESET
+  reset() {
+    this.form.reset();
+    this.editMode = false;
+    this.editId = null;
   }
-  get f() {
-    return this.supplierForm.controls;
+
+  //  CLEANUP
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

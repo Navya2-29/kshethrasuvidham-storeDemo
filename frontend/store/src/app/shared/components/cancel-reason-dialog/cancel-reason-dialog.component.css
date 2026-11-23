@@ -1,0 +1,63 @@
+.cancel-dialog {
+  padding: 20px;
+  min-width: 340px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.cancel-dialog h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1f2937;
+}
+
+.cancel-dialog p {
+  margin: 0 0 12px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.cancel-dialog textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  padding: 8px;
+  font-size: 13px;
+  resize: vertical;
+  outline: none;
+}
+
+.cancel-dialog textarea:focus {
+  border-color: #2563eb;
+}
+
+.cancel-dialog-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancel-dialog-actions button {
+  padding: 7px 14px;
+  border-radius: 5px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

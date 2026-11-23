@@ -1,0 +1,33 @@
+.form-wrapper {
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ccc;
+  border-top: 4px solid blue;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+.mandatoryfiels{
+  color: red;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

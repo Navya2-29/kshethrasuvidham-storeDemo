@@ -1,0 +1,24 @@
+.pid {
+    border:1px solid silver;
+    height:80px;
+    border-radius:10px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    /* padding:15px; */
+    margin:5px;
+    box-shadow: 0px 0px 10px silver inset;
+}
+
+.pid > h1 {
+    font-weight:500;
+    color:maroon;
+    font-size:14pt;
+}
+
+.pid > h4 {
+    font-weight:400;
+   margin-top:-15px;
+   margin-bottom:-15px;
+}

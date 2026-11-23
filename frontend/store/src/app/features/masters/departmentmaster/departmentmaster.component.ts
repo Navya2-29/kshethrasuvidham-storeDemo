@@ -103,7 +103,7 @@ export class DepartmentmasterComponent {
       },
       error: (err) => {
        const message = err?.error?.message || 'Error saving Department';
-          alert(message);
+          // alert(message);
       },
     });
   } else {
@@ -115,7 +115,7 @@ export class DepartmentmasterComponent {
       },
       error: (err) => {
         const message = err?.error?.message || 'Error saving Department';
-          alert(message);
+          // alert(message);
       },
     });
   }

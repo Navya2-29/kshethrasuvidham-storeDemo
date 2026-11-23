@@ -1,0 +1,127 @@
+<form [formGroup]="form" (ngSubmit)="submitForm($event)" class="form-wrapper">
+  <!-- LOADING OVERLAY -->
+  <div class="overlay" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <table>
+    <tr *ngFor="let field of fields">
+      <td>
+        {{ field.label }}
+        <span class="mandatoryfiels" *ngIf="field.required">*</span>
+      </td>
+
+      <td>
+        <ng-container *ngIf="controlMap[field.name] as ctrl">
+          <!-- TEXT -->
+          <input
+            *ngIf="
+              field.type === 'text' ||
+              field.type === 'email' ||
+              field.type === 'number' ||
+              field.type === 'password'
+            "
+            [type]="field.type"
+            [formControlName]="field.name"
+            [style.width]="field.width"
+            [readonly]="disabledMap[field.name] || loading"
+          />
+
+          <!-- DATE -->
+          <input
+            *ngIf="field.type === 'date'"
+            type="date"
+            [formControlName]="field.name"
+            [style.width]="field.width"
+          />
+
+          <!-- DROPDOWN -->
+          <select
+            *ngIf="field.type === 'select'"
+            [formControlName]="field.name"
+            [style.width]="field.width"
+          >
+            <option value="">-- Select --</option>
+            <option *ngFor="let opt of field.options" [value]="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
+
+          <!-- TEXTAREA -->
+          <textarea
+            *ngIf="field.type === 'textarea'"
+            [formControlName]="field.name"
+            [style.width]="field.width"
+          ></textarea>
+
+          <!-- CHECKBOX -->
+          <input
+            *ngIf="field.type === 'checkbox'"
+            type="checkbox"
+            [formControlName]="field.name"
+            [disabled]="disabledMap[field.name] || loading"
+          />
+          <div *ngIf="field.type === 'file'" class="file-upload-wrapper">
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onFileChange($event, field.name)"
+            />
+          </div>
+          <div *ngIf="previewUrls[field.name]" class="mt-2">
+            <img
+              [src]="previewUrls[field.name]"
+              width="120"
+              height="120"
+              style="object-fit: contain; border: 1px solid #ddd; padding: 4px"
+            />
+          </div>
+          <!-- ERRORS -->
+          <div *ngIf="ctrl.touched && ctrl.invalid" class="error">
+            <div *ngIf="ctrl.errors?.['required']">
+              {{ field.errors?.required }}
+            </div>
+            <div *ngIf="ctrl.errors?.['pattern']">
+              {{ field.errors?.pattern }}
+            </div>
+            <div *ngIf="ctrl.errors?.['email']">{{ field.errors?.email }}</div>
+
+            <div *ngIf="ctrl.errors?.['minlength']">
+              {{ field.errors?.minlength }}
+            </div>
+
+            <!-- Max Length -->
+            <div *ngIf="ctrl.errors?.['maxlength']">
+              {{ field.errors?.maxlength }}
+            </div>
+
+            <!-- Password Mismatch -->
+            <div *ngIf="ctrl.errors?.['mismatch']">
+              {{ field.errors?.mismatch }}
+            </div>
+          </div>
+        </ng-container>
+      </td>
+    </tr>
+  </table>
+
+  <!-- BUTTONS -->
+  <div class="form-actions">
+    <button
+      type="submit"
+      [disabled]="form.invalid || loading"
+      class="btn btn-theme waves-effect waves-light mr-2"
+    >
+      <i class="remixicon-save-2-fill mr-1"></i>
+      {{ loading ? "Processing..." : editMode ? "Update" : "Save" }}
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-secondary waves-effect waves-light"
+      (click)="cancel.emit()"
+    >
+      Cancel
+    </button>
+  </div>
+</form>

@@ -1,289 +1,202 @@
-<form [formGroup]="form" (ngSubmit)="save()">
-  <div class="row">
-    <div class="col-md-12 table-responsive" style="margin: 5px; padding: 0px">
-      <table id="basic-datatable" class="dt-responsive">
-        <tr class="toptable">
-          <td>Order No.</td>
-          <td>Invoice No.<span class="mandatoryfiels">*</span></td>
-          <td>Customer</td>
-          <td>Mobile</td>
-          <td>Receipt Date<span class="mandatoryfiels">*</span></td>
-          <td>Department<span class="mandatoryfiels">*</span></td>
-        </tr>
-        <tr>
-          <td>
-            <input type="text" class="tb1" formControlName="order_no" />
-          </td>
-          <td>
-            <input
-              type="text"
-              class="tb2"
-              readonly
-              formControlName="invoice_no"
-            />
-          </td>
-          <td>
-            <input type="text" class="tb2" formControlName="customer_name" />
-          </td>
-          <td>
-            <input
-              type="text"
-              class="date"
-              appNumbersOnly
-              inputmode="numeric"
-              formControlName="customer_mob"
-            />
-          </td>
-          <td>
-            <input type="date" class="date" formControlName="invoice_date" />
-          </td>
-          <td>
-            <select
-              class="departmentdropdown"
-              formControlName="department_id"
-              (change)="onDepartmentChange()"
-            >
-              <option value="">Select</option>
-              <option *ngFor="let d of departments" [value]="d.id">
-                {{ d.dept_name }}
-              </option>
-            </select>
-          </td>
-        </tr>
-      </table>
+<form class="pos-screen" [formGroup]="salesForm">
+  <!-- ================= HEADER ================= -->
+  <div class="header-bar">
+    <div class="field-box">
+      <label>Order No</label>
+      <input type="text" formControlName="order_no" />
+    </div>
+
+    <div class="field-box">
+      <label>Invoice No</label>
+      <input type="text" formControlName="invoice_no" readonly />
+    </div>
+
+    <div class="field-box">
+      <label>Customer</label>
+      <input type="text" formControlName="customer_name" />
+    </div>
+
+    <div class="field-box">
+      <label>Mobile</label>
+      <input type="text" formControlName="customer_mobile" />
+    </div>
+
+    <div class="field-box">
+      <label>Date</label>
+      <input type="date" formControlName="receipt_date" />
+    </div>
+
+    <div class="field-box" *ngIf="storeContext.isMultiDepartment()">
+      <label>Department</label>
+      <select
+        formControlName="department_id"
+        (change)="onDepartmentChange($event)"
+      >
+        <option value="">Select</option>
+
+        <option *ngFor="let d of departments" [value]="d.id">
+          {{ d.dept_name }}
+        </option>
+      </select>
     </div>
   </div>
-  <br />
-  <div class="row">
-    <div class="col-md-12 table-responsive">
-      <table>
-        <tr class="tablehead">
-          <th>Sl.No</th>
-          <th>Product Name<span class="mandatoryfiels">*</span></th>
-          <th style="width: 54px">Qty</th>
-          <th>Unit</th>
-          <th>MRP</th>
-          <th>CPrice</th>
-          <th>CGST</th>
-          <th>SGST</th>
-          <th>Amount</th>
-          <th class="th"></th>
-        </tr>
-        <ng-container formArrayName="items">
-          <tr
-            class="row1-2"
-            *ngFor="let row of items.controls; let i = index"
-            [formGroupName]="i"
-          >
-            <td>
-              <input
-                type="number"
-                class="form-control1 slcol"
-                [value]="i + 1"
-                disabled
-                required
-              />
-            </td>
-            <td>
-              <select
-                class="form-control1 productdropdown"
-                formControlName="product_id"
-                (change)="onProductChange(i)"
-              >
-                <option value="">Select</option>
-                <option *ngFor="let p of products" [value]="p.id">
-                  {{ p.product_name }}
-                </option>
-              </select>
-            </td>
-            <td>
-              <input
-                type="text"
-                appNumbersOnly
-                inputmode="numeric"
-                id="qty"
-                class="form-control1 qtycol"
-                formControlName="qty"
-                (input)="calculateRow(i)"
-                required
-              />
-            </td>
-            <td>
-              <input type="text" class="date" formControlName="unit" />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 mrp"
-                formControlName="mrp"
-                appNumbersOnly
-                inputmode="numeric"
-                readonly
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="cost_price"
-                readonly
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="cgst"
-                readonly
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="sgst"
-                readonly
-                required
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                class="form-control1 value-col"
-                formControlName="amount"
-                readonly
-                required
-              />
-            </td>
-            <td style="vertical-align: middle" *ngIf="items.length > 1" >
-              <a
-                class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                (click)="removeItem(i)"
-                data-toggle="modal"
-                data-target="#deletemodal1"
-                data-placement="top"
-                title="Delete Details"
-                data-original-title="Delete"
-                ><i class="fa fa-times"></i
-              ></a>
-            </td>
-          </tr>
-        </ng-container>
-      </table>
-      <button
-        type="button"
-        class="btn btn-sm btn-primary mt-2"
-        (click)="addItem()"
+
+  <!-- ================= PRODUCT SECTION ================= -->
+  <div class="product-panel">
+    <!-- GRID HEADER -->
+    <div class="grid-head">
+      <div>#</div>
+      <div>Code</div>
+      <div>Product</div>
+      <div>Author</div>
+      <div>Publisher</div>
+      <div>Qty</div>
+      <div>Unit</div>
+      <div>MRP</div>
+      <!-- <div>CP</div> -->
+      <div>SP</div>
+      <div>CG</div>
+      <div>SG</div>
+      <div>Amt</div>
+      <div>+</div>
+      <div>X</div>
+    </div>
+
+    <!-- GRID BODY -->
+    <div class="grid-body" formArrayName="items">
+      <div
+        class="grid-row"
+        *ngFor="let row of items.controls; let i = index"
+        [formGroupName]="i"
       >
-        + Add Item
-      </button>
-      <div class="total-amt">
-        <span class="total">Total:</span>
-        <span class="total-amt"> {{ form.value.sub_total }}</span>
+        <div class="row-no">{{ i + 1 }}</div>
+
+        <input formControlName="product_code" />
+
+        <div class="product-cell" style="position: relative">
+          <select
+            formControlName="product_id"
+            (change)="onProductSelect($event, i)"
+          >
+            <option value="">Select Product</option>
+
+            <option *ngFor="let p of products" [value]="p.id">
+              {{ p.product_code }} - {{ p.product_name }}
+            </option>
+          </select>
+        </div>
+
+        <input formControlName="author" readonly />
+
+        <input formControlName="publisher" readonly />
+
+        <input type="number" formControlName="qty" [min]="1" />
+
+        <input formControlName="unit" readonly />
+
+        <input type="text" formControlName="mrp" readonly class="number" />
+
+        <!-- <input type="number" formControlName="cost_price" readonly /> -->
+
+        <input type="text" formControlName="selling_price" readonly class="number" />
+
+        <input type="text" formControlName="cgst" readonly class="number" />
+
+        <input type="text" formControlName="sgst" readonly class="number"/>
+
+        <input type="text" formControlName="amount" readonly class="number"/>
+
+        <button type="button" class="add-btn" (click)="addRow()">+</button>
+
+        <button type="button" class="del-btn" (click)="removeRow(i)">×</button>
       </div>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12 table-responsive">
-      <table>
-        <tr
-          style="
-            font-size: 0.9rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #6c757d;
-          "
-        >
-          <td style="width: 72px">Discount Amount</td>
-          <td>
-            <input
-              type="text"
-              class="form-control1 discount-amt"
-              formControlName="discount_amount"
-              (input)="calculateTotal()"
-              appNumbersOnly
-              inputmode="numeric"
-            />
-          </td>
-          <!-- <td Style="padding-left:9px;">GST (18%)</td>
-          <td>
-            <input
-              type="text"
-              class="form-control1 gst-amt"
-              formControlName="gst_amount" readonly
-            />
-          </td> -->
-          <td Style="padding-left:9px;">Others</td>
-          <td>
-            <input
-              type="text"
-              appNumbersOnly
-              inputmode="numeric"
-              class="form-control1 others-amt"
-              formControlName="other_charges"
-              (input)="calculateTotal()"
-            />
-          </td>
-          <td Style="padding-left:9px;">Bill Amount</td>
-          <td>
-            <input
-              type="text"
-              class="form-control1 bill-amt"
-              formControlName="bill_amount"
-              readonly
-            />
-          </td>
-          <td Style="padding-left:9px;">
-            Pay-mode<span class="mandatoryfiels">*</span>
-          </td>
-          <td>
-            <select
-              type="text"
-              class="form-control1 gst-amt"
-              formControlName="payment_mode"
-            >
-              <option value="cs">Cash</option>
-              <option value="cr">Credit</option>
-              <option value="ch">Cheque</option>
-            </select>
-          </td>
-          <td Style="padding-left:9px;" *ngIf="form.get('payment_mode')?.value === 'ch'">Cheque date</td>
-          <td *ngIf="form.get('payment_mode')?.value === 'ch'">
-            <input
-              type="date"
-              class="form-control1"
-              formControlName="cheque_date"
-            />
-          </td>
-          <td Style="padding-left:9px;" *ngIf="form.get('payment_mode')?.value === 'ch'">Cheque No</td>
-          <td *ngIf="form.get('payment_mode')?.value === 'ch'">
-            <input 
-              type="text"
-              class="form-control1"
-              appNumbersOnly
-              inputmode="numeric"
-              formControlName="cheque_no"
-            />
-          </td>
-        </tr>
-      </table>
+
+  <!-- ================= FOOTER ================= -->
+  <div class="footer-bar">
+    <!-- ========= ROW 1 : TOTAL ========= -->
+    <div class="footer-row totals-grid">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div class="footer-label">TOTAL</div>
+
+      <input [value]="totalSellingPrice | number:'1.2-2'" readonly />
+      <input [value]="totalCgst | number:'1.2-2'" readonly />
+      <input [value]="totalSgst | number:'1.2-2'" readonly />
+      <input formControlName="total_amount" readonly />
+
+      <div></div>
+      <div></div>
     </div>
-  </div>
-  <div class="col-sm-12 mt-3">
-    <div class="">
-      <button type="submit" class="btn btn-theme waves-effect waves-light save">
-        <i class="remixicon-save-2-fill mr-1"></i>Save
+
+    <!-- ========= ROW 2 : DISCOUNT ========= -->
+    <div class="footer-row totals-grid">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+
+      <div class="footer-label">DISCOUNT</div>
+
+      <div></div>
+      <div></div>
+      <div></div>
+
+      <!-- Amount column -->
+    <input
+  type="text"
+  formControlName="discount"
+/>
+
+      <div></div>
+      <div></div>
+    </div>
+
+    <!-- ========= ROW 3 : PAYMENT / BILL / SAVE ========= -->
+
+    <div class="footer-row totals-grid">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div class="field-box" *ngIf="salesForm.value.payment_mode == 'Cheque'">
+        <input formControlName="bank_name" placeholder="Bank" />
+      </div>
+      <div class="field-box" *ngIf="salesForm.value.payment_mode == 'Cheque'">
+        <input formControlName="cheque_date" placeholder="Cheque Date" />
+      </div>
+
+      <div class="field-box" *ngIf="salesForm.value.payment_mode == 'Cheque'">
+        <input formControlName="cheque_no" placeholder="Cheque No" />
+      </div>
+
+      <select class="paymode-box" formControlName="payment_mode">
+        <option>Cash</option>
+        <option>UPI</option>
+        <option>Card</option>
+        <option>Cheque</option>
+      </select>
+
+      <input class="bill-box" [value]="billAmount | number:'1.2-2'" readonly /> 
+
+      <button type="button" class="save-btn save-wide" (click)="saveBill()">
+        Save
       </button>
     </div>
   </div>
-  <div *ngIf="form.invalid && form.touched" class="alert alert-danger mt-3">
-
-  <div *ngFor="let error of getFormValidationErrors()">
-    • {{ error }}
-  </div>
-
-</div>
 </form>
+<!-- ================= RECEIPT (HIDDEN / AUTO PRINT) ================= -->
+<app-receipt-print
+  *ngIf="showReceipt"
+  [bill]="receiptData">
+</app-receipt-print>

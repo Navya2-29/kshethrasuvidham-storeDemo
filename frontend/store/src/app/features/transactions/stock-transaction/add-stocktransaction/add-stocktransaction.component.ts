@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MasterService } from '../../../../core/services/masters/master.service';
 import { Router } from '@angular/router';
@@ -10,89 +10,108 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthStateService } from '../../../../core/services/auth/auth-state.service';
+import { StoreContextService } from '../../../../core/services/store-context/store-context.service';
 @Component({
   selector: 'app-add-stocktransaction',
   standalone: true,
-  imports: [CommonModule,ReactiveFormsModule,MatButtonModule,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
     MatIconModule,
     MatTableModule,
     MatFormFieldModule,
     MatPaginatorModule,
     MatInputModule,
-    MatSortModule,],
+    MatSortModule,
+  ],
   templateUrl: './add-stocktransaction.component.html',
-  styleUrl: './add-stocktransaction.component.css'
+  styleUrl: './add-stocktransaction.component.css',
 })
 export class AddStocktransactionComponent {
-  displayedColumns: string[] = [
-      'index',
-      'Department',
-      'Available quantity',
-      
-    ];
-    dataSource = new MatTableDataSource<any>([]);
+  displayedColumns: string[] = ['index', 'Department', 'Available quantity'];
+  dataSource = new MatTableDataSource<any>([]);
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+  transferForm!: FormGroup;
+  product: any;
+  departments: any[] = [];
+  stockList: any[] = [];
+  readonly storeContext = inject(StoreContextService);
+
+  constructor(
+    private fb: FormBuilder,
+    private service: MasterService,
+    private router: Router,
+    private authState: AuthStateService,
+  ) {}
+  ngOnInit() {
+    this.product = history.state.product;
+
+    this.transferForm = this.fb.group({
+      departmentId: [''],
+      quantity: [''],
+      freeQty: [0],
+      transferDate: [new Date().toISOString().substring(0, 10)],
+    });
+
+    this.loadDepartments();
+    this.loadStockByProductId(this.product.id);
+  }
+
+  loadDepartments() {
+    this.service.getDepartments().subscribe((res) => {
+      this.departments = res;
+
+      const selected = this.storeContext.selectedDepartmentId();
+      if (selected != null && res.some((d) => d.id === selected)) {
+        this.transferForm.patchValue({ departmentId: selected });
+      }
+    });
+  }
+
+
   
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
-    @ViewChild(MatSort) sort!: MatSort;
-transferForm!: FormGroup;
-product: any;
-departments: any[] = [];
- stockList: any[] = [];
-constructor(private fb:FormBuilder,private service:MasterService, private router:Router){
 
-}
-ngOnInit() {
-  this.product = history.state.product;
+  submitTransfer() {
+    if (this.transferForm.invalid) return;
 
-  this.transferForm = this.fb.group({
-    departmentId: [''],
-    quantity: [''],
-    transferDate: [new Date().toISOString().substring(0,10)]
-  });
+    const payload = {
+      productId: this.product.id,
+      departmentId: this.transferForm.value.departmentId,
+      quantity: this.transferForm.value.quantity,
+      freeQty: this.transferForm.value.freeQty || 0,
+      transferDate: this.transferForm.value.transferDate,
+      created_by:this.authState.user()?.id || null,
+    };
 
-  this.loadDepartments();
-  this.loadStockByProductId(this.product.id)
-}
+    this.service.transferStock(payload).subscribe({
+      next: () => {
+        alert('Stock transferred successfully');
+        this.loadStockByProductId(this.product.id);
+        this.router.navigateByUrl('/transaction/stock-transfer');
+      },
+      error: (err) => alert(err.error.message),
+    });
+  }
 
-loadDepartments() {
-  this.service.getDepartments().subscribe(res => this.departments = res);
-}
-
-submitTransfer() {
-  if (this.transferForm.invalid) return;
-
-  const payload = {
-    productId: this.product.id,
-    departmentId: this.transferForm.value.departmentId,
-    quantity: this.transferForm.value.quantity,
-    transferDate: this.transferForm.value.transferDate
-  };
-
-  this.service.transferStock(payload).subscribe({
-    next: () => {
-      alert('Stock transferred successfully');
-      this.loadStockByProductId(this.product.id)
-      this.router.navigateByUrl('/transcation/stocktransfer');
-    },
-    error: err => alert(err.error.message)
-  });
-}
-
-loadStockByProductId(productId: number) {
-  this.service.getProductStock(productId).subscribe({
-    next: (res) => {
-      this.stockList = res;
-this.dataSource.data =this.stockList
-      // total available stock
-      // this.totalQty = res.reduce(
-      //   (sum: number, s: any) => sum + Number(s.quantity),
-      //   0
-      // );
-    },
-    error: () => alert('Stock load failed')
-  });
-}
- //---------------------------------
+  loadStockByProductId(productId: number) {
+    this.service.getProductStock(productId).subscribe({
+      next: (res) => {
+        this.stockList = res;
+        this.dataSource.data = this.stockList;
+        // total available stock
+        // this.totalQty = res.reduce(
+        //   (sum: number, s: any) => sum + Number(s.quantity),
+        //   0
+        // );
+      },
+      error: () => alert('Stock load failed'),
+    });
+  }
+  //---------------------------------
   // filtering the data from table
   // --------------------------------
   applyFilter(event: Event) {

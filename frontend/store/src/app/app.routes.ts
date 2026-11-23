@@ -1,139 +1,198 @@
-import { ProductWiseComponent } from './features/reports/puchase-reports/product-wise/product-wise.component';
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './features/dashboard/dashboard/dashboard.component';
 
 export const routes: Routes = [
-   // LOGIN (NO LAYOUT)
+  // LOGIN (NO LAYOUT)
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
+
   {
     path: 'login',
     loadComponent: () =>
-      import('./features/auth/login/login.component')
-        .then(m => m.LoginComponent),
+      import('./features/auth/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
   },
 
   // MAIN APP (WITH LAYOUT)
   {
     path: '',
     loadComponent: () =>
-      import('./layout/layout/layout/layout.component')
-        .then(m => m.LayoutComponent),
+      import('./layout/layout/layout/layout.component').then(
+        (m) => m.LayoutComponent,
+      ),
 
     children: [
-
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
       // DASHBOARD
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./features/dashboard/dashboard/dashboard.component')
-            .then(m => m.DashboardComponent),
+          import('./features/dashboard/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
+      },
+      {
+        path: 'change-password',
+        loadComponent: () =>
+          import('./features/auth/change-password/change-password.component').then(
+            (m) => m.ChangePasswordComponent,
+          ),
       },
 
       // MASTER
+
+      {
+        path: 'master/mater-layout',
+        loadComponent: () =>
+          import('./features/masters/master-layout/master-layout.component').then(
+            (m) => m.MasterLayoutComponent,
+          ),
+      },
       {
         path: 'master/productmaster',
         loadComponent: () =>
-          import('./features/masters/productmaster/productmaster.component')
-            .then(m => m.ProductmasterComponent),
+          import('./features/masters/productmaster/productmaster.component').then(
+            (m) => m.ProductmasterComponent,
+          ),
       },
       {
         path: 'master/category',
         loadComponent: () =>
-          import('./features/masters/categorymaster/categorymaster.component')
-            .then(m => m.CategorymasterComponent),
+          import('./features/masters/categorymaster/categorymaster.component').then(
+            (m) => m.CategorymasterComponent,
+          ),
       },
       {
         path: 'master/department',
         loadComponent: () =>
-          import('./features/masters/departmentmaster/departmentmaster.component')
-            .then(m => m.DepartmentmasterComponent),
+          import('./features/masters/departmentmaster/departmentmaster.component').then(
+            (m) => m.DepartmentmasterComponent,
+          ),
       },
       {
         path: 'master/supplier',
         loadComponent: () =>
-          import('./features/masters/suppliermaster/suppliermaster.component')
-            .then(m => m.SuppliermasterComponent),
+          import('./features/masters/suppliermaster/suppliermaster.component').then(
+            (m) => m.SuppliermasterComponent,
+          ),
       },
       {
         path: 'master/book',
         loadComponent: () =>
-          import('./features/masters/bookmaster/bookmaster.component')
-            .then(m => m.BookmasterComponent),
+          import('./features/masters/bookmaster/bookmaster.component').then(
+            (m) => m.BookmasterComponent,
+          ),
+      },
+      {
+        path: 'master/user',
+        loadComponent: () =>
+          import('./features/masters/user/user.component').then(
+            (m) => m.UserComponent,
+          ),
+      },
+      {
+        path: 'master/settings',
+        loadComponent: () =>
+          import('./features/masters/settings/settings.component').then(
+            (m) => m.SettingsComponent,
+          ),
       },
 
       // TRANSACTIONS
+
       {
         path: 'transaction/stock-transfer',
         loadComponent: () =>
-          import('./features/transactions/stock-transaction/stock-transfer/stock-transfer.component')
-            .then(m => m.StockTransferComponent),
+          import('./features/transactions/stock-transaction/stock-transfer/stock-transfer.component').then(
+            (m) => m.StockTransferComponent,
+          ),
+      },
+      {
+        path: 'transaction/productitemdetails/:id',
+        loadComponent: () =>
+          import('./features/transactions/productitemdetails/productitemdetails.component').then(
+            (m) => m.ProductitemdetailsComponent,
+          ),
       },
       {
         path: 'transaction/stock-transfer/add',
         loadComponent: () =>
-          import('./features/transactions/stock-transaction/add-stocktransaction/add-stocktransaction.component')
-            .then(m => m.AddStocktransactionComponent),
+          import('./features/transactions/stock-transaction/add-stocktransaction/add-stocktransaction.component').then(
+            (m) => m.AddStocktransactionComponent,
+          ),
       },
       {
         path: 'transaction/opening-stock',
         loadComponent: () =>
-          import('./features/transactions/opening-stock/opening-stock.component')
-            .then(m => m.OpeningStockComponent),
+          import('./features/transactions/opening-stock/opening-stock.component').then(
+            (m) => m.OpeningStockComponent,
+          ),
       },
       {
         path: 'transaction/direct-entry',
         loadComponent: () =>
-          import('./features/transactions/direct-entry/direct-entry.component')
-            .then(m => m.DirectEntryComponent),
+          import('./features/transactions/direct-entry/direct-entry.component').then(
+            (m) => m.DirectEntryComponent,
+          ),
       },
       {
         path: 'transaction/order',
         loadComponent: () =>
-          import('./features/transactions/order/order.component')
-            .then(m => m.OrderComponent),
+          import('./features/transactions/order/order.component').then(
+            (m) => m.OrderComponent,
+          ),
       },
       {
         path: 'transaction/purchase',
         loadComponent: () =>
-          import('./features/transactions/purchase/purchase.component')
-            .then(m => m.PurchaseComponent),
+          import('./features/transactions/purchase/purchase.component').then(
+            (m) => m.PurchaseComponent,
+          ),
       },
       {
         path: 'transaction/sales',
         loadComponent: () =>
-          import('./features/transactions/sales/sales.component')
-            .then(m => m.SalesComponent),
+          import('./features/transactions/sales/sales.component').then(
+            (m) => m.SalesComponent,
+          ),
       },
 
       // REPORTS
       {
         path: 'report/purchase/product-wise',
         loadComponent: () =>
-          import('./features/reports/puchase-reports/product-wise/product-wise.component')
-            .then(m => m.ProductWiseComponent),
+          import('./features/reports/puchase-reports/product-wise/product-wise.component').then(
+            (m) => m.ProductWiseComponent,
+          ),
       },
       {
         path: 'report/purchase/supplier-wise',
         loadComponent: () =>
-          import('./features/reports/puchase-reports/supplier-wise/supplier-wise.component')
-            .then(m => m.SupplierWiseComponent),
+          import('./features/reports/puchase-reports/supplier-wise/supplier-wise.component').then(
+            (m) => m.SupplierWiseComponent,
+          ),
       },
       {
         path: 'report/stock',
         loadComponent: () =>
-          import('./features/reports/stock-report/stock-report.component')
-            .then(m => m.StockReportComponent),
+          import('./features/reports/stock-report/stock-report.component').then(
+            (m) => m.StockReportComponent,
+          ),
       },
       {
         path: 'report/stock-transfer',
         loadComponent: () =>
-          import('./features/reports/stock-transfer/stock-transfer.component')
-            .then(m => m.StockTransferComponent),
+          import('./features/reports/stock-transfer/stock-transfer.component').then(
+            (m) => m.StockTransferComponent,
+          ),
       },
     ],
   },
 
   // WILDCARD
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'login' },
 ];

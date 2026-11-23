@@ -6,7 +6,6 @@ import { Injectable, signal } from '@angular/core';
 export class LayoutStateService {
  isOpen = signal<boolean>(true);
 
-  // Toggle sidebar
   toggle() {
     this.isOpen.update(v => !v);
   }

@@ -1,136 +1,111 @@
-import { Component, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+
+  ViewEncapsulation,
+} from '@angular/core';
+
 import { Category } from '../models/category.model';
 import {
   FormBuilder,
   FormGroup,
-  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MasterService } from '../../../core/services/masters/master.service';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { FieldConfig } from '../models/field-config.model';
+import { CATEGORY_FIELDS } from '../models/category.fields';
+import { CATEGORY_COLUMNS } from '../models/category-columns';
+import { DynamicFormComponent } from '../../../shared/components/dynamic-form/dynamic-form.component';
+import { DynamicTableComponent } from '../../../shared/components/dynamic-table/dynamic-table.component';
+import { MasterLayoutComponent } from '../master-layout/master-layout.component';
 
 @Component({
   selector: 'app-categorymaster',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
-    CommonModule,
-    MatIconModule,
-    MatTableModule,
-    MatFormFieldModule,
-    MatPaginatorModule,
-    MatInputModule,
-    MatSortModule,
-    MatButtonModule,
+    DynamicFormComponent,
+    DynamicTableComponent,
+    MasterLayoutComponent,
   ],
   templateUrl: './categorymaster.component.html',
   styleUrl: './categorymaster.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
-export class CategorymasterComponent {
-  displayedColumns: string[] = ['index', 'code', 'name', 'action'];
-
-  dataSource = new MatTableDataSource<Category>([]);
-  categoryForm!: FormGroup;
+export class CategorymasterComponent implements OnInit {
+  form!: FormGroup;
+  fields: FieldConfig[] = CATEGORY_FIELDS;
+  columns = CATEGORY_COLUMNS;
+  categories: Category[] = [];
   editMode = false;
-  editId?: number;
-  errorMessage = '';
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-
+  editId: number | null = null;
+  loading = false;
   constructor(
     private fb: FormBuilder,
-    private masterService: MasterService,
+    private service: MasterService,
   ) {}
 
   ngOnInit() {
-    this.categoryForm = this.fb.group({
-      category_code: ['', Validators.required],
-      category_name: ['', Validators.required],
-      category_nameml: ['', Validators.required],
-    });
-
+    this.buildForm();
     this.loadCategories();
   }
 
+  buildForm() {
+    const group: any = {};
+
+    this.fields.forEach((field) => {
+      const validators = [];
+      if (field.required) validators.push(Validators.required);
+      group[field.name] = ['', validators];
+    });
+
+    this.form = this.fb.group(group);
+  }
+
   loadCategories() {
-    this.masterService.getCategories().subscribe((res) => {
-      this.dataSource.data = res;
+    this.service.getCategories().subscribe((res) => {
+      this.categories = res;
     });
   }
 
-  saveCategory() {
-    if (this.categoryForm.invalid) {
-      this.categoryForm.markAllAsTouched();
-      return;
-    }
+  save(data: any) {
+    if (this.loading) return;
 
-    const payload = this.categoryForm.getRawValue();
+    this.loading = true;
 
-    if (this.editMode && this.editId) {
-      this.masterService.updateCategory(this.editId, payload).subscribe({
-        next: () => {
-          this.resetForm();
-          this.loadCategories();
-        },
-        error: (err) => {
-          const message = err?.error?.message || 'Error saving Category';
-          alert(message);
-        },
-      });
-    } else {
-      this.masterService.addCategory(payload).subscribe({
-        next: () => {
-          this.resetForm();
-          this.loadCategories();
-        },
-        error: (err) => {
-          const message = err?.error?.message || 'Error saving Category';
-          alert(message);
-        },
-      });
-    }
+    const request$ =
+      this.editMode && this.editId
+        ? this.service.updateCategory(this.editId, data)
+        : this.service.addCategory(data);
+
+    request$.subscribe({
+      next: () => this.afterSave(),
+      error: () => (this.loading = false),
+    });
   }
 
-  editCategory(cat: Category) {
+  editCategory(data: any) {
     this.editMode = true;
-    this.editId = cat.id;
-
-    this.categoryForm.patchValue(cat);
-    this.categoryForm.get('category_code')?.disable();
+    this.editId = data.id;
+    this.form.patchValue(data);
   }
 
-  deleteCategory(id?: number) {
-    if (!id) return;
-
-    if (confirm('Delete this category?')) {
-      this.masterService.deleteCategory(id).subscribe(() => {
-        this.loadCategories();
-      });
-    }
+  deleteCategory(id: number) {
+    this.service.deleteCategory(id).subscribe(() => {
+      this.loadCategories();
+    });
   }
 
-  resetForm() {
-    this.categoryForm.reset();
+  afterSave() {
+    this.reset();
+    this.loadCategories();
+    this.loading = false;
+  }
+
+  reset() {
+    this.form.reset();
     this.editMode = false;
-    this.editId = undefined;
-    this.errorMessage = '';
-    this.categoryForm.get('category_code')?.enable();
-  }
-
-  get f() {
-    return this.categoryForm.controls;
-  }
-
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.editId = null;
   }
 }

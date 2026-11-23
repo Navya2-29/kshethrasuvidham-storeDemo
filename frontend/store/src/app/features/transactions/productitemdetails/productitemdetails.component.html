@@ -1,0 +1,121 @@
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="fa fa-list"></span>&nbsp;&nbsp;<span
+                          
+                        style="font-size:15pt;color:brown;font-weight:600">{{summary.productCode}}</span> | {{summary.productName}} | <span
+                        style="font-size:15pt;color:#d88e25;">Available Stock - {{ summary.stock?.availableStock }}</span></div>
+            </div>
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="pid">
+                            <h1>{{ summary.openingStock }}</h1>
+                            <h4>Opening Stock</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="pid">
+                           <h1>{{  summary.purchase?.total}}</h1>
+                            <h4>Purchase</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="pid">
+                          <h1>{{ summary.sales }}</h1>
+                            <h4>Sale</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="pid">
+                         <h1>{{ summary.directEntry }}</h1>
+                            <h4>Direct</h4>
+                        </div>
+                    </div>
+                    <!-- <div class="col-md-3">
+                        <div class="pid">
+                            <h1>{{summary.DAMAGE}}</h1>
+                            <h4>Damage/Fire</h4>
+                        </div>
+                    </div> -->
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="pid">
+                            <h1>{{summary.qtyInHand}}</h1>
+                            <h4>Qoh</h4>
+                        </div>
+                    </div>
+                    <!-- <div class="col-md-3">
+                        <div class="pid">
+                            <h1>{{summary.ADJUSTMENT}}</h1>
+                            <h4>Purchase Return</h4>
+                        </div>
+                    </div> -->
+                    <!-- <div class="col-md-3">
+                        <div class="pid">
+                            <h1>Rs. 1000</h1>
+                            <h4>Block</h4>
+                        </div>
+                    </div> -->
+                    <!-- <div class="col-md-3">
+                        <div class="pid">
+                         <h1>{{ summary.qtyInHand }}</h1>
+                            <h4>QOH</h4>
+                        </div>
+                    </div> -->
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr >
+                            <th style="width:50%;background:#d88e25;color:white;">Department</th>
+                            <!-- <th style="width:30%;background:#d88e25;color:white;">Category</th> -->
+                            <th style="width:20%;background:#d88e25;color:white;">Quantity</th>
+                            <!-- <th></th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                       <tr *ngFor="let d of departments">
+      <td>{{d.dept_name}}</td>
+      <td>{{d.qty}}</td>
+    </tr>
+                    </tbody>
+                </table>
+                <!-- <div>
+                     <a href="stock_item.html" class="btn  btn-theme-light btn-xs btn-icon waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="View All Details" data-original-title="View Details" >View All &nbsp;&nbsp;<i class="fa fa-arrow-right"></i></a>
+                 </div> -->
+            </div>
+
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="fa fa-list"></span>&nbsp;&nbsp;<span
+                        style="font-size:15pt;color:brown;font-weight:600">Sotck Items</span></div>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width:50%;background:#d88e25;color:white;">Product</th>
+                            <th style="width:30%;background:#d88e25;color:white;">Category</th>
+                            <th style="width:20%;background:#d88e25;color:white;">Quantity</th>
+                            <th style="background:#d88e25;color:white;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       <tr *ngFor="let p of products">
+      <td>{{p.product_name}}</td>
+      <td>{{p.category_name}}</td>
+      <td>{{p.qty}}</td>
+    </tr>
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

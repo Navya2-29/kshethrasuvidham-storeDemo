@@ -1,195 +1,27 @@
-<div class="row">
-  <div class="col-md-8">
-    <div class="card">
-      <div
-        class="card-header border-bottom-0"
-        style="font-size: 12.3pt; padding: 9px"
-      >
-        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
-          &nbsp;&nbsp;<span class="fa fa-list"></span>&nbsp;&nbsp;Category List
-        </div>
-      </div>
-      <div class="card-body" style="padding: 15px">
-        <div class="table-responsive">
-         <div class="table-container">
-         <div class="search-container">
-              <input
-                class="searchiput"
-                matInput
-                (keyup)="applyFilter($event)"
-                placeholder="Search..."
-              />
-            </div>
-          <table mat-table
-              [dataSource]="dataSource"
-              matSort
-              class="custom-table">
-            <ng-container matColumnDef="index">
-              <th mat-header-cell *matHeaderCellDef>#</th>
-              <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
-            </ng-container>
+ <app-master-layout
+  title="Category List"
+  [formTitle]="editMode ? 'Update Category' : 'Add Category'">
 
-            <ng-container matColumnDef="code">
-              <th mat-header-cell *matHeaderCellDef>Code</th>
-              <td mat-cell *matCellDef="let row">{{ row.category_code }}</td>
-            </ng-container>
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
-              <td mat-cell *matCellDef="let row">{{ row.category_name }}</td>
-            </ng-container>
-
-            
-
-               <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef>Action</th>
-                <td mat-cell *matCellDef="let element">
-                  <a
-                    (click)="editCategory(element)"
-                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                    data-toggle="tooltip"
-                    data-placement="top"
-                    title="Edit"
-                    data-original-title="Edit Details"
-                    ><i class="fa fa-edit"></i
-                  ></a>
-                  <a
-                    (click)="deleteCategory(element.id)"
-                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                    data-toggle="modal"
-                    data-placement="top"
-                    title="Delete Details"
-                    data-original-title="Delete"
-                    ><i class="fa fa-times"></i
-                  ></a>
-                </td>
-              </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-             <tr *matNoDataRow>
-                <td colspan="5" class="text-center">No category found</td>
-              </tr>
-          </table>
-            <!-- No Data -->
-             
-           
-
-            <!-- Pagination -->
-            <mat-paginator
-              [pageSize]="5"
-              [pageSizeOptions]="[5, 10, 20]"
-              showFirstLastButtons
-            >
-            </mat-paginator>
-         </div>
-
-         
-        </div>
-      </div>
-    </div>
+  <!-- FORM -->
+  <div form>
+ <app-dynamic-form
+      [form]="form"
+      [fields]="fields"
+      [editMode]="editMode"
+      [loading]="loading"
+      (submit)="save($event)"
+      (cancel)="reset()">
+    </app-dynamic-form>
   </div>
-  <div
-    class="col-md-4 collapse show"
-    id="collapseTwo"
-    aria-labelledby="headingTwo"
-    data-parent="#accordion"
-  >
-    <div class="card">
-      <div class="card-header border-bottom-0">
-        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
-          &nbsp;&nbsp;<span class="fas fa-plus-square"></span>&nbsp;&nbsp;Add
-          New Category
-        </div>
-      </div>
 
-      <div class="card-body" style="padding: 15px">
-        <form [formGroup]="categoryForm">
-          <div class="row">
-            <div class="col-md-12">
-              <table class="addcategory">
-                <tr>
-                  <td>Category Code<span class="mandatoryfiels">*</span></td>
-                  <td>
-                    <input type="text" id="category_code" name="category_code" class="addcategorycode" formControlName="category_code"/>
-                    <div
-                      *ngIf="
-                        f['category_code'].touched &&
-                        f['category_code'].hasError('required')
-                      "
-                      class="text-danger"
-                    >
-                      Code is required
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Category Name<span class="mandatoryfiels">*</span></td>
-                  <td>
-                    <input
-                      type="text"
-                      formControlName="category_name"
-                      class="addcategoryname"
-                      id="category_name"
-                      name="category_name"
-                    />
-                    <div
-                      *ngIf="
-                        f['category_name'].touched &&
-                        f['category_name'].hasError('required')
-                      "
-                      class="text-danger"
-                    >
-                      Name is required
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>category name(mal)<span class="mandatoryfiels">*</span></td>
-                  <td>
-                    <input
-                      type="text"
-                      class="shortform"
-                      formControlName="category_nameml"
-                      id="category_nameml"
-                      name="category_nameml"
-                    />
-                    <div
-                      *ngIf="
-                        f['category_nameml'].touched &&
-                        f['category_nameml'].hasError('required')
-                      "
-                      class="text-danger"
-                    >
-                      Name(mal) is required
-                    </div>
-                  </td>
-                </tr>
-              </table>
-            </div>
-
-            <div class="col-md-6">
-              <div class="form-group mt-2 sbmt">
-                <button
-                  type="submit"
-                  name="master_search"
-                  id="master_search"
-                  class="btn btn-theme waves-effect w-100 waves-effect waves-light btnsubmt"
-                  (click)="saveCategory()"
-                >
-                  <i class="fa fa-save mr-1"></i>
-                  {{ editMode ? "Update" : "Save" }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary w-100 waves-effect waves-light btnsubmt"
-                  (click)="resetForm()"
-                >
-                  Clear
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+  <!-- TABLE -->
+  <div table>
+    <app-dynamic-table
+      [columns]="columns"
+      [data]="categories"
+      (edit)="editCategory($event)"
+      (delete)="deleteCategory($event)">
+    </app-dynamic-table>
   </div>
-</div>
+
+</app-master-layout>

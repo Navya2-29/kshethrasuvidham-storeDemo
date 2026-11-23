@@ -1,0 +1,84 @@
+.dashboard {
+  padding: 20px;
+  background: #f4f6f9;
+  min-height: 100vh;
+}
+
+.title {
+  margin-bottom: 20px;
+}
+
+.loading {
+  font-size: 20px;
+  text-align: center;
+  padding: 40px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.card h4 {
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.card h2 {
+  margin: 0;
+}
+
+.green { border-left: 5px solid #28a745; }
+.blue { border-left: 5px solid #007bff; }
+.orange { border-left: 5px solid #ff9800; }
+.red { border-left: 5px solid #dc3545; }
+
+.stock-box {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.stock-box h1 {
+  font-size: 42px;
+  color: #007bff;
+}
+
+.table-box {
+  background: white;
+  padding: 20px;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #e1cf09b2;
+  color: white;
+}
+
+th, td {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+
+@media(max-width: 768px) {
+  .cards {
+    grid-template-columns: repeat(2,1fr);
+  }
+}
