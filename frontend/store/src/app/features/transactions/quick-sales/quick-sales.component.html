@@ -1,0 +1,141 @@
+<form class="pos-screen" [formGroup]="salesForm">
+  <!-- ================= HEADER ================= -->
+  <div class="header-bar">
+    <div class="field-box invoice-box">
+      <label>Invoice No</label>
+      <input type="text" formControlName="invoice_no" readonly />
+    </div>
+
+    <!-- <div class="field-box customer-box">
+      <label>Customer</label>
+      <input type="text" formControlName="customer_name" placeholder="Customer Name"
+        (keydown.enter)="focusElement('code_0'); $event.preventDefault()" />
+    </div> -->
+
+    <div class="field-box date-box">
+      <label>Date</label>
+      <input type="date" formControlName="receipt_date" />
+    </div>
+
+    <div class="field-box dept-box" *ngIf="storeContext.isMultiDepartment()">
+      <label>Department</label>
+      <select formControlName="department_id" (change)="onDepartmentChange($event)">
+        <option value="">Select Department</option>
+        <option *ngFor="let d of departments" [value]="d.id">
+          {{ d.dept_name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ================= PRODUCT SECTION ================= -->
+  <div class="product-panel">
+    <!-- GRID HEADER -->
+    <div class="grid-head">
+      <div>#</div>
+      <div>Code</div>
+      <div>Product</div>
+      <div>In Hand Qty</div>
+      <div>Qty</div>
+      <div>Rate</div>
+      <div>Amt</div>
+      <div>+</div>
+      <div>X</div>
+    </div>
+
+    <!-- GRID BODY -->
+    <div class="grid-body">
+      <div class="grid-row" *ngFor="let row of items.controls; let i = index; trackBy: trackByRow"
+        [formGroup]="$any(row)">
+        <div class="row-no">{{ i + 1 }}</div>
+
+        <input [id]="'code_' + i" formControlName="product_code" placeholder="Code"
+          (keydown.enter)="onCodeEnter(i, $event)" />
+
+        <div class="product-cell" style="position: relative">
+          <select [id]="'prod_' + i" formControlName="product_id" (change)="onProductSelect($event, i)"
+            (keydown.enter)="onProductEnter(i, $event)">
+            <option value="">Select Product</option>
+            <option *ngFor="let p of products" [value]="p.id" [disabled]="getStock(p.id) <= 0">
+              {{ p.product_code }} - {{ p.product_name }}
+            </option>
+          </select>
+        </div>
+
+        <input formControlName="in_hand_qty" readonly class="number in-hand-box" placeholder="0" />
+
+        <input [id]="'qty_' + i" type="number" formControlName="qty" [min]="1"
+          [max]="getStock(row.get('product_id')?.value)" (keydown)="onQtyKeyDown($event, row)"
+          (keydown.enter)="onQtyEnter(i, $event)" />
+        <input type="text" formControlName="selling_price" readonly class="number" />
+
+
+        <input type="text" formControlName="amount" readonly class="number" />
+
+        <button type="button" class="add-btn" [id]="'add_' + i" (click)="addRowAndFocus(i + 1)"
+          (keydown.enter)="addRowAndFocus(i + 1); $event.preventDefault()" title="Add Row">+</button>
+
+        <button type="button" class="del-btn" [id]="'del_' + i" (click)="removeRow(i)" title="Remove Row">×</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <div class="footer-bar">
+    <!-- ========= ROW 1 : TOTAL ========= -->
+    <div class="footer-row totals-grid">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div class="footer-label">TOTAL</div>
+      <input [value]="totalSellingPrice | number:'1.2-2'" readonly class="number" />
+      <input [value]="salesForm.get('total_amount')?.value | number:'1.2-2'" readonly class="number" />
+      <div></div>
+      <div></div>
+    </div>
+
+    <!-- ========= ROW 2 : DISCOUNT ========= -->
+    <div class="footer-row totals-grid">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div class="footer-label">DISCOUNT</div>
+      <input type="text" formControlName="discount" class="number" />
+      <div></div>
+      <div></div>
+    </div>
+
+    <!-- ========= ROW 3 : PAYMENT / BILL / SAVE ========= -->
+    <div class="footer-row totals-grid">
+      <div></div>
+      <div></div>
+      <div class="cheque-container" *ngIf="salesForm.value.payment_mode === 'Cheque'">
+        <input formControlName="bank_name" placeholder="Bank" />
+        <input formControlName="cheque_date" placeholder="Cheque Date" />
+        <input formControlName="cheque_no" placeholder="Cheque No" />
+      </div>
+      <div *ngIf="salesForm.value.payment_mode !== 'Cheque'"></div>
+      <div></div>
+
+      <select class="paymode-box" formControlName="payment_mode">
+        <option>Cash</option>
+        <option>UPI</option>
+        <option>Card</option>
+        <option>Cheque</option>
+      </select>
+
+      <input class="bill-box number" [value]="billAmount | number:'1.2-2'" readonly />
+
+      <button type="button" class="save-btn save-wide" (click)="saveBill()">
+        Save
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- ================= RECEIPT (HIDDEN / AUTO PRINT) ================= -->
+<app-receipt-print *ngIf="showReceipt" [bill]="receiptData">
+</app-receipt-print>
