@@ -37,7 +37,7 @@ export class SidebarComponent {
       icon: 'remixicon-contacts-line',
       children: [
         { label: 'Supplier Details', route: '/master/supplier' },
-        { label: 'Department Master', route: '/master/department' },
+        // { label: 'Department Master', route: '/master/department' },
         { label: 'Category Master', route: '/master/category' },
         { label: 'Product Master', route: '/master/productmaster' },
         { label: 'Author / Publisher Master', route: '/master/book', bookstoreOnly: true },
@@ -54,6 +54,7 @@ export class SidebarComponent {
         { label: 'Order', route: '/transaction/order' },
         { label: 'Purchase', route: '/transaction/purchase' },
         { label: 'Stock Transfer', route: '/transaction/stock-transfer', multiDepartmentOnly: true },
+        { label: 'Quick Sales', route: '/transaction/quicksales' },
         { label: 'Sales', route: '/transaction/sales' },
       ],
     },

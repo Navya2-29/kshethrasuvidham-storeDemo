@@ -154,6 +154,18 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'transaction/quicksales',
+        loadComponent: () =>
+          import('./features/transactions/quick-sales/quick-sales.component').then(
+            (m) => m.QuickSalesComponent,
+          ),
+      },
+      {
+        path: 'transaction/quick-sales',
+        redirectTo: 'transaction/quicksales',
+        pathMatch: 'full',
+      },
+      {
         path: 'transaction/sales',
         loadComponent: () =>
           import('./features/transactions/sales/sales.component').then(
