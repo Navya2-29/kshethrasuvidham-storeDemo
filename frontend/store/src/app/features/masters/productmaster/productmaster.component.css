@@ -303,3 +303,29 @@ mat-paginator {
   color: #6c757d;
   font-weight: 600;
 }
+
+.productmaster-page .mat-column-Quantity {
+  text-align: center;
+  width: 75px;
+}
+
+.productmaster-page .stock-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 32px;
+  text-align: center;
+}
+
+.productmaster-page .badge-stock-in {
+  color: #15803d;
+
+}
+
+.productmaster-page .badge-stock-out {
+
+  color: #b91c1c;
+
+}

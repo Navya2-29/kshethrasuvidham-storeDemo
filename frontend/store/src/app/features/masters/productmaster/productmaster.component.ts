@@ -61,6 +61,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     'product',
     'Category',
     'Price',
+    'Quantity',
     'action',
   ];
 
@@ -111,6 +112,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       }
       if (property === 'product') return item.product_name;
       if (property === 'Category') return item.category as any;
+      if (property === 'Quantity') return Number(item.current_stock ?? 0);
       return (item as any)[property];
     };
   }
@@ -215,6 +217,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
           this.publishers = res.publishers;
 
           this.dataSource.data = this.products;
+          console.log('productlist', this.products);
         },
         error: (err) => {
           console.error(err);
@@ -345,6 +348,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         next: (res: Product[]) => {
           this.products = this.sortProductsByCode(res);
           this.dataSource.data = this.products;
+          console.log('productlist', this.products)
         },
         error: (err) => console.error(err),
       });
@@ -486,6 +490,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       'Unit',
       'Min Qty',
       'Max Qty',
+      'Stock Qty',
       'Cost Price',
       'Selling Price',
       'MRP',
@@ -511,6 +516,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         p.unit,
         p.min_qty,
         p.max_qty,
+        p.current_stock ?? 0,
         p.cost_price,
         p.selling_price,
         p.mrp,
@@ -542,7 +548,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
   =================================================== */
   private readonly reportHeaders = [
     'Code', 'Name', 'Regional Name', 'Category', 'Unit',
-    'Min Qty', 'Max Qty', 'Cost', 'Selling', 'MRP', 'GST %',
+    'Min Qty', 'Max Qty', 'Stock Qty', 'Cost', 'Selling', 'MRP', 'GST %',
     'HSN', 'Sale Item', 'Authors', 'Publishers', 'Status', 'Created By',
   ];
 
@@ -555,6 +561,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       p.unit,
       p.min_qty,
       p.max_qty,
+      p.current_stock ?? 0,
       p.cost_price,
       p.selling_price,
       p.mrp,
