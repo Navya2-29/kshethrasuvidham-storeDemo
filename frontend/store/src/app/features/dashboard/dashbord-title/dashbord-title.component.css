@@ -1,6 +1,7 @@
-h4{
-    padding-left:3%;
+h4 {
+  padding-left: 3%;
 }
+
 .notification-ticker {
   background: #fff7ed;
   border: 1px solid #fed7aa;
@@ -22,6 +23,7 @@ h4{
   0% {
     transform: translateX(100%);
   }
+
   100% {
     transform: translateX(-100%);
   }
