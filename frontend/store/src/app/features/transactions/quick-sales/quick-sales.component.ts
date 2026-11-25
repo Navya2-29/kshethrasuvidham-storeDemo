@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostListener,
   inject,
   OnDestroy,
   OnInit,
@@ -52,6 +53,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
   totalSgst: number | string = 0.0;
   receiptData: any;
   showReceipt = false;
+  isSaving = false;
 
   private destroy$ = new Subject<void>();
   readonly storeContext = inject(StoreContextService);
@@ -72,12 +74,11 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.buildForm();
     this.addRow();
     this.watchHeaderFields();
-    this.watchPaymentMode();
     this.loadInvoiceNo();
     this.loadProducts();
     this.loadDepartments();
     setTimeout(() => {
-      this.focusElement('code_0');
+      this.focusElement('prod_0');
     }, 300);
   }
 
@@ -173,60 +174,129 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     return this.stockMap.get(numId) ?? 0;
   }
 
-  onProductSelect(event: any, index: number): void {
-    const rawValue = event.target.value;
-    if (!rawValue) return;
-
-    const productId = +rawValue;
-
-    if (this.isDuplicateProduct(productId, index)) {
-      this.notification.error('This product is already added in another row');
-      const row = this.items.at(index);
-      row.patchValue({
-        product_id: '',
-        product_code: '',
-        product_name: '',
-      }, { emitEvent: false });
-      return;
+  getFilteredProducts(row: AbstractControl): any[] {
+    const rawVal = row.get('product_name')?.value;
+    if (!rawVal || typeof rawVal !== 'string') {
+      return this.products;
+    }
+    const filter = rawVal.trim().toLowerCase();
+    if (!filter) {
+      return this.products;
     }
 
-    const product = this.products.find((p) => Number(p.id) === productId);
-    if (!product) return;
+    const selectedProdId = row.get('product_id')?.value;
+    const selectedProd = this.products.find((p) => p.id === selectedProdId);
+    if (selectedProd && selectedProd.product_name?.toLowerCase() === filter) {
+      return this.products;
+    }
+
+    return this.products.filter(
+      (p) =>
+        p.product_name?.toLowerCase().includes(filter) ||
+        p.product_code?.toString().toLowerCase().includes(filter),
+    );
+  }
+
+  trackByProductId(index: number, item: any): any {
+    return item?.id ?? index;
+  }
+
+  selectProduct(product: any, index: number): boolean {
+    if (!product) return false;
+
+    if (this.isDuplicateProduct(product.id, index)) {
+      this.notification.error('This product is already added in another row');
+      const row = this.items.at(index);
+      row.patchValue(
+        {
+          product_id: '',
+          product_code: '',
+          product_name: '',
+          selling_price: 0,
+          amount: 0,
+          in_hand_qty: 0,
+        },
+        { emitEvent: false },
+      );
+      return false;
+    }
 
     const stock = this.getStock(product.id);
     if (this.stockMap.size > 0 && stock <= 0) {
       this.notification.error(`Product "${product.product_name}" is out of stock`);
       const row = this.items.at(index);
-      row.patchValue({
-        product_id: '',
-        product_code: '',
-        product_name: '',
-      }, { emitEvent: false });
-      return;
+      row.patchValue(
+        {
+          product_id: '',
+          product_code: '',
+          product_name: '',
+          selling_price: 0,
+          amount: 0,
+          in_hand_qty: 0,
+        },
+        { emitEvent: false },
+      );
+      return false;
     }
 
     const row = this.items.at(index);
     const qty = +row.get('qty')?.value || 1;
     const inHand = Math.max(0, stock - qty);
 
-    row.patchValue({
-      product_id: product.id,
-      product_code: product.product_code,
-      product_name: product.product_name,
-      author: product.author_name,
-      publisher: product.publisher_name,
-      unit: product.unit,
-      mrp: product.mrp,
-      cost_price: product.cost_price,
-      selling_price: product.selling_price,
-      gst_percent: +product.gst_percent,
-      stock_qty: stock,
-      in_hand_qty: inHand,
-    }, { emitEvent: false });
+    row.patchValue(
+      {
+        product_id: product.id,
+        product_code: product.product_code,
+        product_name: product.product_name,
+        author: product.author_name,
+        publisher: product.publisher_name,
+        unit: product.unit,
+        mrp: product.mrp,
+        cost_price: product.cost_price,
+        selling_price: product.selling_price,
+        gst_percent: +product.gst_percent,
+        stock_qty: stock,
+        in_hand_qty: inHand,
+      },
+      { emitEvent: false },
+    );
 
     this.calculateRow(index);
     this.calculateTotals();
+    this.cdr.markForCheck();
     this.focusElement('qty_' + index);
+    return true;
+  }
+
+  onProductSearchChange(index: number, event: Event): void {
+    const row = this.items.at(index);
+    const text = (event.target as HTMLInputElement).value;
+    const currentId = row.get('product_id')?.value;
+    const currentProd = this.products.find((p) => p.id === currentId);
+    if (currentProd && currentProd.product_name !== text) {
+      row.patchValue(
+        {
+          product_id: '',
+          product_code: '',
+          selling_price: 0,
+          amount: 0,
+          in_hand_qty: 0,
+        },
+        { emitEvent: false },
+      );
+      this.calculateRow(index);
+      this.calculateTotals();
+    }
+  }
+
+  onProductSelect(event: any, index: number): void {
+    const rawValue = event.target.value;
+    if (!rawValue) return;
+    const productId = +rawValue;
+    const product = this.products.find((p) => Number(p.id) === productId);
+    if (product) {
+      this.selectProduct(product, index);
+    }
   }
 
   onProductCodeEnter(index: number): void {
@@ -244,48 +314,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isDuplicateProduct(product.id, index)) {
-      this.notification.error('This product is already added in another row');
-      row.patchValue({
-        product_id: '',
-        product_code: '',
-        product_name: '',
-      }, { emitEvent: false });
-      return;
-    }
-
-    const stock = this.getStock(product.id);
-    if (this.stockMap.size > 0 && stock <= 0) {
-      this.notification.error(`Product "${product.product_name}" is out of stock`);
-      row.patchValue({
-        product_id: '',
-        product_code: '',
-        product_name: '',
-      }, { emitEvent: false });
-      return;
-    }
-
-    const qty = +row.get('qty')?.value || 1;
-    const inHand = Math.max(0, stock - qty);
-
-    row.patchValue({
-      product_id: product.id,
-      product_code: product.product_code,
-      product_name: product.product_name,
-      author: product.author_name,
-      publisher: product.publisher_name,
-      unit: product.unit,
-      mrp: product.mrp,
-      cost_price: product.cost_price,
-      selling_price: product.selling_price,
-      gst_percent: +product.gst_percent,
-      stock_qty: stock,
-      in_hand_qty: inHand,
-    }, { emitEvent: false });
-
-    this.calculateRow(index);
-    this.calculateTotals();
-    this.focusElement('qty_' + index);
+    this.selectProduct(product, index);
   }
 
   loadInvoiceNo(): void {
@@ -431,35 +460,6 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       .subscribe(() => this.calculateBill());
   }
 
-  watchPaymentMode(): void {
-    this.salesForm
-      .get('payment_mode')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((mode) => {
-        const chequeDate = this.salesForm.get('cheque_date');
-        const chequeNo = this.salesForm.get('cheque_no');
-        const bankName = this.salesForm.get('bank_name');
-
-        if (mode === 'Cheque') {
-          chequeDate?.setValidators([Validators.required]);
-          chequeNo?.setValidators([Validators.required]);
-          bankName?.setValidators([Validators.required]);
-        } else {
-          chequeDate?.clearValidators();
-          chequeNo?.clearValidators();
-          bankName?.clearValidators();
-
-          chequeDate?.setValue('');
-          chequeNo?.setValue('');
-          bankName?.setValue('');
-        }
-
-        chequeDate?.updateValueAndValidity();
-        chequeNo?.updateValueAndValidity();
-        bankName?.updateValueAndValidity();
-      });
-  }
-
   trackByRow(index: number, row: any): any {
     return row;
   }
@@ -493,7 +493,39 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
 
   onProductEnter(index: number, event: Event): void {
     event.preventDefault();
-    this.focusElement('qty_' + index);
+    const row = this.items.at(index);
+    const productId = row.get('product_id')?.value;
+
+    if (productId) {
+      this.focusElement('qty_' + index);
+      return;
+    }
+
+    const typed = (row.get('product_name')?.value || '').toString().trim().toLowerCase();
+    if (!typed) {
+      this.focusElement('qty_' + index);
+      return;
+    }
+
+    let matched = this.products.find(
+      (p) =>
+        p.product_code?.toString().toLowerCase() === typed ||
+        p.product_name?.toLowerCase() === typed,
+    );
+
+    if (!matched) {
+      matched = this.products.find(
+        (p) =>
+          p.product_code?.toString().toLowerCase().includes(typed) ||
+          p.product_name?.toLowerCase().includes(typed),
+      );
+    }
+
+    if (matched) {
+      this.selectProduct(matched, index);
+    } else {
+      this.notification.error('Product not found');
+    }
   }
 
   onQtyEnter(index: number, event: Event): void {
@@ -518,7 +550,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.addRow();
     if (this.items.length > prevCount) {
       const nextIdx = targetIndex !== undefined && targetIndex < this.items.length ? targetIndex : this.items.length - 1;
-      this.focusElement('code_' + nextIdx);
+      this.focusElement('prod_' + nextIdx);
     }
   }
 
@@ -655,13 +687,64 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.addRow();
   }
 
+  @HostListener('window:keydown', ['$event'])
+  onGlobalKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!this.showReceipt && !this.isSaving) {
+        this.saveBill();
+      }
+      return;
+    }
+
+    if (event.key === 'F2') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.setPaymentMode('Cash');
+      return;
+    }
+
+    if (event.key === 'F3') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.setPaymentMode('UPI');
+      return;
+    }
+
+    if (event.key === 'F4') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.setPaymentMode('Card');
+      return;
+    }
+  }
+
+  setPaymentMode(mode: string): void {
+    this.salesForm.patchValue({ payment_mode: mode });
+    this.notification.success(`Payment Mode: ${mode}`);
+    this.cdr.markForCheck();
+  }
+
   saveBill(): void {
+    if (this.isSaving) return;
+
+    // Clean up trailing empty row if there's at least one valid filled row
+    if (this.items.length > 1) {
+      const lastRow = this.items.at(this.items.length - 1);
+      if (!lastRow.get('product_id')?.value && !lastRow.get('product_name')?.value) {
+        this.items.removeAt(this.items.length - 1);
+        this.calculateTotals();
+      }
+    }
+
     if (this.salesForm.invalid) {
       this.salesForm.markAllAsTouched();
       this.notification.error('Please fill all required fields correctly');
       return;
     }
 
+    this.isSaving = true;
     const form = this.salesForm.value;
 
     const payload = {
@@ -698,6 +781,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
 
     this.salesService.saveSale(payload).subscribe({
       next: (res: any) => {
+        this.isSaving = false;
         this.receiptData = res.data;
         this.showReceipt = true;
         this.cdr.detectChanges();
@@ -719,10 +803,11 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
 
         this.notification.success('Sale saved successfully');
         setTimeout(() => {
-          this.focusElement('code_0');
+          this.focusElement('prod_0');
         }, 300);
       },
       error: (err) => {
+        this.isSaving = false;
         console.error('Save sale error', err);
         this.notification.error(err?.error?.message || 'Error saving sale');
       },

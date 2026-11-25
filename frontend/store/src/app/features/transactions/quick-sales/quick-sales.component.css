@@ -72,7 +72,7 @@ input[readonly] {
 
 .number {
   text-align: right;
-  padding-right: 4px;
+  padding-right: 6px !important;
 }
 
 /* ================= HEADER ================= */
@@ -116,18 +116,18 @@ input[readonly] {
 .grid-row {
   display: grid;
   grid-template-columns:
-    40px
-    120px
-    1fr
-    75px
-    70px
+    38px
+    110px
+    minmax(200px, 1fr)
+    95px
+    65px
     85px
-    105px
-    36px
-    36px;
+    95px
+    48px
+    65px;
   gap: 6px;
   align-items: center;
-  min-width: 680px;
+  min-width: 820px;
 }
 
 .grid-head {
@@ -135,18 +135,26 @@ input[readonly] {
   color: #fff;
   font-size: 11px;
   font-weight: 700;
-  padding: 0 6px;
+  padding: 0 4px;
   border-radius: 5px;
   height: 32px;
+  letter-spacing: 0.3px;
 }
 
 .grid-head div:nth-child(1) { text-align: center; }
-.grid-head div:nth-child(4),
-.grid-head div:nth-child(5),
-.grid-head div:nth-child(6),
-.grid-head div:nth-child(7) { text-align: right; }
-.grid-head div:nth-child(8),
+.grid-head div:nth-child(2) { text-align: left; padding-left: 4px; }
+.grid-head div:nth-child(3) { text-align: left; padding-left: 4px; }
+.grid-head div:nth-child(4) { text-align: right; padding-right: 6px; }
+.grid-head div:nth-child(5) { text-align: right; padding-right: 6px; }
+.grid-head div:nth-child(6) { text-align: right; padding-right: 6px; }
+.grid-head div:nth-child(7) { text-align: right; padding-right: 6px; }
+.grid-head div:nth-child(8) { text-align: center; }
 .grid-head div:nth-child(9) { text-align: center; }
+
+.grid-row {
+  padding: 4px;
+  border-bottom: 1px solid #eef2f7;
+}
 
 .in-hand-box {
   background: #f1f5f9 !important;
@@ -179,6 +187,80 @@ input[readonly] {
   min-height: 30px;
 }
 
+/* ================= PRODUCT AUTOCOMPLETE ================= */
+.product-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.prod-input {
+  width: 100%;
+  padding-right: 22px !important;
+}
+
+.prod-dropdown-arrow {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  min-height: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  padding: 0;
+  z-index: 1;
+}
+
+.prod-dropdown-arrow:hover {
+  color: #1e293b;
+}
+
+.prod-opt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-size: 12px;
+}
+
+.prod-opt-code {
+  font-weight: 700;
+  color: #2563eb;
+  min-width: 45px;
+}
+
+.prod-opt-name {
+  flex: 1;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prod-opt-stock {
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  padding: 1px 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.prod-opt-stock.stock-zero {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
 .row-no {
   text-align: center;
   font-size: 12px;
@@ -187,9 +269,9 @@ input[readonly] {
 
 /* ================= BUTTONS ================= */
 .add-btn {
-  background: #16a34a;
-  color: #fff;
-  border: none;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -199,17 +281,24 @@ input[readonly] {
   height: 30px;
   min-height: 30px;
   border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.add-btn:hover {
+  background: #bbf7d0;
+  color: #166534;
+  border-color: #4ade80;
 }
 
 .add-btn:focus {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #16a34a;
   outline-offset: 1px;
 }
 
 .del-btn {
-  background: #ef4444;
-  color: #fff;
-  border: none;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -219,6 +308,13 @@ input[readonly] {
   height: 30px;
   min-height: 30px;
   border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.del-btn:hover {
+  background: #fecaca;
+  color: #991b1b;
+  border-color: #f87171;
 }
 
 .del-btn:focus {
@@ -231,29 +327,30 @@ input[readonly] {
   border: 1px solid #d1d5db;
   background: #fff;
   border-radius: 5px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .footer-row {
   border-top: 1px solid #e5e7eb;
-  padding: 4px 6px;
+  padding: 4px;
 }
 
 .totals-grid {
   display: grid;
   grid-template-columns:
-    40px
-    120px
-    1fr
-    75px
-    70px
+    38px
+    110px
+    minmax(200px, 1fr)
+    95px
+    65px
     85px
-    105px
-    36px
-    36px;
+    95px
+    48px
+    65px;
   gap: 6px;
   align-items: center;
-  min-width: 680px;
+  min-width: 820px;
 }
 
 .footer-bar input,
@@ -307,11 +404,6 @@ input[readonly] {
 
 .save-wide {
   grid-column: 8 / span 2;
-}
-
-.cheque-container {
-  display: flex;
-  gap: 4px;
 }
 
 .grid-row input[type="number"],

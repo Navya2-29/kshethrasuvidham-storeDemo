@@ -39,8 +39,8 @@
       <div>Qty</div>
       <div>Rate</div>
       <div>Amt</div>
-      <div>+</div>
-      <div>X</div>
+      <div>Add</div>
+      <div>Remove</div>
     </div>
 
     <!-- GRID BODY -->
@@ -52,14 +52,27 @@
         <input [id]="'code_' + i" formControlName="product_code" placeholder="Code"
           (keydown.enter)="onCodeEnter(i, $event)" />
 
-        <div class="product-cell" style="position: relative">
-          <select [id]="'prod_' + i" formControlName="product_id" (change)="onProductSelect($event, i)"
-            (keydown.enter)="onProductEnter(i, $event)">
-            <option value="">Select Product</option>
-            <option *ngFor="let p of products" [value]="p.id" [disabled]="getStock(p.id) <= 0">
-              {{ p.product_code }} - {{ p.product_name }}
-            </option>
-          </select>
+        <div class="product-cell">
+          <input type="text" [id]="'prod_' + i" formControlName="product_name" placeholder="Type or select product..."
+            [matAutocomplete]="autoProd" #trigger="matAutocompleteTrigger" (focus)="trigger.openPanel()"
+            (input)="onProductSearchChange(i, $event)" (keydown.enter)="onProductEnter(i, $event)" autocomplete="off"
+            class="prod-input" />
+          <button type="button" class="prod-dropdown-arrow" tabindex="-1"
+            (click)="trigger.openPanel(); focusElement('prod_' + i)" title="Show products">
+            ▾
+          </button>
+          <mat-autocomplete #autoProd="matAutocomplete" class="product-autocomplete-panel">
+            <mat-option *ngFor="let p of getFilteredProducts(row); trackBy: trackByProductId" [value]="p.product_name"
+              [disabled]="getStock(p.id) <= 0" (onSelectionChange)="$event.isUserInput && selectProduct(p, i)">
+              <div class="prod-opt-row">
+                <span class="prod-opt-code">{{ p.product_code }}</span>
+                <span class="prod-opt-name">{{ p.product_name }}</span>
+                <span class="prod-opt-stock" [class.stock-zero]="getStock(p.id) <= 0">
+                  {{ getStock(p.id) > 0 ? (getStock(p.id) + ' in stock') : 'Out of stock' }}
+                </span>
+              </div>
+            </mat-option>
+          </mat-autocomplete>
         </div>
 
         <input formControlName="in_hand_qty" readonly class="number in-hand-box" placeholder="0" />
@@ -112,25 +125,19 @@
     <div class="footer-row totals-grid">
       <div></div>
       <div></div>
-      <div class="cheque-container" *ngIf="salesForm.value.payment_mode === 'Cheque'">
-        <input formControlName="bank_name" placeholder="Bank" />
-        <input formControlName="cheque_date" placeholder="Cheque Date" />
-        <input formControlName="cheque_no" placeholder="Cheque No" />
-      </div>
-      <div *ngIf="salesForm.value.payment_mode !== 'Cheque'"></div>
+      <div></div>
       <div></div>
 
-      <select class="paymode-box" formControlName="payment_mode">
-        <option>Cash</option>
-        <option>UPI</option>
-        <option>Card</option>
-        <option>Cheque</option>
+      <select class="paymode-box" formControlName="payment_mode" title="Payment Mode: F2 Cash, F3 UPI, F4 Card">
+        <option value="Cash">Cash (F2)</option>
+        <option value="UPI">UPI (F3)</option>
+        <option value="Card">Card (F4)</option>
       </select>
 
       <input class="bill-box number" [value]="billAmount | number:'1.2-2'" readonly />
 
-      <button type="button" class="save-btn save-wide" (click)="saveBill()">
-        Save
+      <button type="button" class="save-btn save-wide" (click)="saveBill()" title="Press Esc to Save & Print">
+        Save & print (Esc)
       </button>
     </div>
   </div>
