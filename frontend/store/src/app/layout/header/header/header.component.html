@@ -1,38 +1,64 @@
-<div class="navbar-custom">
-  <ul class="list-unstyled topnav-menu float-right mb-0">
-    <li class="dropdown notification-list">
-      <a class="nav-link nav-user" (click)="toggleProfile()">
-        <img src="assets/images/user.jpg" class="rounded-circle" />
-        <span class="pro-user-name ml-1">
-          {{ user()?.username || "User" }} <i class="mdi mdi-chevron-down"></i>
-        </span>
-      </a>
-      <div class="dropdown-menu dropdown-menu-right" [class.show]="show">
-        <a class="dropdown-item">My Account</a>
- <div class="dropdown-divider"></div>
-        <a class="dropdown-item" (click)="openChangePassword()">
-    Change Password
-  </a>
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item" (click)="logout()">Logout</a>
-      </div>
-    </li>
-  </ul>
-  <div class="logo-box">
-    <h1>
-      <a routerLink="/dashboard" class="logo">SMS</a>
-    </h1>
-    <div class="department-label" *ngIf="storeContext.selectedDepartment() as dept">
-      {{ dept.dept_name }}
+<div class="navbar-custom" [class.sidebar-collapsed]="!sidebarService.isOpen()">
+
+  <!-- LEFT: Hamburger Toggle + Search Bar -->
+  <div class="header-left-group">
+    <button type="button" class="hamburger-btn" (click)="toggleSidebar()" title="Toggle Sidebar">
+      <svg class="hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="header-search-box">
+      <svg class="search-glass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" class="search-input" placeholder="Search here..." />
     </div>
   </div>
 
-  <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
-    <li>
-      <button class="button-menu-mobile" (click)="toggleSidebar()">
-        <i class="fe-menu"></i>
+  <!-- RIGHT: Notification Bell + User Profile -->
+  <div class="header-right-group">
+
+    <!-- Notification Bell with Red Dot Indicator -->
+    <div class="notification-wrap">
+      <button type="button" class="notification-btn" title="Notifications">
+        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="notification-dot"></span>
       </button>
-      <span  *ngIf="settings$ | async as settings">{{ settings.client_name }}</span>
-    </li>
-  </ul>
+    </div>
+
+    <!-- User Profile Dropdown -->
+    <div class="profile-dropdown-wrap">
+      <div class="user-profile-trigger" (click)="toggleProfile()">
+        <img src="assets/images/user.jpg" alt="User Avatar" class="user-avatar" (error)="$any($event.target).src = 'assets/default-logo.png'" />
+        <span class="user-name">{{ user()?.username || "Admin" }}</span>
+        <svg class="dropdown-chevron" [class.rotated]="show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+
+      <!-- Dropdown Menu -->
+      <div class="profile-dropdown-menu" [class.show]="show">
+        <a class="dropdown-item-custom">
+          <i class="fa fa-user mr-2"></i> My Account
+        </a>
+        <div class="dropdown-divider-custom"></div>
+        <a class="dropdown-item-custom" (click)="openChangePassword()">
+          <i class="fa fa-key mr-2"></i> Change Password
+        </a>
+        <div class="dropdown-divider-custom"></div>
+        <a class="dropdown-item-custom logout-item" (click)="logout()">
+          <i class="fa fa-sign-out mr-2"></i> Logout
+        </a>
+      </div>
+    </div>
+
+  </div>
+
 </div>

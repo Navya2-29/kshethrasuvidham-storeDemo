@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { LayoutStateService } from '../../service/layout-state.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthStateService } from '../../../core/services/auth/auth-state.service';
 import { SettingstoreService } from '../../../core/services/setting/settingstore.service';
 import { StoreContextService } from '../../../core/services/store-context/store-context.service';
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })

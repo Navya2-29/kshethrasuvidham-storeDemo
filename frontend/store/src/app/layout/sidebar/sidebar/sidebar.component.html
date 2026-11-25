@@ -1,77 +1,123 @@
 <div class="left-side-menu" [class.compact]="!sidebarService.isOpen()">
-  <div class="slimscroll-menu">
-    <div id="sidebar-menu">
-      <ul class="metismenu" id="side-menu">
-        <li class="menu-title logomenu">
-           <ng-container *ngIf="settings$ | async as settings">
-          <a [routerLink]="['/dashboard']" class="logo text-center">
-            <span class="logo-lg" >
-              <img
-                 [src]="settings?.logo ? getImageUrl(settings.logo) : 'assets/default-logo.png'"
-                alt=""
-                height="120"
-              />
-            </span>
-            <span class="logo-sm" >
-              <img
-                  [src]="settings?.logo ? getImageUrl(settings.logo) : 'assets/default-logo.png'"
-                alt=""
-                height="120"
-              />
-            </span>
-          </a>
-          </ng-container>
-        </li>
 
-        <ng-container *ngFor="let item of menuItems">
-          <li>
-            <a
-              class="waves-effect"
-              (click)="item.children ? toggleMenu(item.label) : null"
-              [routerLink]="!item.children ? item.route : null"
-            >
-              <i [class]="item.icon"></i>
-              <span>{{ item.label }}</span>
-            </a>
-            <!-- Second Level -->
-            <ul
-              class="nav-second-level"
-              [class.open]="item.children && openMenu() === item.label"
-              [class.collapsed]="!sidebarService.isOpen()"
-            >
+  <!-- ================= BRAND / LOGO HEADER ================= -->
+  <div class="sidebar-brand-box" [routerLink]="['/dashboard']">
+    <div class="brand-book-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        <line x1="12" y1="6" x2="12" y2="16"></line>
+      </svg>
+    </div>
+    <div class="brand-text" *ngIf="sidebarService.isOpen()">
+      <span class="brand-title">SMS</span>
+      <span class="brand-subtitle">
+        {{ storeContext.selectedDepartment()?.dept_name || 'Books Deptm' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ================= NAVIGATION MENU ================= -->
+  <div class="sidebar-nav-container">
+    <ul class="nav-list">
+      <ng-container *ngFor="let item of menuItems">
+        <li class="nav-item">
+
+          <!-- Root Item with direct Route (e.g. Dashboard) -->
+          <a *ngIf="!item.children" class="nav-link-root" [routerLink]="item.route" routerLinkActive="active-root-item"
+            [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }">
+            <div class="nav-link-left">
+              <span class="nav-icon-wrap" [ngSwitch]="item.label">
+                <!-- Dashboard (Home) -->
+                <svg *ngSwitchCase="'Dashboard'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <!-- Settings (Gear) -->
+                <svg *ngSwitchCase="'Settings'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                  </path>
+                </svg>
+                <!-- Fallback icon -->
+                <i *ngSwitchDefault [class]="item.icon"></i>
+              </span>
+              <span class="nav-text" *ngIf="sidebarService.isOpen()">{{ item.label }}</span>
+            </div>
+          </a>
+
+          <!-- Root Item with Dropdown Children (e.g. Masters, Transactions) -->
+          <a *ngIf="item.children" class="nav-link-root" (click)="toggleMenu(item.label)"
+            [class.menu-expanded]="openMenu() === item.label">
+            <div class="nav-link-left">
+              <span class="nav-icon-wrap" [ngSwitch]="item.label">
+                <!-- Masters (4 Squares / Grid) -->
+                <svg *ngSwitchCase="'Masters'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                  <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                  <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                  <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                </svg>
+                <!-- Transactions (Card / Transfer / Flow) -->
+                <svg *ngSwitchCase="'Transactions'" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 1l4 4-4 4"></path>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <path d="M7 23l-4-4 4-4"></path>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+                <!-- Fallback icon -->
+                <i *ngSwitchDefault [class]="item.icon"></i>
+              </span>
+              <span class="nav-text" *ngIf="sidebarService.isOpen()">{{ item.label }}</span>
+            </div>
+
+            <svg *ngIf="sidebarService.isOpen()" class="nav-arrow-chevron" [class.open]="openMenu() === item.label"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </a>
+
+          <!-- Sub-menu Items (Level 2) -->
+          <div *ngIf="item.children" class="nav-sub-container" [class.open]="openMenu() === item.label"
+            [class.collapsed]="!sidebarService.isOpen()">
+            <ul class="nav-sub-list">
               <ng-container *ngFor="let child of item.children">
-                <li *ngIf="(!child.bookstoreOnly || isBookstore()) && (!child.multiDepartmentOnly || storeContext.isMultiDepartment())">
-                  <a
-                    [routerLink]="child.route"
-                    (click)="
-                      child.children ? toggleSubMenu(child.label) : null;
-                      $event.preventDefault()
-                    "
-                  >
-                    <i class="remixicon-arrow-right-line"></i> {{ child.label }}
+                <li class="nav-sub-item"
+                  *ngIf="(!child.bookstoreOnly || isBookstore()) && (!child.multiDepartmentOnly || storeContext.isMultiDepartment())">
+                  <a class="nav-sub-link" [routerLink]="child.route" routerLinkActive="active-sub-item"
+                    (click)="child.children ? toggleSubMenu(child.label) : null">
+                    <span class="sub-dot"></span>
+                    <span class="sub-text">{{ child.label }}</span>
                   </a>
 
-                  <!-- Third Level -->
-                  <ul
-                    class="nav-third-level"
-                    [class.open]="
-                      child.children && openSubMenu() === child.label
-                    "
-                    [class.collapsed]="!sidebarService.isOpen()"
-                  >
-                    <li *ngFor="let grandChild of child.children">
-                      <a [routerLink]="grandChild.route">
-                        <i class="fa fa-caret-right"></i> {{ grandChild.label }}
-                      </a>
-                    </li>
-                  </ul>
+                  <!-- Third Level (if any) -->
+                  <div *ngIf="child.children" class="nav-grandchild-container"
+                    [class.open]="openSubMenu() === child.label" [class.collapsed]="!sidebarService.isOpen()">
+                    <ul class="nav-grandchild-list">
+                      <li *ngFor="let grandChild of child.children">
+                        <a class="nav-grandchild-link" [routerLink]="grandChild.route"
+                          routerLinkActive="active-grandchild-item">
+                          <span class="sub-dot-mini"></span>
+                          <span>{{ grandChild.label }}</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
                 </li>
               </ng-container>
             </ul>
-          </li>
-        </ng-container>
-      </ul>
-    </div>
-    <div class="clearfix"></div>
+          </div>
+
+        </li>
+      </ng-container>
+    </ul>
   </div>
+
 </div>
