@@ -62,11 +62,11 @@ export const settingsFields: FieldConfig[] = [
     type: 'number',
     width: '240px'
   },
-  {
-    name: 'is_bookstore',
-    label: 'Book Store',
-    type: 'checkbox'
-  },
+  // {
+  //   name: 'is_bookstore',
+  //   label: 'Book Store',
+  //   type: 'checkbox'
+  // },
   {
     name: 'version_no',
     label: 'Version No',
