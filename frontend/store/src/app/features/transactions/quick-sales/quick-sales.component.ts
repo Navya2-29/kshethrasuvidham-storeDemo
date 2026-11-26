@@ -27,6 +27,25 @@ import { SnackbarService } from '../../../core/services/ui/snackbar.service';
 import { ReceiptPrintComponent } from '../sales/receipt-print/receipt-print.component';
 import { StoreContextService } from '../../../core/services/store-context/store-context.service';
 
+export interface PendingSale {
+  id: string;
+  tempId: string;
+  createdAt: string;
+  customer_name?: string;
+  customer_mobile?: string;
+  department_id?: number | string;
+  receipt_date?: string;
+  totalSellingPrice: number | string;
+  total_amount: number;
+  discount_percent: number;
+  discount: number;
+  other_amount: number;
+  billAmount: number;
+  payment_mode: string;
+  lastDiscountMode?: 'percent' | 'rupee';
+  items: any[];
+}
+
 @Component({
   selector: 'app-quick-sales',
   standalone: true,
@@ -54,6 +73,13 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
   receiptData: any;
   showReceipt = false;
   isSaving = false;
+  lastDiscountMode: 'percent' | 'rupee' = 'rupee';
+
+  // Pending / Hold Bills
+  pendingBills: PendingSale[] = [];
+  activePendingId: string | null = null;
+  showPendingModal = false;
+  viewingPendingBill: PendingSale | null = null;
 
   private destroy$ = new Subject<void>();
   readonly storeContext = inject(StoreContextService);
@@ -74,7 +100,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.buildForm();
     this.addRow();
     this.watchHeaderFields();
-    this.loadInvoiceNo();
+    this.loadPendingBills();
     this.loadProducts();
     this.loadDepartments();
     setTimeout(() => {
@@ -94,11 +120,12 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     const today = new Date().toISOString().split('T')[0];
     this.salesForm = this.fb.group({
       order_no: [''],
-      invoice_no: ['', Validators.required],
+      invoice_no: ['Auto on Payment'],
       customer_name: [''],
       customer_mobile: [''],
       receipt_date: [today, Validators.required],
       department_id: ['', Validators.required],
+      discount_percent: [0, [Validators.min(0), Validators.max(100)]],
       discount: [0, Validators.min(0)],
       total_amount: [0, Validators.min(0)],
       bill_amount: [0, Validators.min(0)],
@@ -605,6 +632,79 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     );
   }
 
+  onDiscountPercentInput(event: Event): void {
+    this.lastDiscountMode = 'percent';
+    const input = event.target as HTMLInputElement;
+    const rawVal = input.value;
+
+    if (rawVal === '' || rawVal === null) {
+      this.salesForm.patchValue(
+        {
+          discount_percent: '',
+          discount: 0,
+        },
+        { emitEvent: false },
+      );
+      this.calculateBill();
+      this.cdr.markForCheck();
+      return;
+    }
+
+    let percent = parseFloat(rawVal) || 0;
+    if (percent < 0) percent = 0;
+    if (percent > 100) percent = 100;
+
+    const total = Number(this.salesForm.get('total_amount')?.value || 0);
+    const rupee = total > 0 ? (total * percent) / 100 : 0;
+    const roundedRupee = Number(rupee.toFixed(2));
+
+    this.salesForm.patchValue(
+      {
+        discount: roundedRupee,
+      },
+      { emitEvent: false },
+    );
+
+    this.calculateBill();
+    this.cdr.markForCheck();
+  }
+
+  onDiscountRupeeInput(event: Event): void {
+    this.lastDiscountMode = 'rupee';
+    const input = event.target as HTMLInputElement;
+    const rawVal = input.value;
+
+    if (rawVal === '' || rawVal === null) {
+      this.salesForm.patchValue(
+        {
+          discount: '',
+          discount_percent: 0,
+        },
+        { emitEvent: false },
+      );
+      this.calculateBill();
+      this.cdr.markForCheck();
+      return;
+    }
+
+    let rupee = parseFloat(rawVal) || 0;
+    if (rupee < 0) rupee = 0;
+
+    const total = Number(this.salesForm.get('total_amount')?.value || 0);
+    const percent = total > 0 ? (rupee / total) * 100 : 0;
+    const roundedPercent = Number(percent.toFixed(2));
+
+    this.salesForm.patchValue(
+      {
+        discount_percent: roundedPercent,
+      },
+      { emitEvent: false },
+    );
+
+    this.calculateBill();
+    this.cdr.markForCheck();
+  }
+
   calculateTotals(): void {
     let totalSp = 0;
     let totalCgst = 0;
@@ -635,6 +735,23 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       },
       { emitEvent: false },
     );
+
+    const totalAmt = +total.toFixed(2);
+    if (this.lastDiscountMode === 'percent') {
+      const percent = Number(this.salesForm.get('discount_percent')?.value || 0);
+      const rupeeDiscount = totalAmt > 0 ? (totalAmt * percent) / 100 : 0;
+      this.salesForm.patchValue(
+        { discount: Number(rupeeDiscount.toFixed(2)) },
+        { emitEvent: false },
+      );
+    } else {
+      const rupee = Number(this.salesForm.get('discount')?.value || 0);
+      const percent = totalAmt > 0 ? (rupee / totalAmt) * 100 : 0;
+      this.salesForm.patchValue(
+        { discount_percent: Number(percent.toFixed(2)) },
+        { emitEvent: false },
+      );
+    }
 
     this.calculateBill();
   }
@@ -668,11 +785,12 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
 
     this.salesForm.reset({
       order_no: '',
-      invoice_no: this.salesForm.get('invoice_no')?.value,
+      invoice_no: 'Auto on Payment',
       customer_name: '',
       customer_mobile: '',
       receipt_date: today,
       department_id: this.salesForm.get('department_id')?.value || '',
+      discount_percent: 0,
       discount: 0,
       total_amount: 0,
       bill_amount: 0,
@@ -683,8 +801,219 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       bank_name: '',
     });
 
+    this.activePendingId = null;
+    this.lastDiscountMode = 'rupee';
     this.billAmount = 0;
     this.addRow();
+  }
+
+  /* =========================================
+     PENDING / HOLD BILLS FUNCTIONALITY
+  ========================================= */
+  loadPendingBills(): void {
+    try {
+      const data = localStorage.getItem('ks_pending_sales');
+      this.pendingBills = data ? JSON.parse(data) : [];
+    } catch {
+      this.pendingBills = [];
+    }
+    this.cdr.markForCheck();
+  }
+
+  savePendingBills(): void {
+    try {
+      localStorage.setItem('ks_pending_sales', JSON.stringify(this.pendingBills));
+    } catch (e) {
+      console.error('Error saving pending bills to localStorage', e);
+    }
+    this.cdr.markForCheck();
+  }
+
+  generateTempId(): string {
+    const key = 'ks_hold_counter';
+    let counter = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+    localStorage.setItem(key, counter.toString());
+    return `HOLD-${String(counter).padStart(3, '0')}`;
+  }
+
+  newBill(): void {
+    const hasItems = this.items.controls.some(
+      (c) => !!c.get('product_id')?.value && Number(c.get('qty')?.value) > 0,
+    );
+
+    if (hasItems) {
+      const confirmNew = confirm(
+        'Start a new bill? Any unheld changes on this screen will be discarded. (Click Cancel and click "Hold Bill" if you want to keep them).',
+      );
+      if (!confirmNew) return;
+    }
+
+    this.activePendingId = null;
+    this.resetForm();
+    this.notification.success('New bill session started');
+    setTimeout(() => this.focusElement('prod_0'), 150);
+  }
+
+  holdBill(): void {
+    const validItems = this.items.controls
+      .filter((c) => !!c.get('product_id')?.value && Number(c.get('qty')?.value) > 0)
+      .map((c) => c.getRawValue());
+
+    if (!validItems.length) {
+      this.notification.error('Cannot hold an empty bill. Please add at least one product.');
+      return;
+    }
+
+    const tempId = this.activePendingId || this.generateTempId();
+    const pendingSale: PendingSale = {
+      id: tempId,
+      tempId,
+      createdAt: new Date().toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }),
+      customer_name: this.salesForm.get('customer_name')?.value || '',
+      customer_mobile: this.salesForm.get('customer_mobile')?.value || '',
+      department_id: this.salesForm.get('department_id')?.value,
+      receipt_date: this.salesForm.get('receipt_date')?.value,
+      totalSellingPrice: this.totalSellingPrice,
+      total_amount: Number(this.salesForm.get('total_amount')?.value || 0),
+      discount_percent: Number(this.salesForm.get('discount_percent')?.value || 0),
+      discount: Number(this.salesForm.get('discount')?.value || 0),
+      other_amount: Number(this.salesForm.get('other_amount')?.value || 0),
+      billAmount: this.billAmount,
+      payment_mode: this.salesForm.get('payment_mode')?.value || 'Cash',
+      lastDiscountMode: this.lastDiscountMode,
+      items: validItems,
+    };
+
+    const existingIdx = this.pendingBills.findIndex((p) => p.id === tempId);
+    if (existingIdx >= 0) {
+      this.pendingBills[existingIdx] = pendingSale;
+    } else {
+      this.pendingBills.unshift(pendingSale);
+    }
+
+    this.savePendingBills();
+    this.activePendingId = null;
+    this.resetForm();
+    this.notification.success(`Bill held successfully as ${tempId}`);
+    setTimeout(() => this.focusElement('prod_0'), 150);
+  }
+
+  openPendingModal(): void {
+    this.loadPendingBills();
+    this.viewingPendingBill = null;
+    this.showPendingModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closePendingModal(): void {
+    this.showPendingModal = false;
+    this.viewingPendingBill = null;
+    this.cdr.markForCheck();
+  }
+
+  resumeBill(bill: PendingSale): void {
+    const hasCurrentItems = this.items.controls.some(
+      (c) => !!c.get('product_id')?.value && Number(c.get('qty')?.value) > 0,
+    );
+
+    if (hasCurrentItems && this.activePendingId !== bill.id) {
+      const confirmResume = confirm(
+        `Current screen has active items. Discard current screen and load held bill ${bill.tempId}? (Click Cancel and click "Hold Bill" first if you want to keep current items).`,
+      );
+      if (!confirmResume) return;
+    }
+
+    while (this.items.length) {
+      this.items.removeAt(0);
+    }
+
+    this.salesForm.patchValue(
+      {
+        customer_name: bill.customer_name || '',
+        customer_mobile: bill.customer_mobile || '',
+        department_id: bill.department_id || this.salesForm.get('department_id')?.value,
+        receipt_date: bill.receipt_date || new Date().toISOString().split('T')[0],
+        discount_percent: bill.discount_percent || 0,
+        discount: bill.discount || 0,
+        other_amount: bill.other_amount || 0,
+        payment_mode: bill.payment_mode || 'Cash',
+      },
+      { emitEvent: false },
+    );
+
+    this.lastDiscountMode = bill.lastDiscountMode || 'rupee';
+
+    bill.items.forEach((itemData: any) => {
+      const row = this.createRow();
+      row.patchValue(
+        {
+          product_id: itemData.product_id,
+          product_code: itemData.product_code,
+          product_name: itemData.product_name,
+          author: itemData.author || '',
+          publisher: itemData.publisher || '',
+          qty: itemData.qty,
+          unit: itemData.unit || 'Nos',
+          gst_percent: itemData.gst_percent || 0,
+          mrp: itemData.mrp || 0,
+          cost_price: itemData.cost_price || 0,
+          selling_price: itemData.selling_price || 0,
+          stock_qty: itemData.stock_qty || 0,
+          in_hand_qty: itemData.in_hand_qty || 0,
+          cgst: itemData.cgst || 0,
+          sgst: itemData.sgst || 0,
+          amount: itemData.amount || 0,
+        },
+        { emitEvent: false },
+      );
+
+      row.valueChanges.subscribe(() => {
+        this.calculateRow(row);
+        this.calculateTotals();
+      });
+
+      this.items.push(row);
+    });
+
+    if (this.items.length === 0) {
+      this.addRow();
+    }
+
+    this.activePendingId = bill.tempId;
+    this.closePendingModal();
+    this.calculateTotals();
+    this.notification.success(`Loaded pending bill ${bill.tempId}`);
+    setTimeout(() => this.focusElement('qty_0'), 150);
+  }
+
+  discardPendingBill(bill: PendingSale, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (!confirm(`Are you sure you want to cancel and remove pending bill ${bill.tempId}?`)) {
+      return;
+    }
+    this.pendingBills = this.pendingBills.filter((p) => p.id !== bill.id);
+    this.savePendingBills();
+    if (this.activePendingId === bill.id) {
+      this.activePendingId = null;
+    }
+    if (this.viewingPendingBill?.id === bill.id) {
+      this.viewingPendingBill = null;
+    }
+    this.notification.success(`Pending bill ${bill.tempId} removed`);
+    this.cdr.markForCheck();
+  }
+
+  viewPendingDetails(bill: PendingSale, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.viewingPendingBill = bill;
+    this.cdr.markForCheck();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -692,9 +1021,38 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
+      if (this.showPendingModal) {
+        this.closePendingModal();
+        return;
+      }
       if (!this.showReceipt && !this.isSaving) {
         this.saveBill();
       }
+      return;
+    }
+
+    if (event.key === 'F6') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.holdBill();
+      return;
+    }
+
+    if (event.key === 'F7') {
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.showPendingModal) {
+        this.closePendingModal();
+      } else {
+        this.openPendingModal();
+      }
+      return;
+    }
+
+    if (event.key === 'F9') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.newBill();
       return;
     }
 
@@ -755,7 +1113,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       customer_name: form.customer_name,
       customer_mobile: form.customer_mobile,
       total_amount: form.total_amount,
-      discount_amount: form.discount,
+      discount_amount: Number(form.discount || 0),
       other_charges: form.other_amount,
       bill_amount: form.bill_amount,
       payment_mode: form.payment_mode,
@@ -792,8 +1150,13 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         }, 300);
 
+        if (this.activePendingId) {
+          this.pendingBills = this.pendingBills.filter((p) => p.id !== this.activePendingId);
+          this.savePendingBills();
+          this.activePendingId = null;
+        }
+
         this.resetForm();
-        this.loadInvoiceNo();
         this.loadProducts();
 
         const deptId = form.department_id || this.storeContext.selectedDepartmentId() || this.departments[0]?.id;

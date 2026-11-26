@@ -3,7 +3,9 @@
   <div class="header-bar">
     <div class="field-box invoice-box">
       <label>Invoice No</label>
-      <input type="text" formControlName="invoice_no" readonly />
+      <input type="text" [value]="activePendingId ? (activePendingId + ' (Held)') : 'Auto on Payment'"
+        class="invoice-display-input" [class.is-held]="!!activePendingId" readonly
+        title="Official bill number is generated automatically upon payment" />
     </div>
 
     <!-- <div class="field-box customer-box">
@@ -25,6 +27,24 @@
           {{ d.dept_name }}
         </option>
       </select>
+    </div>
+
+    <!-- ACTION BUTTONS IN HEADER -->
+    <div class="header-actions">
+      <button type="button" class="header-btn btn-new" (click)="newBill()" title="Start a new empty bill (F9)">
+        <span class="btn-icon">＋</span> New (F9)
+      </button>
+
+      <button type="button" class="header-btn btn-hold" (click)="holdBill()"
+        title="Hold current bill and clear for next customer (F6)">
+        <span class="btn-icon">⏸</span> Hold Bill (F6)
+      </button>
+
+      <button type="button" class="header-btn btn-pending" (click)="openPendingModal()"
+        title="View and resume held bills (F7)">
+        <span class="btn-icon">📋</span> Pending Bills (F7)
+        <span class="pending-count-badge" *ngIf="pendingBills.length > 0">{{ pendingBills.length }}</span>
+      </button>
     </div>
   </div>
 
@@ -114,9 +134,19 @@
       <div></div>
       <div></div>
       <div></div>
-      <div></div>
       <div class="footer-label">DISCOUNT</div>
-      <input type="text" formControlName="discount" class="number" />
+      <div class="input-with-symbol">
+        <input type="number" id="discount_percent" formControlName="discount_percent" class="number" placeholder="0"
+          step="any" min="0" max="100" (focus)="$any($event.target).select()" (input)="onDiscountPercentInput($event)"
+          title="Discount in Percentage (%)" />
+        <span class="symbol-addon">%</span>
+      </div>
+      <div class="input-with-symbol">
+        <input type="number" id="discount_rupee" formControlName="discount" class="number" placeholder="0.00" step="any"
+          min="0" (focus)="$any($event.target).select()" (input)="onDiscountRupeeInput($event)"
+          title="Discount in Rupees (₹)" />
+        <span class="symbol-addon">₹</span>
+      </div>
       <div></div>
       <div></div>
     </div>
@@ -146,3 +176,109 @@
 <!-- ================= RECEIPT (HIDDEN / AUTO PRINT) ================= -->
 <app-receipt-print *ngIf="showReceipt" [bill]="receiptData">
 </app-receipt-print>
+
+<!-- ================= PENDING BILLS MODAL ================= -->
+<div class="modal-backdrop" *ngIf="showPendingModal" (click)="closePendingModal()">
+  <div class="pending-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <h3>Pending Bills (Hold Queue)</h3>
+        <span class="modal-count-badge">{{ pendingBills.length }} Held</span>
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closePendingModal()" title="Close (Esc)">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- VIEW SPECIFIC HELD BILL DETAILS PREVIEW -->
+      <div class="pending-preview-panel" *ngIf="viewingPendingBill as viewBill">
+        <div class="preview-header">
+          <div>
+            <strong>Details for {{ viewBill.tempId }}</strong>
+            <span class="preview-time">{{ viewBill.createdAt }}</span>
+          </div>
+          <button type="button" class="btn-back-list" (click)="viewingPendingBill = null">← Back to List</button>
+        </div>
+
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Amt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let it of viewBill.items; let idx = index">
+              <td>{{ idx + 1 }}</td>
+              <td>{{ it.product_code }} - {{ it.product_name }}</td>
+              <td>{{ it.qty }}</td>
+              <td>{{ it.selling_price | number:'1.2-2' }}</td>
+              <td>{{ it.amount | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="preview-footer">
+          <div class="preview-summary">
+            <span>Discount: {{ viewBill.discount | number:'1.2-2' }}</span>
+            <span class="preview-total">Grand Total: ₹{{ viewBill.billAmount | number:'1.2-2' }}</span>
+          </div>
+          <button type="button" class="btn-resume-preview" (click)="resumeBill(viewBill)">
+            Resume this Bill
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN PENDING BILLS LIST TABLE -->
+      <div class="pending-list-table-container" *ngIf="!viewingPendingBill">
+        <div class="empty-pending-state" *ngIf="pendingBills.length === 0">
+          <div class="empty-icon">📂</div>
+          <p>No bills currently on hold.</p>
+          <small>Click <b>Hold Bill (F6)</b> while billing to temporarily hold a customer's bill.</small>
+        </div>
+
+        <table class="pending-table" *ngIf="pendingBills.length > 0">
+          <thead>
+            <tr>
+              <th>Hold ID</th>
+              <th>Time</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total Amount</th>
+              <th class="action-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of pendingBills">
+              <td>
+                <span class="hold-id-tag">{{ b.tempId }}</span>
+              </td>
+              <td class="time-cell">{{ b.createdAt }}</td>
+              <td>{{ b.customer_name || 'Walk-in' }}</td>
+              <td>{{ b.items.length }} {{ b.items.length === 1 ? 'item' : 'items' }}</td>
+              <td class="amount-cell">₹{{ b.billAmount | number:'1.2-2' }}</td>
+              <td class="action-cell">
+                <button type="button" class="btn-resume-sm" (click)="resumeBill(b)" title="Resume this bill">
+                  Resume
+                </button>
+                <button type="button" class="btn-view-sm" (click)="viewPendingDetails(b, $event)" title="View items">
+                  View
+                </button>
+                <button type="button" class="btn-discard-sm" (click)="discardPendingBill(b, $event)"
+                  title="Discard hold bill">
+                  ✕
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-close-modal" (click)="closePendingModal()">Close</button>
+    </div>
+  </div>
+</div>
