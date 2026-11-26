@@ -1,168 +1,234 @@
-/* =====================================================
-   Purchase page - same POS-style layout as Sales:
-   fixed header + footer, only the item grid scrolls.
-===================================================== */
+/* ==========================================================================
+   PURCHASE TRANSACTION COMPONENT - MODERN SAAS THEME
+   ========================================================================== */
 
 :host {
   display: block;
-  height: calc(100vh - 170px);
-  overflow: hidden;
-  background: #f4f7fa;
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #edf4fc;
 }
 
-* {
+.purchase-page-wrapper {
+  padding: 20px 24px;
+  min-height: calc(100vh - 64px);
+  background-color: #edf4fc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1e293b;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* TOP HEADER TITLE */
+.page-header-bar {
+  margin-bottom: 2px;
+}
+
+.page-header-bar .header-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
   margin: 0;
-  padding: 0;
+  letter-spacing: -0.01em;
+}
+
+/* FORM WRAPPER */
+.purchase-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+/* CARD COMMON STYLING */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
   box-sizing: border-box;
 }
 
-.pos-screen {
-  height: 100%;
-  display: grid;
-  grid-template-rows: 58px minmax(0, 1fr) 104px;
-  gap: 6px;
-  padding: 6px;
-  overflow: hidden;
+/* ==========================================================================
+   CARD 1: HEADER METADATA
+   ========================================================================== */
+.header-card {
+  padding: 16px 20px;
 }
 
-/* ================= COMMON ================= */
+.header-fields-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+}
+
 .field-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 5px;
+  min-width: 110px;
+  flex: 1;
+}
+
+.field-box.supplier-field {
+  flex: 2;
+  min-width: 180px;
+}
+
+.field-box.date-field {
+  min-width: 130px;
+}
+
+.field-box.dept-field {
+  min-width: 120px;
 }
 
 .field-box label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #475569;
-  padding-left: 2px;
-  line-height: 1;
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
 }
 
-input,
-select,
-button {
-  width: 100%;
-  min-height: 32px;
-  border: 1px solid #d1d5db;
-  border-radius: 5px;
-  padding: 0 6px;
+.mandatory {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.field-box input,
+.field-box select {
+  height: 34px;
+  border: 1px solid #d4d5d5;
+  border-radius: 6px;
+  padding: 0 10px;
   font-size: 12px;
+  color: #1e293b;
+  background: #ffffff;
   outline: none;
-  background: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-input:focus,
-select:focus {
-  border-color: #2563eb;
+.field-box input:focus,
+.field-box select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
 }
 
-input[readonly] {
+.field-box input[readonly] {
   background: #f8fafc;
-  font-weight: 700;
+  color: #334155;
+  font-weight: 500;
 }
 
-.number {
-  text-align: right;
-  padding-right: 4px;
+/* ==========================================================================
+   CARD 2: ITEMS TABLE
+   ========================================================================== */
+.items-card {
+  padding: 14px 18px;
 }
 
-.mandatoryfiels {
-  color: red;
-}
-
-/* ================= HEADER ================= */
-.header-bar {
-  display: grid;
-  grid-template-columns: 100px 110px 90px 1fr 120px 120px 130px;
-  gap: 6px;
-  min-height: 58px;
-}
-
-/* ================= PRODUCT SECTION ================= */
-.product-panel {
-  min-height: 0;
-  display: grid;
-  grid-template-rows: 28px minmax(0, 1fr);
-  gap: 6px;
-  overflow: hidden;
+.table-scroll-container {
+  overflow-x: auto;
+  width: 100%;
 }
 
 .grid-head,
 .grid-row {
   display: grid;
-  grid-template-columns:
-    30px
-    1.6fr
-    55px
-    50px
-    60px
-    65px
-    65px
-    65px
-    55px
-    55px
-    55px
-    85px
-    30px
-    30px;
-  gap: 5px;
+  grid-template-columns: 32px minmax(220px, 2fr) 65px 65px 75px 75px 75px 75px 65px 65px 85px 36px 36px;
+  gap: 8px;
   align-items: center;
+  min-width: 960px;
 }
 
 .grid-head.bookstore,
 .grid-row.bookstore {
-  grid-template-columns:
-    30px
-    1.4fr
-    1fr
-    1fr
-    55px
-    50px
-    60px
-    65px
-    65px
-    65px
-    55px
-    55px
-    85px
-    30px
-    30px;
+  grid-template-columns: 32px minmax(180px, 1.6fr) 110px 110px 65px 65px 75px 75px 75px 75px 65px 65px 85px 36px 36px;
+  gap: 8px;
+  align-items: center;
+  min-width: 1180px;
 }
 
 .grid-head {
-  background: #1f2937;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 0 6px;
-  border-radius: 5px;
+  background: #edf4fc;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 9px 8px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.col-center {
+  text-align: center;
 }
 
 .grid-body {
-  min-height: 0;
+  max-height: calc(100vh - 430px);
+  min-height: 240px;
   overflow-y: auto;
-  overflow-x: auto;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 5px;
-  padding: 4px;
+  padding-right: 4px;
 }
 
 .grid-row {
-  padding: 4px 0;
-  border-bottom: 1px solid #eef2f7;
+  padding: 5px 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.grid-row:hover {
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.row-no {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.product-cell {
+  position: relative;
+}
+
+.grid-row select,
+.grid-row input {
+  height: 32px;
+  border: 1px solid #d4d5d5;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: #1e293b;
+  background: #ffffff;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.grid-row select:focus,
+.grid-row input:focus {
+  border-color: #3b82f6;
+}
+
+.col-input.number {
+  text-align: center;
+}
+
+.readonly-input {
+  background: #f8fafc !important;
+  color: #475569;
 }
 
 .row-hint {
-  font-size: 9px;
+  font-size: 10px;
   color: #94a3b8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 1px 2px 0;
+  padding: 2px 2px 0;
 }
 
 .row-warning {
@@ -176,212 +242,227 @@ input[readonly] {
   cursor: help;
 }
 
-.grid-row:hover {
-  background: #f8fafc;
+.col-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.grid-row input,
-.grid-row select {
-  min-height: 28px;
-  font-size: 11px;
-}
-
-.row-no {
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* ================= BUTTONS ================= */
-.add-btn {
-  background: #16a34a;
-  color: #fff;
-  border: none;
+.btn-action-add {
+  width: 32px;
+  height: 32px;
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s ease;
 }
 
-.del-btn {
-  background: #ef4444;
-  color: #fff;
-  border: none;
+.btn-action-add:hover {
+  background: #bbf7d0;
+}
+
+.btn-action-del {
+  width: 32px;
+  height: 32px;
+  background: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s ease;
 }
 
-.del-btn:disabled {
+.btn-action-del:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.btn-action-del:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ================= FOOTER ================= */
-.footer-bar {
-  border: 1px solid #d1d5db;
-  background: #fff;
-  border-radius: 5px;
-  overflow: hidden;
+/* ==========================================================================
+   CARD 3: TOTALS & ACTIONS (FOOTER)
+   ========================================================================== */
+.footer-card {
+  padding: 16px 20px;
 }
 
-.footer-row {
-  padding: 8px 10px;
-  height: 100%;
-}
-
-.footer-split {
+.footer-layout {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
-  height: 100%;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .totals-row {
-  display: grid;
-  grid-template-columns: repeat(3, auto minmax(90px, 120px));
-  gap: 8px 10px;
-  align-items: center;
-}
-
-.footer-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #475569;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 4px;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
-.totals-row input {
-  background: #dbeafe;
+.total-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.total-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.total-input {
+  background: #dbeafe !important;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  height: 34px;
+  width: 105px;
   text-align: right;
-  font-weight: 700;
+  padding: 0 10px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #1e40af;
+  outline: none;
+  box-sizing: border-box;
 }
 
-/* Bill Amount + Save/Purchase-List stacked underneath it, right-aligned */
-.bill-column {
+.total-input.readonly-total {
+  cursor: default;
+}
+
+.bill-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.bill-field {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 220px;
-  flex-shrink: 0;
 }
 
-.bill-column .footer-label {
-  justify-content: flex-start;
-  padding-right: 0;
+.bill-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.bill-input {
+  background: #dcfce7 !important;
+  border: 1px solid #86efac;
+  border-radius: 6px;
+  height: 36px;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  color: #15803d;
+  padding: 0 12px;
+  text-align: left;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .bill-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
 }
 
-.bill-actions button {
+.btn-save {
   flex: 1;
-}
-
-.bill-box {
-  background: #dcfce7 !important;
-  font-weight: 700;
-  color: #166534;
-}
-
-.save-btn {
-  background: #d88e25;
-  color: #fff;
+  background: #3b82f6;
+  color: #ffffff;
   border: none;
-  font-weight: 700;
+  border-radius: 6px;
+  height: 34px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.save-btn:disabled {
+.btn-save:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.list-btn {
-  background: #2563eb;
-  color: #fff;
+.btn-purchase-list {
+  flex: 1;
+  background: #d0e1fd;
+  color: #1d4ed8;
   border: none;
-  font-weight: 700;
+  border-radius: 6px;
+  height: 34px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-@media (max-width: 1200px) {
-  :host {
-    height: calc(100vh - 110px);
+.btn-purchase-list:hover {
+  background: #bfdbfe;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 1080px) {
+  .purchase-page-wrapper {
+    padding: 16px;
   }
 
-  .pos-screen {
-    grid-template-rows: 58px minmax(0, 1fr) 160px;
+  .header-fields-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 
-  .header-bar {
-    grid-template-columns: repeat(3, 1fr);
-    min-height: auto;
-  }
-
-  .footer-split {
+  .footer-layout {
     flex-direction: column;
-    gap: 8px;
-  }
-
-  .bill-column {
-    width: 100%;
-  }
-
-  .grid-head {
-    display: none;
-  }
-
-  .product-panel {
-    grid-template-rows: minmax(0, 1fr);
-  }
-
-  .grid-row,
-  .grid-row.bookstore {
-    grid-template-columns: repeat(3, 1fr);
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 8px;
-  }
-}
-
-@media (max-width: 576px) {
-  .pos-screen {
-    grid-template-rows: auto minmax(0, 1fr) auto;
-  }
-
-  .header-bar {
-    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .totals-row {
-    grid-template-columns: auto 1fr;
+    justify-content: space-between;
   }
 
-  .grid-row,
-  .grid-row.bookstore {
-    grid-template-columns: 1fr;
+  .bill-group {
+    width: 100%;
   }
 
   .bill-actions {
-    flex-direction: column;
-  }
-
-  .save-btn,
-  .list-btn {
-    min-height: 42px;
-    font-size: 14px;
+    width: 100%;
   }
 }

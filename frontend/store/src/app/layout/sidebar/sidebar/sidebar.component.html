@@ -2,20 +2,34 @@
 
   <!-- ================= BRAND / LOGO HEADER ================= -->
   <div class="sidebar-brand-box" [routerLink]="['/dashboard']">
-    <div class="brand-book-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-        <line x1="12" y1="6" x2="12" y2="16"></line>
-      </svg>
-    </div>
-    <div class="brand-text" *ngIf="sidebarService.isOpen()">
-      <span class="brand-title">SMS</span>
-      <span class="brand-subtitle">
-        {{ storeContext.selectedDepartment()?.dept_name || 'Books Deptm' }}
-      </span>
-    </div>
+    <ng-container *ngIf="settings$ | async as settings; else defaultBrand">
+      <div class="brand-book-icon">
+        <img
+          [src]="settings?.logo ? getImageUrl(settings.logo) : 'assets/images/logo.png'"
+          (error)="$any($event.target).src = 'assets/images/logo.png'"
+          alt="Logo"
+          class="brand-logo-img"
+        />
+      </div>
+      <div class="brand-text" *ngIf="sidebarService.isOpen()">
+        <span class="brand-title">{{ settings?.client_name || 'SMS' }}</span>
+        <span class="brand-subtitle">
+          {{ storeContext.selectedDepartment()?.dept_name || 'Books Deptm' }}
+        </span>
+      </div>
+    </ng-container>
+
+    <ng-template #defaultBrand>
+      <div class="brand-book-icon">
+        <img src="assets/images/logo.png" alt="Logo" class="brand-logo-img" />
+      </div>
+      <div class="brand-text" *ngIf="sidebarService.isOpen()">
+        <span class="brand-title">SMS</span>
+        <span class="brand-subtitle">
+          {{ storeContext.selectedDepartment()?.dept_name || 'Books Deptm' }}
+        </span>
+      </div>
+    </ng-template>
   </div>
 
   <!-- ================= NAVIGATION MENU ================= -->

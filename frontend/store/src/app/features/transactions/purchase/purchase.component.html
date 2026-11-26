@@ -1,210 +1,246 @@
-<form class="pos-screen" [formGroup]="form" (ngSubmit)="save()">
-  <!-- ================= HEADER ================= -->
-  <div class="header-bar">
-    <div class="field-box">
-      <label>Order No</label>
-      <input
-        type="text"
-        formControlName="order_no"
-        placeholder="Type to autofill"
-      />
-    </div>
-
-    <div class="field-box">
-      <label>Invoice No<span class="mandatoryfiels">*</span></label>
-      <input type="text" formControlName="invoice_no" />
-    </div>
-
-    <div class="field-box">
-      <label>Supplier Code</label>
-      <input
-        type="text"
-        formControlName="supplier_code"
-      />
-    </div>
-
-    <div class="field-box">
-      <label>Supplier<span class="mandatoryfiels">*</span></label>
-      <select formControlName="supplier_id">
-        <option value="">Select</option>
-        <option *ngFor="let s of filteredSuppliers" [value]="s.id">
-          {{ s.supplier_name }}
-        </option>
-      </select>
-    </div>
-
-    <div class="field-box">
-      <label>Invoice Date<span class="mandatoryfiels">*</span></label>
-      <input type="date" formControlName="invoice_date" />
-    </div>
-
-    <div class="field-box">
-      <label>Receipt Date<span class="mandatoryfiels">*</span></label>
-      <input type="date" formControlName="receipt_date" />
-    </div>
-
-    <div class="field-box" *ngIf="storeContext.selectedDepartment() as dept">
-      <label>Department</label>
-      <input type="text" [value]="dept.dept_name" readonly />
-    </div>
+<div class="purchase-page-wrapper">
+  <!-- Top Welcome Title -->
+  <div class="page-header-bar">
+    <h1 class="header-title">Welcome !</h1>
   </div>
 
-  <!-- ================= ITEMS ================= -->
-  <div class="product-panel">
-    <div class="grid-head" [class.bookstore]="isBookstore">
-      <div>#</div>
-      <div>Product</div>
-      <div *ngIf="isBookstore">Author</div>
-      <div *ngIf="isBookstore">Publisher</div>
-      <div>Qty</div>
-      <div>Free</div>
-      <div>Unit</div>
-      <div>MRP</div>
-      <div>Cost</div>
-      <div>Disc</div>
-      <div>CGST</div>
-      <div>SGST</div>
-      <div>Amt</div>
-      <div>+</div>
-      <div>X</div>
-    </div>
-
-    <div class="grid-body" formArrayName="items">
-      <div
-        class="grid-row"
-        [class.bookstore]="isBookstore"
-        *ngFor="let row of items.controls; let i = index"
-        [formGroupName]="i"
-      >
-        <div class="row-no">{{ i + 1 }}</div>
-
-        <div class="product-cell">
-          <select formControlName="product_id" (change)="onProductChange(i)">
-            <option value="">Select Product</option>
-            <option
-              *ngFor="let p of products"
-              [value]="p.id"
-              [style.color]="isLowStock(p) ? '#dc2626' : null"
-            >
-              {{ isLowStock(p) ? '⚠ ' : '' }}{{ p.product_code }} - {{ p.product_name }}
-            </option>
-          </select>
-          <div class="row-hint" *ngIf="stockHint(i) as hint">{{ hint }}</div>
-          <div class="row-warning" *ngIf="minQtyWarning(i) as w" [title]="w">⚠ Below Min</div>
-          <div class="row-warning" *ngIf="maxQtyWarning(i) as w" [title]="w">⚠ At/Above Max</div>
+  <form class="purchase-form" [formGroup]="form" (ngSubmit)="save()">
+    <!-- ================= CARD 1: HEADER INFO ================= -->
+    <div class="card header-card">
+      <div class="header-fields-row">
+        <div class="field-box">
+          <label>Order No</label>
+          <input
+            type="text"
+            formControlName="order_no"
+            placeholder="Type to autofill"
+          />
         </div>
 
-        <div *ngIf="isBookstore">
-          <select formControlName="author_id">
-            <option [ngValue]="null">Select</option>
-            <option *ngFor="let a of rowProducts[i]?.authors" [ngValue]="a.id">
-              {{ a.author_name }}
-            </option>
-          </select>
+        <div class="field-box">
+          <label>Invoice No <span class="mandatory">*</span></label>
+          <input type="text" formControlName="invoice_no" />
         </div>
-        <div *ngIf="isBookstore">
-          <select formControlName="publisher_id">
-            <option [ngValue]="null">Select</option>
-            <option *ngFor="let p of rowProducts[i]?.publishers" [ngValue]="p.id">
-              {{ p.publisher_name }}
+
+        <div class="field-box">
+          <label>Supplier Code</label>
+          <input
+            type="text"
+            formControlName="supplier_code"
+          />
+        </div>
+
+        <div class="field-box supplier-field">
+          <label>Supplier <span class="mandatory">*</span></label>
+          <select formControlName="supplier_id">
+            <option value="">Select</option>
+            <option *ngFor="let s of filteredSuppliers" [value]="s.id">
+              {{ s.supplier_name }}
             </option>
           </select>
         </div>
 
-        <input
-          type="text"
-          appNumbersOnly
-          inputmode="numeric"
-          formControlName="qty"
-          (input)="calculateRow(i)"
-          class="number"
-        />
+        <div class="field-box date-field">
+          <label>Invoice Date <span class="mandatory">*</span></label>
+          <input type="date" formControlName="invoice_date" />
+        </div>
 
-        <input
-          type="text"
-          appNumbersOnly
-          inputmode="numeric"
-          formControlName="free_qty"
-          class="number"
-        />
+        <div class="field-box date-field">
+          <label>Receipt Date <span class="mandatory">*</span></label>
+          <input type="date" formControlName="receipt_date" />
+        </div>
 
-        <select formControlName="unit">
-          <option value="">Select</option>
-          <option value="Nos">Nos</option>
-          <option value="Ltr">Ltr</option>
-          <option value="Bdl">Bdl</option>
-          <option value="others">Others</option>
-        </select>
-
-        <input type="text" formControlName="mrp" readonly class="number" />
-        <input type="text" formControlName="cost_price" readonly class="number" />
-
-        <input
-          type="text"
-          appNumbersOnly
-          inputmode="numeric"
-          formControlName="discount"
-          (input)="calculateRow(i)"
-          class="number"
-        />
-
-        <input type="text" formControlName="cgst" readonly class="number" />
-        <input type="text" formControlName="sgst" readonly class="number" />
-        <input type="text" formControlName="amount" readonly class="number" />
-
-        <button type="button" class="add-btn" (click)="addItem()">+</button>
-        <button
-          type="button"
-          class="del-btn"
-          [disabled]="items.length === 1"
-          (click)="removeItem(i)"
-        >
-          ×
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= FOOTER ================= -->
-  <div class="footer-bar">
-    <div class="footer-row footer-split">
-      <div class="totals-row">
-        <div class="footer-label">Discount Amount</div>
-        <input
-          type="text"
-          appNumbersOnly
-          inputmode="numeric"
-          formControlName="discount_amount"
-          (input)="calculateTotal()"
-        />
-
-        <div class="footer-label">Others</div>
-        <input
-          type="text"
-          appNumbersOnly
-          inputmode="numeric"
-          formControlName="other_charges"
-          (input)="calculateTotal()"
-        />
-
-        <div class="footer-label">Total</div>
-        <input formControlName="total_amount" readonly class="number" />
-      </div>
-
-      <div class="bill-column">
-        <div class="footer-label">Bill Amount</div>
-        <input formControlName="bill_amount" readonly class="bill-box" />
-
-        <div class="bill-actions">
-          <button type="submit" class="save-btn" [disabled]="isSaving">
-            {{ isSaving ? "Saving..." : (isEditMode ? "Update" : "Save") }}
-          </button>
-
-          <button type="button" class="list-btn" (click)="listAllpurchase()">
-            Purchase List
-          </button>
+        <div class="field-box dept-field" *ngIf="storeContext.selectedDepartment() as dept">
+          <label>Department</label>
+          <input type="text" [value]="dept.dept_name" readonly />
         </div>
       </div>
     </div>
-  </div>
-</form>
+
+    <!-- ================= CARD 2: ITEMS TABLE ================= -->
+    <div class="card items-card">
+      <div class="table-scroll-container">
+        <!-- Table Header -->
+        <div class="grid-head" [class.bookstore]="isBookstore">
+          <div class="col-center">#</div>
+          <div>Product</div>
+          <div *ngIf="isBookstore">Author</div>
+          <div *ngIf="isBookstore">Publisher</div>
+          <div class="col-center">Qty</div>
+          <div class="col-center">Free</div>
+          <div class="col-center">Unit</div>
+          <div class="col-center">MRP</div>
+          <div class="col-center">Cost</div>
+          <div class="col-center">Disc</div>
+          <div class="col-center">CGST</div>
+          <div class="col-center">SGST</div>
+          <div class="col-center">Amt</div>
+          <div class="col-center">+</div>
+          <div class="col-center">X</div>
+        </div>
+
+        <!-- Table Rows -->
+        <div class="grid-body" formArrayName="items">
+          <div
+            class="grid-row"
+            [class.bookstore]="isBookstore"
+            *ngFor="let row of items.controls; let i = index"
+            [formGroupName]="i"
+          >
+            <div class="row-no">{{ i + 1 }}</div>
+
+            <div class="product-cell">
+              <select formControlName="product_id" (change)="onProductChange(i)">
+                <option value="">Select Product</option>
+                <option
+                  *ngFor="let p of products"
+                  [value]="p.id"
+                  [style.color]="isLowStock(p) ? '#dc2626' : null"
+                >
+                  {{ isLowStock(p) ? '⚠ ' : '' }}{{ p.product_code }} - {{ p.product_name }}
+                </option>
+              </select>
+              <div class="row-hint" *ngIf="stockHint(i) as hint">{{ hint }}</div>
+              <div class="row-warning" *ngIf="minQtyWarning(i) as w" [title]="w">⚠ Below Min</div>
+              <div class="row-warning" *ngIf="maxQtyWarning(i) as w" [title]="w">⚠ At/Above Max</div>
+            </div>
+
+            <div *ngIf="isBookstore">
+              <select formControlName="author_id">
+                <option [ngValue]="null">Select</option>
+                <option *ngFor="let a of rowProducts[i]?.authors" [ngValue]="a.id">
+                  {{ a.author_name }}
+                </option>
+              </select>
+            </div>
+            <div *ngIf="isBookstore">
+              <select formControlName="publisher_id">
+                <option [ngValue]="null">Select</option>
+                <option *ngFor="let p of rowProducts[i]?.publishers" [ngValue]="p.id">
+                  {{ p.publisher_name }}
+                </option>
+              </select>
+            </div>
+
+            <input
+              type="text"
+              appNumbersOnly
+              inputmode="numeric"
+              formControlName="qty"
+              (input)="calculateRow(i)"
+              class="col-input number"
+            />
+
+            <input
+              type="text"
+              appNumbersOnly
+              inputmode="numeric"
+              formControlName="free_qty"
+              class="col-input number"
+            />
+
+            <select formControlName="unit" class="col-input">
+              <option value="">Select</option>
+              <option value="Nos">Nos</option>
+              <option value="Ltr">Ltr</option>
+              <option value="Bdl">Bdl</option>
+              <option value="others">Others</option>
+            </select>
+
+            <input type="text" formControlName="mrp" readonly class="col-input number readonly-input" />
+            <input type="text" formControlName="cost_price" readonly class="col-input number readonly-input" />
+
+            <input
+              type="text"
+              appNumbersOnly
+              inputmode="numeric"
+              formControlName="discount"
+              (input)="calculateRow(i)"
+              class="col-input number"
+            />
+
+            <input type="text" formControlName="cgst" readonly class="col-input number readonly-input" />
+            <input type="text" formControlName="sgst" readonly class="col-input number readonly-input" />
+            <input type="text" formControlName="amount" readonly class="col-input number readonly-input" />
+
+            <div class="col-action">
+              <button type="button" class="btn-action-add" (click)="addItem()" title="Add Row">
+                +
+              </button>
+            </div>
+            <div class="col-action">
+              <button
+                type="button"
+                class="btn-action-del"
+                [disabled]="items.length === 1"
+                (click)="removeItem(i)"
+                title="Remove Row"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CARD 3: TOTALS & ACTIONS ================= -->
+    <div class="card footer-card">
+      <div class="footer-layout">
+        <!-- Left Side: Summary Badges -->
+        <div class="totals-row">
+          <div class="total-item">
+            <span class="total-label">Discount Amount</span>
+            <input
+              type="text"
+              appNumbersOnly
+              inputmode="numeric"
+              formControlName="discount_amount"
+              (input)="calculateTotal()"
+              class="total-input"
+            />
+          </div>
+
+          <div class="total-item">
+            <span class="total-label">Others</span>
+            <input
+              type="text"
+              appNumbersOnly
+              inputmode="numeric"
+              formControlName="other_charges"
+              (input)="calculateTotal()"
+              class="total-input"
+            />
+          </div>
+
+          <div class="total-item">
+            <span class="total-label">Total</span>
+            <input
+              formControlName="total_amount"
+              readonly
+              class="total-input readonly-total"
+            />
+          </div>
+        </div>
+
+        <!-- Right Side: Bill Amount & Buttons -->
+        <div class="bill-group">
+          <div class="bill-field">
+            <span class="bill-label">Bill Amount</span>
+            <input formControlName="bill_amount" readonly class="bill-input" />
+          </div>
+
+          <div class="bill-actions">
+            <button type="submit" class="btn-save" [disabled]="isSaving">
+              {{ isSaving ? "Saving..." : (isEditMode ? "Update" : "Save") }}
+            </button>
+
+            <button type="button" class="btn-purchase-list" (click)="listAllpurchase()">
+              Purchase List
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

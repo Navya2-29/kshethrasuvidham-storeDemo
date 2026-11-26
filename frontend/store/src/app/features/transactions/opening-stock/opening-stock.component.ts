@@ -261,6 +261,8 @@ export class OpeningStockComponent implements OnInit, OnDestroy {
   }
 
   reset() {
+    this.editId = null;
+    this.buttonText = 'Save';
     this.selectedProduct = null;
     this.openingForm.reset({
       product_code: '',
