@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, inject, ViewEncapsulation } from '@angular/core';
 import { ClientSettings } from '../models/settings.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
@@ -16,6 +16,7 @@ import { DynamicFormComponent } from '../../../shared/components/dynamic-form/dy
   imports: [CommonModule, MasterLayoutComponent, DynamicFormComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class SettingsComponent {
   private readonly fb = inject(FormBuilder);
@@ -191,6 +192,24 @@ export class SettingsComponent {
     
     return this.api.getLogoUrl(path);
   }
+
+  isExpired(): boolean {
+    if (this.form.value.status === 'EXPIRED') return true;
+    if (this.form.value.expiry_date) {
+      const exp = new Date(this.form.value.expiry_date);
+      const now = new Date();
+      if (!isNaN(exp.getTime()) && exp < now) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get statusText(): string {
+    if (this.isExpired()) return 'EXPIRED';
+    return this.form.value.status || 'ACTIVE';
+  }
+
   // date  format
   private formatDate(date: any): string | null {
     if (!date) return null;
