@@ -100,8 +100,20 @@
         <input [id]="'qty_' + i" type="number" formControlName="qty" [min]="1"
           [max]="getStock(row.get('product_id')?.value)" (keydown)="onQtyKeyDown($event, row)"
           (keydown.enter)="onQtyEnter(i, $event)" />
-        <input type="text" formControlName="selling_price" readonly class="number" />
 
+        <input
+          type="number"
+          [id]="'rate_' + i"
+          formControlName="selling_price"
+          class="number"
+          step="any"
+          min="0"
+          [readonly]="!row.get('is_price_editable')?.value"
+          [class.editable-rate]="row.get('is_price_editable')?.value"
+          (input)="onRateInput(i)"
+          (keydown.enter)="onRateEnter(i, $event)"
+          title="{{ row.get('is_price_editable')?.value ? 'Rate is editable' : 'Rate is fixed' }}"
+        />
 
         <input type="text" formControlName="amount" readonly class="number" />
 

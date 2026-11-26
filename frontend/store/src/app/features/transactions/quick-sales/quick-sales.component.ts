@@ -179,12 +179,44 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
   loadProducts(): void {
     this.salesService.getProducts().subscribe({
       next: (res) => {
-        this.products = res;
-        console.log('products', this.products)
+        this.products = this.mergePriceEditable(res);
+        console.log('products', this.products);
         this.cdr.markForCheck();
       },
       error: (err) => console.error(err),
     });
+  }
+
+  private mergePriceEditable(products: any[]): any[] {
+    try {
+      const raw = localStorage.getItem('store_product_price_editable_overrides');
+      const map: Record<string, boolean> = raw ? JSON.parse(raw) : {};
+      return (products || []).map((p) => {
+        const idKey = String(p.id);
+        const codeKey = p.product_code
+          ? String(p.product_code).trim().toLowerCase()
+          : '';
+        let isEditable = false;
+        if (idKey && map[idKey] !== undefined) {
+          isEditable = !!map[idKey];
+        } else if (codeKey && map[codeKey] !== undefined) {
+          isEditable = !!map[codeKey];
+        } else {
+          isEditable = !!(
+            p.is_price_editable === 1 ||
+            p.is_price_editable === true ||
+            p.is_price_editable === '1' ||
+            p.is_price_editable === 'Y'
+          );
+        }
+        return {
+          ...p,
+          is_price_editable: isEditable ? 1 : 0,
+        };
+      });
+    } catch {
+      return products;
+    }
   }
 
   isDuplicateProduct(productId: number, currentIndex: number): boolean {
@@ -281,6 +313,12 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
         mrp: product.mrp,
         cost_price: product.cost_price,
         selling_price: product.selling_price,
+        is_price_editable: !!(
+          product.is_price_editable === 1 ||
+          product.is_price_editable === true ||
+          product.is_price_editable === '1' ||
+          product.is_price_editable === 'Y'
+        ),
         gst_percent: +product.gst_percent,
         stock_qty: stock,
         in_hand_qty: inHand,
@@ -374,6 +412,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       mrp: [0.0],
       cost_price: [0.0],
       selling_price: [0.0],
+      is_price_editable: [false],
       stock_qty: [0.0],
       in_hand_qty: [0],
       cgst: [0.0],
@@ -434,6 +473,12 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
           mrp: product.mrp,
           cost_price: product.cost_price,
           selling_price: product.selling_price,
+          is_price_editable: !!(
+            product.is_price_editable === 1 ||
+            product.is_price_editable === true ||
+            product.is_price_editable === '1' ||
+            product.is_price_editable === 'Y'
+          ),
           cgst: product.gst_percent,
           sgst: product.gst_percent,
           stock_qty: stock,
@@ -557,7 +602,22 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
 
   onQtyEnter(index: number, event: Event): void {
     event.preventDefault();
+    const row = this.items.at(index);
+    if (row.get('is_price_editable')?.value) {
+      this.focusElement('rate_' + index);
+    } else {
+      this.focusElement('add_' + index);
+    }
+  }
+
+  onRateEnter(index: number, event: Event): void {
+    event.preventDefault();
     this.focusElement('add_' + index);
+  }
+
+  onRateInput(index: number): void {
+    this.calculateRow(index);
+    this.calculateTotals();
   }
 
   onQtyKeyDown(event: KeyboardEvent, row: AbstractControl): void {
@@ -965,6 +1025,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
           mrp: itemData.mrp || 0,
           cost_price: itemData.cost_price || 0,
           selling_price: itemData.selling_price || 0,
+          is_price_editable: !!itemData.is_price_editable,
           stock_qty: itemData.stock_qty || 0,
           in_hand_qty: itemData.in_hand_qty || 0,
           cgst: itemData.cgst || 0,

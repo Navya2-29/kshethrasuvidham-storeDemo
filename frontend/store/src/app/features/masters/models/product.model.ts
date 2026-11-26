@@ -23,6 +23,7 @@ export interface Product {
   author_id?: number;
   publisher_id?: number;
   selling_price: number;
+  is_price_editable?: number | boolean;
   author_name?: string;
   publisher_name?: string;
   authors?: NamedRef[];
@@ -48,6 +49,7 @@ export interface Product {
   cost_price: number;
   mrp: number;
   selling_price: number;
+  is_price_editable?: number | boolean;
   gst_percent: number;
 
   sale_item: string;

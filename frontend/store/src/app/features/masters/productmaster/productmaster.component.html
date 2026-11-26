@@ -238,6 +238,27 @@
             </div>
           </div>
 
+          <!-- 14. Price Change -->
+          <div class="form-group price-change-group">
+            <label class="form-label" for="is_price_editable">
+              Price Change
+            </label>
+            <div class="toggle-control-wrapper">
+              <label class="switch-toggle" title="Allow rate change in sales">
+                <input
+                  type="checkbox"
+                  id="is_price_editable"
+                  formControlName="is_price_editable"
+                />
+                <span class="slider round"></span>
+              </label>
+              <span class="toggle-status-text" [class.active]="f['is_price_editable'].value">
+                {{ f['is_price_editable'].value ? 'Editable in Sales' : 'Read-only in Sales' }}
+              </span>
+            </div>
+            <small class="helper-text">Allow cashier to edit rate during sales</small>
+          </div>
+
         </div>
 
         <!-- BOOKSTORE AUTHORS & PUBLISHERS -->
@@ -494,6 +515,9 @@
                 <span><b>Cost:</b> {{ element.cost_price | number:'1.2-2' }}</span>
                 <span><b>Selling:</b> {{ element.selling_price | number:'1.2-2' }}</span>
                 <span><b>MRP:</b> {{ element.mrp | number:'1.2-2' }}</span>
+                <span *ngIf="isProductPriceEditable(element)" class="badge-price-change" title="Rate can be edited during sales">
+                  Price Change Allowed
+                </span>
               </div>
             </td>
           </ng-container>

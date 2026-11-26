@@ -1,8 +1,13 @@
 <div class="dialog-header">
-  <h2>
-    <span class="code" *ngIf="summary.productCode">{{ summary.productCode }} |</span>
-    {{ summary.productName || data.productName }}
-  </h2>
+  <div class="header-title-wrap">
+    <h2>
+      <span class="code" *ngIf="summary.productCode || data.productCode">{{ summary.productCode || data.productCode }} |</span>
+      {{ summary.productName || data.productName }}
+    </h2>
+    <span *ngIf="data.isPriceEditable" class="badge-price-change-dialog" title="Rate is editable during sales">
+      Price Change Allowed
+    </span>
+  </div>
   <button type="button" class="close-btn" title="Close" (click)="close()">
     <i class="fa fa-times"></i>
   </button>

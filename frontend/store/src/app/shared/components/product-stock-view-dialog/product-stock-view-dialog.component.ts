@@ -40,7 +40,13 @@ export class ProductStockViewDialogComponent implements OnInit {
   locations: LocationStock[] = [];
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { productId: number; productName: string },
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      productId: number;
+      productName: string;
+      productCode?: string;
+      isPriceEditable?: boolean | number;
+    },
     private dialogRef: MatDialogRef<ProductStockViewDialogComponent>,
     private masterService: MasterService,
   ) {}

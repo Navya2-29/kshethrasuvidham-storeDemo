@@ -305,6 +305,21 @@ input[readonly] {
   min-height: 30px;
 }
 
+.grid-row input.editable-rate {
+  background-color: #f0fdf4 !important;
+  border: 1.5px solid #22c55e !important;
+  color: #15803d !important;
+  font-weight: 700 !important;
+  cursor: text !important;
+}
+
+.grid-row input.editable-rate:focus {
+  outline: none !important;
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25) !important;
+  background-color: #ffffff !important;
+}
+
 /* ================= PRODUCT AUTOCOMPLETE ================= */
 .product-cell {
   position: relative;

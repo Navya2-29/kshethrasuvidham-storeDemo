@@ -184,6 +184,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         gst_percent: [0, [Validators.min(0), Validators.max(100)]],
 
         sale_item: ['', Validators.required],
+        is_price_editable: [false],
         hsn_code: [''],
 
         author_ids: [[] as number[], [this.requiredForBookstore()]],
@@ -211,7 +212,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       )
       .subscribe({
         next: (res: any) => {
-          this.products = this.sortProductsByCode(res.products);
+          this.products = this.sortProductsByCode(this.mergePriceEditable(res.products));
           this.categories = res.categories;
           this.authors = res.authors;
           this.publishers = res.publishers;
@@ -289,9 +290,13 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     }
 
     const raw = this.productForm.getRawValue();
+    const isPriceEditable = !!raw.is_price_editable;
+    const targetEditId = this.editId;
+    const isEditing = this.editMode && !!targetEditId;
+    const prodCode = raw.product_code?.trim();
 
     const payload: ProductPayload = {
-      product_code: raw.product_code?.trim(),
+      product_code: prodCode,
       product_name: raw.product_name?.trim(),
       product_nameml: raw.product_nameml?.trim(),
 
@@ -308,6 +313,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       gst_percent: Number(raw.gst_percent || 0),
 
       sale_item: raw.sale_item,
+      is_price_editable: isPriceEditable ? 1 : 0,
       hsn_code: raw.hsn_code?.trim() || '',
 
       author_ids: this.isBookstore ? raw.author_ids : [],
@@ -317,8 +323,8 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     this.saving = true;
 
     const request$ =
-      this.editMode && this.editId
-        ? this.masterService.updateProduct(this.editId, payload)
+      isEditing
+        ? this.masterService.updateProduct(targetEditId, payload)
         : this.masterService.addProduct(payload);
 
     request$
@@ -327,7 +333,9 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         finalize(() => (this.saving = false))
       )
       .subscribe({
-        next: () => {
+        next: (res: any) => {
+          const savedId = isEditing ? targetEditId : (res?.id || res?.data?.id);
+          this.savePriceEditableState(savedId, prodCode, isPriceEditable);
           this.resetForm();
           this.refreshProductsOnly();
         },
@@ -346,9 +354,9 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: Product[]) => {
-          this.products = this.sortProductsByCode(res);
+          this.products = this.sortProductsByCode(this.mergePriceEditable(res));
           this.dataSource.data = this.products;
-          console.log('productlist', this.products)
+          console.log('productlist', this.products);
         },
         error: (err) => console.error(err),
       });
@@ -381,6 +389,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       gst_percent: product.gst_percent,
 
       sale_item: product.sale_item,
+      is_price_editable: this.isProductPriceEditable(product),
       hsn_code: product.hsn_code,
 
       author_ids: this.selectedAuthors.map((a) => a.id),
@@ -422,6 +431,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       mrp: 0,
       selling_price: 0,
       gst_percent: 0,
+      is_price_editable: false,
       author_ids: [],
       publisher_ids: [],
     });
@@ -456,7 +466,97 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
 
     this.dialog.open(ProductStockViewDialogComponent, {
       width: '650px',
-      data: { productId: product.id, productName: product.product_name },
+      data: {
+        productId: product.id,
+        productName: product.product_name,
+        productCode: product.product_code,
+        isPriceEditable: this.isProductPriceEditable(product),
+      },
+    });
+  }
+
+  /* ===================================================
+     PRICE EDITABLE STATE PERSISTENCE (LOCAL & BACKEND)
+  =================================================== */
+  private getPriceEditableMap(): Record<string, boolean> {
+    try {
+      const raw = localStorage.getItem('store_product_price_editable_overrides');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private savePriceEditableState(
+    id: number | string | undefined,
+    code: string | undefined,
+    editable: boolean
+  ): void {
+    try {
+      const map = this.getPriceEditableMap();
+      if (id != null && id !== '') {
+        map[String(id)] = editable;
+      }
+      if (code) {
+        map[String(code).trim().toLowerCase()] = editable;
+      }
+      localStorage.setItem(
+        'store_product_price_editable_overrides',
+        JSON.stringify(map)
+      );
+    } catch (err) {
+      console.error('Error saving price editable override', err);
+    }
+  }
+
+  isProductPriceEditable(product: Product): boolean {
+    if (!product) return false;
+    const map = this.getPriceEditableMap();
+    const idKey = String(product.id);
+    const codeKey = product.product_code
+      ? String(product.product_code).trim().toLowerCase()
+      : '';
+
+    if (idKey && map[idKey] !== undefined) {
+      return !!map[idKey];
+    }
+    if (codeKey && map[codeKey] !== undefined) {
+      return !!map[codeKey];
+    }
+    return !!(
+      product.is_price_editable === 1 ||
+      product.is_price_editable === true ||
+      (product.is_price_editable as any) === '1' ||
+      (product.is_price_editable as any) === 'Y'
+    );
+  }
+
+  private mergePriceEditable(products: Product[]): Product[] {
+    const map = this.getPriceEditableMap();
+    return (products || []).map((p) => {
+      const idKey = String(p.id);
+      const codeKey = p.product_code
+        ? String(p.product_code).trim().toLowerCase()
+        : '';
+      let isEditable = false;
+
+      if (idKey && map[idKey] !== undefined) {
+        isEditable = !!map[idKey];
+      } else if (codeKey && map[codeKey] !== undefined) {
+        isEditable = !!map[codeKey];
+      } else {
+        isEditable = !!(
+          p.is_price_editable === 1 ||
+          p.is_price_editable === true ||
+          (p.is_price_editable as any) === '1' ||
+          (p.is_price_editable as any) === 'Y'
+        );
+      }
+
+      return {
+        ...p,
+        is_price_editable: isEditable ? 1 : 0,
+      };
     });
   }
 
