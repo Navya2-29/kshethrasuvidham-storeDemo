@@ -50,6 +50,7 @@ exports.getProductsByDepartment = async (req, res) => {
       p.unit,
       p.mrp,
       p.cost_price,
+      COALESCE(p.is_price_editable, 0) AS is_price_editable,
       s.qty AS quantity
 
    FROM products p

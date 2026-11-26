@@ -36,6 +36,17 @@ exports.getDashboard = async (req, res) => {
       WHERE status='ACTIVE'
     `);
 
+    const [[totalBillsRow]] = await db.query(`
+      SELECT COUNT(*) totalBills
+      FROM sales_header
+    `);
+
+    const [[todayBillsRow]] = await db.query(`
+      SELECT COUNT(*) todayBills
+      FROM sales_header
+      WHERE receipt_date = CURDATE()
+    `);
+
     const [[purchaseBills]] = await db.query(`
       SELECT COUNT(*) totalPurchaseBills
       FROM purchase_header
@@ -98,6 +109,8 @@ exports.getDashboard = async (req, res) => {
         todayPurchase: Number(todayPurchase.total),
 
         totalOrders: Number(orders.totalOrders),
+        totalBills: Number(totalBillsRow.totalBills || orders.totalOrders),
+        todayBills: Number(todayBillsRow.todayBills || 0),
         totalPurchaseBills: Number(purchaseBills.totalPurchaseBills),
 
         totalProducts: Number(products.totalProducts),
