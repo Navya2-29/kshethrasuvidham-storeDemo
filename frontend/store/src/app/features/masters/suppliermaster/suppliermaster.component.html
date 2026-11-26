@@ -1,25 +1,32 @@
-<app-master-layout
-  title="Supplier List"
-  [formTitle]="editMode ? 'Update Supplier' : 'Add Supplier'">
+<div class="supplier-page-wrapper">
 
-  <div form>
-    <app-dynamic-form
-      [form]="form"
-      [fields]="fields"
-      [editMode]="editMode"
-      [loading]="loading"
-      (submit)="save($event)"
-      (cancel)="reset()">
-    </app-dynamic-form>
+  <!-- TOP HEADER BAR -->
+  <div class="supplier-header-bar">
+    <div class="header-left">
+      <h1 class="header-title">Supplier Details</h1>
+      <div class="breadcrumbs">
+        <span>Masters</span>
+        <span class="separator">></span>
+        <span class="current">Supplier Details</span>
+      </div>
+    </div>
   </div>
 
-  <div table>
-    <app-dynamic-table
-      [columns]="columns"
-      [data]="suppliers"
-      (edit)="editSupplier($event)"
-  (delete)="deleteSupplier($event)">
-    </app-dynamic-table>
-  </div>
+  <!-- MASTER LAYOUT (WITH PRESERVED ARCHITECTURE & DATA BINDINGS) -->
+  <app-master-layout title="Supplier List" [formTitle]="editMode ? 'Update Supplier' : 'Add Supplier'">
 
-</app-master-layout>
+    <div form>
+      <app-dynamic-form [form]="form" [fields]="fields" [editMode]="editMode" [loading]="loading"
+        (submit)="save($event)" (cancel)="reset()">
+      </app-dynamic-form>
+    </div>
+
+    <div table>
+      <app-dynamic-table [columns]="columns" [data]="suppliers" (edit)="editSupplier($event)"
+        (delete)="deleteSupplier($event)">
+      </app-dynamic-table>
+    </div>
+
+  </app-master-layout>
+
+</div>
