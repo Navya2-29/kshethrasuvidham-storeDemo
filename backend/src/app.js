@@ -58,4 +58,6 @@ app.use('/api/users',userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/client-settings', require('./routes/settings.routes'));
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/damage', require('./routes/damage.routes'));
+app.use('/api/damages', require('./routes/damage.routes'));
 module.exports = app;

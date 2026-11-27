@@ -34,8 +34,8 @@ async function mirrorToSoleDepartment(conn, product_id, qty, free_qty = 0) {
     `INSERT INTO stock (product_id, location_type, location_id, qty, free_qty)
      VALUES (?, 'DEPARTMENT', ?, ?, ?)
      ON DUPLICATE KEY UPDATE
-       qty = qty + VALUES(qty),
-       free_qty = free_qty + VALUES(free_qty)`,
+       qty = GREATEST(0, qty + VALUES(qty)),
+       free_qty = GREATEST(0, free_qty + VALUES(free_qty))`,
     [product_id, deptId, qty || 0, free_qty || 0]
   );
 }
