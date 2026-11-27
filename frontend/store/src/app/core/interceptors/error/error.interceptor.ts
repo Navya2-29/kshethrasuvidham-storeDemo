@@ -10,8 +10,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const errorService = inject(ErrorService);
   const router = inject(Router);
 
-  return next(req).pipe(
+  const skipNotification = req.headers.has('skip-error-notification') || req.headers.has('x-silent-error');
+  const cleanReq = skipNotification
+    ? req.clone({ headers: req.headers.delete('skip-error-notification').delete('x-silent-error') })
+    : req;
+
+  return next(cleanReq).pipe(
     catchError((error) => {
+      // Do not pop up global snackbar if request opted out
+      if (skipNotification) {
+        return throwError(() => error);
+      }
+
       const message = errorService.getErrorMessage(error);
 
       //  Show snackbar globally
