@@ -24,15 +24,21 @@ async function ensureTable() {
   `);
 }
 
-// Generate next damage reference number (e.g. DMG-2026-0001)
+// Generate next damage reference number (e.g. DMG-0001)
 async function generateDamageNo() {
-  const year = new Date().getFullYear();
-  const [[row]] = await db.query(
-    `SELECT COUNT(*) AS total FROM damage_records WHERE damage_no LIKE ?`,
-    [`DMG-${year}-%`]
+  const [[maxRow]] = await db.query(
+    `SELECT MAX(CAST(SUBSTRING(damage_no, 5) AS UNSIGNED)) AS max_num 
+     FROM damage_records 
+     WHERE damage_no REGEXP '^DMG-[0-9]+$'`
   );
-  const nextSeq = (row?.total || 0) + 1;
-  return `DMG-${year}-${String(nextSeq).padStart(4, "0")}`;
+  if (maxRow && maxRow.max_num) {
+    const nextSeq = Number(maxRow.max_num) + 1;
+    return `DMG-${String(nextSeq).padStart(4, "0")}`;
+  }
+
+  const [[cntRow]] = await db.query(`SELECT COUNT(*) AS total FROM damage_records`);
+  const nextSeq = (cntRow?.total || 0) + 1;
+  return `DMG-${String(nextSeq).padStart(4, "0")}`;
 }
 
 // GET all damage records

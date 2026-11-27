@@ -100,9 +100,9 @@ export class RecordDamageDialogComponent implements OnInit {
     this.saving = true;
 
     const currentUser = this.authState.user();
-    const year = new Date().getFullYear();
     const timestamp = Date.now();
-    const localDamageNo = `DMG-${year}-${String(timestamp).slice(-4)}`;
+    const nextSeq = this.getNextLocalSeq();
+    const localDamageNo = `DMG-${String(nextSeq).padStart(4, '0')}`;
     const costPrice = Number(this.data.costPrice || 0);
     const sellingPrice = Number(this.data.sellingPrice || 0);
     const totalLoss = Number((costPrice * qty).toFixed(2));
@@ -174,6 +174,24 @@ export class RecordDamageDialogComponent implements OnInit {
         this.dialogRef.close({ success: true, damaged_qty: qty, record: newRecord });
       },
     });
+  }
+
+  private getNextLocalSeq(): number {
+    try {
+      const raw = localStorage.getItem(this.BACKUP_STORAGE_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      let maxNum = 0;
+      list.forEach((r: any) => {
+        const match = (r.damage_no || '').match(/^DMG-(\d+)$/);
+        if (match) {
+          const n = parseInt(match[1], 10);
+          if (n > maxNum) maxNum = n;
+        }
+      });
+      return maxNum > 0 ? maxNum + 1 : (list.length || 0) + 1;
+    } catch {
+      return 1;
+    }
   }
 
   private saveToBackup(record: any): void {

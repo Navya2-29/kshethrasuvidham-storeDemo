@@ -420,10 +420,9 @@ export class DamageListComponent implements OnInit, OnDestroy {
     const totalLoss = Number((costPrice * qty).toFixed(2));
     const today = this.formDamageDate || this.getTodayDate();
 
-    // Auto-generate damage ref number for client
-    const year = new Date().getFullYear();
+    // Auto-generate damage ref number for client (e.g. DMG-0001)
     const seq = String(this.damageRecords.length + 1).padStart(4, '0');
-    const localDamageNo = `DMG-${year}-${seq}`;
+    const localDamageNo = `DMG-${seq}`;
 
     const payload = {
       damage_no: localDamageNo,
