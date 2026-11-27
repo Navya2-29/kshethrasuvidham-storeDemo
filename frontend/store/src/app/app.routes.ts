@@ -161,6 +161,13 @@ export const routes: Routes = [
           ).then((m) => m.PurchaseReturnListComponent),
       },
       {
+        path: 'transaction/damage-list',
+        loadComponent: () =>
+          import(
+            './features/transactions/damage-list/damage-list.component'
+          ).then((m) => m.DamageListComponent),
+      },
+      {
         path: 'transaction/quicksales',
         loadComponent: () =>
           import('./features/transactions/quick-sales/quick-sales.component').then(

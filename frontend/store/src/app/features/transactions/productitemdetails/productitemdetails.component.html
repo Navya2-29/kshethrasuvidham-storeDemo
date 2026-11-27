@@ -1,11 +1,14 @@
 <div class="row">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="card-title"><span class="fa fa-list"></span>&nbsp;&nbsp;<span
                           
                         style="font-size:15pt;color:brown;font-weight:600">{{summary.productCode}}</span> | {{summary.productName}} | <span
                         style="font-size:15pt;color:#d88e25;">Available Stock - {{ summary.stock?.availableStock }}</span></div>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-auto" (click)="openDamageDialog()" title="Report Damaged Stock">
+                    <span class="fa fa-exclamation-triangle"></span> Report Damage
+                </button>
             </div>
             <div class="card-body">
 

@@ -1,0 +1,494 @@
+<div class="damage-wrapper">
+
+  <!-- ================= TOP HEADER & SUMMARY METRICS ================= -->
+  <div class="list-header">
+    <div class="header-title-group">
+      <div class="header-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div>
+        <h2 class="title-text">Damage & Stock Write-Off List</h2>
+        <span class="subtitle-text">Record, monitor, and audit damaged goods, expiries, and stock losses</span>
+      </div>
+    </div>
+
+    <!-- Header Stats -->
+    <div class="header-stats-row">
+      <div class="stat-pill stat-count" title="Total Damage Incidents">
+        <span class="stat-label">Incidents:</span>
+        <span class="stat-value">{{ totalDamageCount }}</span>
+      </div>
+      <div class="stat-pill stat-qty" title="Total Units Written Off">
+        <span class="stat-label">Units Written Off:</span>
+        <span class="stat-value">{{ totalUnitsDamaged | number }}</span>
+      </div>
+      <div class="stat-pill stat-loss" title="Total Financial Loss">
+        <span class="stat-label">Total Loss:</span>
+        <span class="stat-value">₹{{ totalFinancialLoss | number:'1.2-2' }}</span>
+      </div>
+      <button type="button" class="btn-record-primary" (click)="openReportModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Report Damage</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= TOOLBAR & FILTERS ================= -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchText"
+        (input)="onSearchChange()"
+        placeholder="Search damage no, product, code, reason, user..."
+        class="search-input"
+      />
+      <button *ngIf="searchText" class="clear-search-btn" (click)="searchText = ''; onSearchChange()">✕</button>
+    </div>
+
+    <!-- Damage Type Filter Pills -->
+    <div class="type-filter-group">
+      <button
+        type="button"
+        class="type-pill"
+        [class.active]="selectedTypeFilter === 'ALL'"
+        (click)="setTypeFilter('ALL')"
+      >
+        All Reasons
+      </button>
+      <button
+        *ngFor="let t of damageTypes"
+        type="button"
+        class="type-pill"
+        [class.active]="selectedTypeFilter === t.value"
+        (click)="setTypeFilter(t.value)"
+      >
+        <span class="pill-dot" [style.backgroundColor]="t.color"></span>
+        {{ t.label }}
+      </button>
+    </div>
+
+    <!-- Date Filters & Actions -->
+    <div class="filter-actions-group">
+      <div class="date-pills">
+        <button
+          type="button"
+          class="date-btn"
+          [class.active]="selectedDateFilter === 'ALL'"
+          (click)="setDateFilter('ALL')"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          class="date-btn"
+          [class.active]="selectedDateFilter === 'TODAY'"
+          (click)="setDateFilter('TODAY')"
+        >
+          Today
+        </button>
+        <button
+          type="button"
+          class="date-btn"
+          [class.active]="selectedDateFilter === 'MONTH'"
+          (click)="setDateFilter('MONTH')"
+        >
+          Month
+        </button>
+      </div>
+
+      <button type="button" class="btn-refresh" (click)="loadDamageRecords()" title="Refresh List">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= LOADING STATE ================= -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Loading damaged stock records...</span>
+  </div>
+
+  <!-- ================= TABLE SECTION ================= -->
+  <div class="table-container" *ngIf="!loading">
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z0 damage-table">
+
+      <!-- Index Column -->
+      <ng-container matColumnDef="index">
+        <th mat-header-cell *matHeaderCellDef class="col-index">#</th>
+        <td mat-cell *matCellDef="let element; let i = index" class="col-index">
+          {{ i + 1 }}
+        </td>
+      </ng-container>
+
+      <!-- Damage No Column -->
+      <ng-container matColumnDef="damage_no">
+        <th mat-header-cell *matHeaderCellDef>Ref No</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="damage-no-badge">{{ element.damage_no }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Product Column -->
+      <ng-container matColumnDef="product">
+        <th mat-header-cell *matHeaderCellDef>Product</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="product-cell">
+            <span class="prod-name">{{ element.product_name || 'Item #' + element.product_id }}</span>
+            <span class="prod-code" *ngIf="element.product_code">Code: {{ element.product_code }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Department Column -->
+      <ng-container matColumnDef="department">
+        <th mat-header-cell *matHeaderCellDef>Department</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="dept-badge">{{ element.dept_name || 'Main Store' }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Damaged Qty Column -->
+      <ng-container matColumnDef="damaged_qty">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Damaged Qty</th>
+        <td mat-cell *matCellDef="let element" class="text-right">
+          <span class="qty-pill">
+            <strong>{{ element.damaged_qty }}</strong>
+            <small class="unit-text">{{ element.unit || 'Nos' }}</small>
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Damage Type Column -->
+      <ng-container matColumnDef="damage_type">
+        <th mat-header-cell *matHeaderCellDef>Reason</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="type-badge" [style.borderColor]="getTypeBadgeColor(element.damage_type)">
+            <span class="pill-dot" [style.backgroundColor]="getTypeBadgeColor(element.damage_type)"></span>
+            {{ element.damage_type || 'Broken' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Total Loss Column -->
+      <ng-container matColumnDef="total_loss">
+        <th mat-header-cell *matHeaderCellDef class="text-right">Total Loss</th>
+        <td mat-cell *matCellDef="let element" class="text-right">
+          <span class="loss-amount">₹{{ (element.total_loss || (element.cost_price * element.damaged_qty)) | number:'1.2-2' }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="damage_date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="date-cell">{{ element.damage_date | date:'dd MMM yyyy' }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Reported By Column -->
+      <ng-container matColumnDef="reported_by">
+        <th mat-header-cell *matHeaderCellDef>Reported By</th>
+        <td mat-cell *matCellDef="let element">
+          <span class="user-pill">{{ element.reported_by_name || 'Staff' }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef class="col-actions">Actions</th>
+        <td mat-cell *matCellDef="let element" class="col-actions">
+          <div class="action-buttons-wrap">
+            <button
+              type="button"
+              class="btn-action btn-view"
+              (click)="viewDetails(element)"
+              title="View Write-off Details"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="btn-action btn-print"
+              (click)="printDamageSlip(element)"
+              title="Print Damage Slip"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="table-row"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row no-data-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <p class="empty-title">No damaged stock records found</p>
+            <p class="empty-desc" *ngIf="searchText || selectedTypeFilter !== 'ALL' || selectedDateFilter !== 'ALL'">
+              No records match your selected filters. Try clearing filters or search query.
+            </p>
+            <p class="empty-desc" *ngIf="!searchText && selectedTypeFilter === 'ALL' && selectedDateFilter === 'ALL'">
+              All products in inventory are intact. You can report damaged or expired goods whenever write-offs occur.
+            </p>
+            <button type="button" class="btn-record-primary mt-3" (click)="openReportModal()">
+              + Report Damaged Stock
+            </button>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ================= REPORT DAMAGE MODAL ================= -->
+  <div class="modal-backdrop" *ngIf="showReportModal" (click)="closeReportModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon warning-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Record Damaged / Expired Stock</h3>
+            <p class="modal-subtitle">Damaged quantity will be written off and immediately deducted from available stock</p>
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeReportModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+
+          <!-- Department / Location -->
+          <div class="form-group">
+            <label class="form-label">Department / Store Location</label>
+            <select class="form-control" [(ngModel)]="formDepartmentId">
+              <option [ngValue]="null">Main Store / Warehouse</option>
+              <option *ngFor="let dept of departments" [ngValue]="dept.id">
+                {{ dept.dept_name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Product Selection -->
+          <div class="form-group">
+            <label class="form-label">Product to Write-Off <span class="required">*</span></label>
+            <select
+              class="form-control"
+              [(ngModel)]="formProductId"
+              (change)="onProductChange()"
+            >
+              <option [ngValue]="null">-- Select Product --</option>
+              <option *ngFor="let prod of products" [ngValue]="prod.id">
+                {{ prod.product_name }} ({{ prod.product_code || 'No Code' }})
+              </option>
+            </select>
+          </div>
+
+          <!-- In-Hand Stock Badge (If product selected) -->
+          <div class="form-group full-width" *ngIf="selectedProduct">
+            <div class="stock-info-banner">
+              <div class="stock-info-item">
+                <span class="info-label">Available Stock:</span>
+                <span class="info-val font-bold text-success">{{ getProductStock(selectedProduct) }} {{ selectedProduct.unit || 'Nos' }}</span>
+              </div>
+              <div class="stock-info-item">
+                <span class="info-label">Unit Cost:</span>
+                <span class="info-val font-bold">₹{{ selectedProduct.cost_price || 0 }}</span>
+              </div>
+              <div class="stock-info-item">
+                <span class="info-label">Selling Price:</span>
+                <span class="info-val">₹{{ selectedProduct.selling_price || 0 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Damaged Qty -->
+          <div class="form-group">
+            <label class="form-label">Damaged Quantity <span class="required">*</span></label>
+            <input
+              type="number"
+              min="0.01"
+              step="any"
+              class="form-control"
+              [(ngModel)]="formDamagedQty"
+              placeholder="e.g. 5"
+            />
+          </div>
+
+          <!-- Damage Reason / Type -->
+          <div class="form-group">
+            <label class="form-label">Damage Reason / Category <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formDamageType">
+              <option *ngFor="let t of damageTypes" [value]="t.value">
+                {{ t.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Damage Date -->
+          <div class="form-group">
+            <label class="form-label">Date of Incident <span class="required">*</span></label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="formDamageDate"
+            />
+          </div>
+
+          <!-- Estimated Loss Preview -->
+          <div class="form-group">
+            <label class="form-label">Estimated Financial Loss</label>
+            <div class="loss-preview-box">
+              <span class="loss-calc">₹{{ estimatedFinancialLoss | number:'1.2-2' }}</span>
+              <span class="loss-sub">(Based on cost price ₹{{ selectedProduct?.cost_price || 0 }})</span>
+            </div>
+          </div>
+
+          <!-- Remarks / Notes -->
+          <div class="form-group full-width">
+            <label class="form-label">Detailed Remarks / Cause</label>
+            <textarea
+              rows="3"
+              class="form-control"
+              [(ngModel)]="formRemarks"
+              placeholder="e.g. Broken during transit delivery, box leaked water, expired batch #102..."
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeReportModal()" [disabled]="saving">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn-save"
+          (click)="submitDamageReport()"
+          [disabled]="saving || !formProductId || !formDamagedQty"
+        >
+          <span *ngIf="saving" class="btn-spinner"></span>
+          <span>{{ saving ? 'Recording Write-off...' : 'Record Damaged Stock' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DETAILS MODAL ================= -->
+  <div class="modal-backdrop" *ngIf="selectedRecord" (click)="closeDetails()">
+    <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Damage Incident Details</h3>
+            <p class="modal-subtitle">Reference: {{ selectedRecord.damage_no }}</p>
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeDetails()">✕</button>
+      </div>
+
+      <div class="modal-body details-body">
+        <div class="detail-row">
+          <span class="detail-label">Product Name</span>
+          <span class="detail-value font-bold">{{ selectedRecord.product_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Product Code</span>
+          <span class="detail-value">{{ selectedRecord.product_code || 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Department</span>
+          <span class="detail-value">{{ selectedRecord.dept_name || 'Main Store' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Damaged Units</span>
+          <span class="detail-value font-bold text-danger">{{ selectedRecord.damaged_qty }} {{ selectedRecord.unit || 'Nos' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Damage Reason</span>
+          <span class="detail-value">
+            <span class="type-badge" [style.borderColor]="getTypeBadgeColor(selectedRecord.damage_type)">
+              {{ selectedRecord.damage_type }}
+            </span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Cost Price / Unit</span>
+          <span class="detail-value">₹{{ selectedRecord.cost_price | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Total Financial Write-off</span>
+          <span class="detail-value font-bold text-danger">₹{{ (selectedRecord.total_loss || (selectedRecord.cost_price * selectedRecord.damaged_qty)) | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Incident Date</span>
+          <span class="detail-value">{{ selectedRecord.damage_date | date:'dd MMMM yyyy' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Reported By</span>
+          <span class="detail-value">{{ selectedRecord.reported_by_name || 'Staff' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.remarks">
+          <span class="detail-label">Remarks / Cause</span>
+          <span class="detail-value remarks-text">{{ selectedRecord.remarks }}</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeDetails()">Close</button>
+        <button type="button" class="btn-print-voucher" (click)="printDamageSlip(selectedRecord)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>Print Write-off Slip</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
