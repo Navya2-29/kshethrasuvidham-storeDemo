@@ -31,6 +31,11 @@
 
     <!-- ACTION BUTTONS IN HEADER -->
     <div class="header-actions">
+      <div class="scanner-badge" (click)="focusActiveCodeInput()" title="Barcode scanner active. Click to focus Code input (Scan any item)">
+        <span class="scanner-dot"></span>
+        <span class="scanner-label">Barcode Ready</span>
+      </div>
+
       <button type="button" class="header-btn btn-new" (click)="newBill()" title="Start a new empty bill (F9)">
         <span class="btn-icon">＋</span> New (F9)
       </button>
@@ -53,7 +58,7 @@
     <!-- GRID HEADER -->
     <div class="grid-head">
       <div>#</div>
-      <div>Code</div>
+      <div>Code / Barcode</div>
       <div>Product</div>
       <div>In Hand Qty</div>
       <div>Qty</div>
@@ -69,8 +74,8 @@
         [formGroup]="$any(row)">
         <div class="row-no">{{ i + 1 }}</div>
 
-        <input [id]="'code_' + i" formControlName="product_code" placeholder="Code"
-          (keydown.enter)="onCodeEnter(i, $event)" />
+        <input [id]="'code_' + i" formControlName="product_code" placeholder="Scan / Code" autocomplete="off"
+          (keydown.enter)="onCodeEnter(i, $event)" title="Scan barcode or enter product code" />
 
         <div class="product-cell">
           <input type="text" [id]="'prod_' + i" formControlName="product_name" placeholder="Type or select product..."

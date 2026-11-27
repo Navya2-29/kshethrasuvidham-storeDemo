@@ -81,6 +81,11 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
   showPendingModal = false;
   viewingPendingBill: PendingSale | null = null;
 
+  // Barcode Scanner detection
+  private barcodeBuffer: string = '';
+  private lastBarcodeKeyTime: number = 0;
+  readonly BARCODE_SCAN_MAX_INTERVAL = 60; // Max ms between keystrokes from a scanner
+
   private destroy$ = new Subject<void>();
   readonly storeContext = inject(StoreContextService);
 
@@ -104,7 +109,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.loadProducts();
     this.loadDepartments();
     setTimeout(() => {
-      this.focusElement('prod_0');
+      this.focusElement('code_0');
     }, 300);
   }
 
@@ -367,19 +372,133 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
   onProductCodeEnter(index: number): void {
     const row = this.items.at(index);
     const code = row.get('product_code')?.value;
+    if (code) {
+      this.processScannedCode(code, index);
+    }
+  }
 
-    if (!code) return;
+  /* =========================================
+     BARCODE & SCANNER PROCESSING
+  ========================================= */
+  processScannedCode(code: string | number, targetRowIndex?: number): boolean {
+    if (code === null || code === undefined) return false;
+    const cleanCode = code.toString().trim();
+    if (!cleanCode) return false;
 
+    // 1. Find product matching product_code / barcode
     const product = this.products.find(
-      (p) => p.product_code?.toString().toLowerCase() === code.toString().toLowerCase(),
+      (p) =>
+        p.product_code?.toString().trim().toLowerCase() ===
+        cleanCode.toLowerCase(),
     );
 
     if (!product) {
-      this.notification.error('Product not found');
-      return;
+      this.notification.error(`Product with barcode "${cleanCode}" not found`);
+      return false;
     }
 
-    this.selectProduct(product, index);
+    // 2. Check stock
+    const stock = this.getStock(product.id);
+    if (this.stockMap.size > 0 && stock <= 0) {
+      this.notification.error(`Product "${product.product_name}" is out of stock`);
+      return false;
+    }
+
+    // 3. Check if product is ALREADY added in another row (Duplicate handling for Barcode)
+    const existingIndex = this.items.controls.findIndex(
+      (r) => Number(r.get('product_id')?.value) === Number(product.id),
+    );
+
+    if (existingIndex >= 0) {
+      // Product already in bill: increment quantity by 1!
+      const existingRow = this.items.at(existingIndex);
+      const currentQty = +existingRow.get('qty')?.value || 0;
+
+      if (this.stockMap.size > 0 && currentQty + 1 > stock) {
+        this.notification.error(
+          `Cannot increase quantity for "${product.product_name}". In-hand stock is 0 (Max available: ${stock})`,
+        );
+        return false;
+      }
+
+      existingRow.patchValue({ qty: currentQty + 1 });
+      this.calculateRow(existingIndex);
+      this.calculateTotals();
+      this.playScanBeep();
+      this.notification.success(`Scanned: ${product.product_name} (+1, Total: ${currentQty + 1})`);
+
+      // If user typed/scanned on a separate empty row, clear that row's product_code
+      if (targetRowIndex !== undefined && targetRowIndex !== existingIndex) {
+        const curRow = this.items.at(targetRowIndex);
+        if (!curRow.get('product_id')?.value) {
+          curRow.patchValue({ product_code: '' }, { emitEvent: false });
+        }
+      }
+
+      this.cdr.markForCheck();
+      return true;
+    }
+
+    // 4. Product is not yet in bill: determine target row
+    let rowIndex = targetRowIndex;
+    if (rowIndex === undefined || this.items.at(rowIndex)?.get('product_id')?.value) {
+      const emptyIndex = this.items.controls.findIndex(
+        (r) => !r.get('product_id')?.value,
+      );
+      if (emptyIndex >= 0) {
+        rowIndex = emptyIndex;
+      } else {
+        this.addRow();
+        rowIndex = this.items.length - 1;
+      }
+    }
+
+    const row = this.items.at(rowIndex);
+    // Ensure product_code displays in the Code column
+    row.patchValue({ product_code: product.product_code }, { emitEvent: false });
+
+    const success = this.selectProduct(product, rowIndex);
+    if (success) {
+      this.playScanBeep();
+      // Ensure a next empty row is ready for continuous barcode scanning
+      const hasEmptyRow = this.items.controls.some((r) => !r.get('product_id')?.value);
+      if (!hasEmptyRow) {
+        this.addRow();
+      }
+      const nextEmptyIndex = this.items.controls.findIndex((r) => !r.get('product_id')?.value);
+      if (nextEmptyIndex >= 0) {
+        setTimeout(() => this.focusElement('code_' + nextEmptyIndex), 80);
+      }
+    }
+
+    this.cdr.markForCheck();
+    return success;
+  }
+
+  private playScanBeep(): void {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1400, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
+    } catch {
+      // AudioContext not supported or requires gesture
+    }
+  }
+
+  focusActiveCodeInput(): void {
+    const emptyIndex = this.items.controls.findIndex((r) => !r.get('product_id')?.value);
+    const target = emptyIndex >= 0 ? emptyIndex : 0;
+    this.focusElement('code_' + target);
   }
 
   loadInvoiceNo(): void {
@@ -554,11 +673,8 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     const code = row.get('product_code')?.value;
 
     if (code) {
-      this.onProductCodeEnter(index);
-      if (row.get('product_id')?.value) {
-        this.focusElement('qty_' + index);
-        return;
-      }
+      const handled = this.processScannedCode(code, index);
+      if (handled) return;
     }
     this.focusElement('prod_' + index);
   }
@@ -911,7 +1027,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.activePendingId = null;
     this.resetForm();
     this.notification.success('New bill session started');
-    setTimeout(() => this.focusElement('prod_0'), 150);
+    setTimeout(() => this.focusElement('code_0'), 150);
   }
 
   holdBill(): void {
@@ -1137,6 +1253,41 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       this.setPaymentMode('Card');
       return;
     }
+
+    // Hardware Barcode Scanner listener
+    const now = Date.now();
+    const timeDiff = now - this.lastBarcodeKeyTime;
+
+    if (event.key === 'Enter') {
+      if (this.barcodeBuffer.length >= 2 && timeDiff <= this.BARCODE_SCAN_MAX_INTERVAL * 2) {
+        const scannedCode = this.barcodeBuffer.trim();
+        this.barcodeBuffer = '';
+        this.lastBarcodeKeyTime = 0;
+
+        const activeEl = document.activeElement as HTMLElement | null;
+        const isCodeInput = activeEl?.id?.startsWith('code_');
+
+        if (!isCodeInput && scannedCode) {
+          event.preventDefault();
+          event.stopPropagation();
+          this.processScannedCode(scannedCode);
+          return;
+        }
+      }
+      this.barcodeBuffer = '';
+      return;
+    }
+
+    if (event.key.length !== 1 || event.ctrlKey || event.altKey || event.metaKey) {
+      return;
+    }
+
+    if (timeDiff > this.BARCODE_SCAN_MAX_INTERVAL && this.barcodeBuffer.length > 0) {
+      this.barcodeBuffer = '';
+    }
+
+    this.barcodeBuffer += event.key;
+    this.lastBarcodeKeyTime = now;
   }
 
   setPaymentMode(mode: string): void {
