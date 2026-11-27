@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Supplier } from '../../../features/masters/models/supplier.model';
-import {  Observable} from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Department } from '../../../features/masters/models/department.model';
 import { Product, ProductPayload } from '../../../features/masters/models/product.model';
 import { PurchasePayload } from '../../../features/transactions/models/purchase.model';
@@ -14,6 +14,60 @@ import { API_BASE_URL } from '../../constants/api.constants';
 })
 export class MasterService {
   private readonly API = API_BASE_URL;
+  private readonly STOCK_ADJ_KEY = 'store_local_stock_adjustments';
+
+  // Real-time stock change event stream across Quick Sales, Product Master, and Cancelled Bills
+  private stockUpdatedSubject = new Subject<{
+    type: 'SALE_CANCELLED' | 'SALE_CREATED' | 'STOCK_CHANGED';
+    departmentId?: number;
+    items?: any[];
+  }>();
+
+  readonly stockUpdated$ = this.stockUpdatedSubject.asObservable();
+
+  getAllStockAdjustments(): Record<string, number> {
+    try {
+      const raw = localStorage.getItem(this.STOCK_ADJ_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  getStockAdjustment(productId: number | string): number {
+    if (!productId) return 0;
+    const map = this.getAllStockAdjustments();
+    return Number(map[String(productId)]) || 0;
+  }
+
+  recordStockAdjustment(productId: number | string, deltaQty: number): void {
+    if (!productId || !deltaQty) return;
+    try {
+      const map = this.getAllStockAdjustments();
+      const current = Number(map[String(productId)]) || 0;
+      map[String(productId)] = current + deltaQty;
+      localStorage.setItem(this.STOCK_ADJ_KEY, JSON.stringify(map));
+    } catch (e) {
+      console.warn('Failed to record stock adjustment', e);
+    }
+  }
+
+  notifyStockUpdated(event: {
+    type: 'SALE_CANCELLED' | 'SALE_CREATED' | 'STOCK_CHANGED';
+    departmentId?: number;
+    items?: any[];
+  }): void {
+    if (event.type === 'SALE_CANCELLED' && event.items && Array.isArray(event.items)) {
+      event.items.forEach((it: any) => {
+        const pId = Number(it.product_id || it.id);
+        const qty = Number(it.qty || 0);
+        if (pId && qty > 0) {
+          this.recordStockAdjustment(pId, qty);
+        }
+      });
+    }
+    this.stockUpdatedSubject.next(event);
+  }
 
   constructor(private http: HttpClient) {}
 
@@ -86,8 +140,10 @@ export class MasterService {
     return this.http.post(`${this.API}/purchases`, payload);
   }
 
-  getAllPurchases() {
-    return this.http.get(`${this.API}/purchases/allpurchase`);
+  getAllPurchases(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/purchases/allpurchase`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
   }
   getPurchaseById(id: number) {
     return this.http.get<any>(`${this.API}/purchases/${id}`);
@@ -153,6 +209,37 @@ export class MasterService {
  return this.http.get<any[]>(
       `${this.API}/sales/stock/department/${deptId}`,
     );
+  }
+
+  getAllSales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/sales/all`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getSaleById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.API}/sales/${id}`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  cancelSale(
+    id: number,
+    data: {
+      cancel_reason: string;
+      cancelled_by?: string | null;
+      payment_return_method?: string;
+    },
+  ): Observable<any> {
+    return this.http.put(`${this.API}/sales/cancel/${id}`, data, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getCancelledSales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/sales/cancelled`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
   }
 
   // ==========================report==========================
