@@ -21,11 +21,14 @@ import { CommonModule } from '@angular/common';
 import { MatOptionModule } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthStateService } from '../../../core/services/auth/auth-state.service';
 import { Subject, takeUntil } from 'rxjs';
 import { SnackbarService } from '../../../core/services/ui/snackbar.service';
 import { ReceiptPrintComponent } from '../sales/receipt-print/receipt-print.component';
 import { StoreContextService } from '../../../core/services/store-context/store-context.service';
+import { SalesListComponent } from '../sales-list/sales-list.component';
+import { CancelledSalesListComponent } from '../cancelled-sales-list/cancelled-sales-list.component';
 
 export interface PendingSale {
   id: string;
@@ -92,6 +95,7 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     private authState: AuthStateService,
     private cdr: ChangeDetectorRef,
     private notification: SnackbarService,
+    private dialog: MatDialog,
   ) {
     this.buildForm();
   }
@@ -103,6 +107,44 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.loadPendingBills();
     this.loadProducts();
     this.loadDepartments();
+
+    // ⚡ Real-time stock sync listener:
+    // When a sale is cancelled or stock changes, immediately update product stock in sales billing at that exact moment!
+    this.salesService.stockUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((evt) => {
+        if (evt?.items && Array.isArray(evt.items)) {
+          evt.items.forEach((it: any) => {
+            const pId = Number(it.product_id || it.id);
+            const qty = Number(it.qty || 0);
+            if (pId && qty > 0) {
+              const current = this.stockMap.get(pId) || 0;
+              this.stockMap.set(pId, current + qty);
+            }
+          });
+
+          // Update stock_qty and in_hand_qty on all active billing rows in form
+          this.items.controls.forEach((row: AbstractControl) => {
+            const pId = Number(row.get('product_id')?.value);
+            if (pId) {
+              const stock = this.getStock(pId);
+              const qty = Number(row.get('qty')?.value || 0);
+              row.patchValue(
+                {
+                  stock_qty: stock,
+                  in_hand_qty: Math.max(0, stock - qty),
+                },
+                { emitEvent: false },
+              );
+            }
+          });
+
+          this.calculateTotals();
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+        }
+      });
+
     setTimeout(() => {
       this.focusElement('prod_0');
     }, 300);
@@ -163,9 +205,22 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
     this.salesService.getStockByDepartment(deptId).subscribe({
       next: (res) => {
         this.stockMap.clear();
-        res.forEach((item: any) => {
-          this.stockMap.set(Number(item.product_id), Number(item.stock_qty));
+        (res || []).forEach((item: any) => {
+          const pId = Number(item.product_id);
+          const baseQty = Number(item.stock_qty || 0);
+          const adj = this.salesService.getStockAdjustment(pId);
+          this.stockMap.set(pId, baseQty + adj);
         });
+
+        // Ensure any locally adjusted products not present in server response are included
+        const allAdj = this.salesService.getAllStockAdjustments();
+        Object.keys(allAdj).forEach((k) => {
+          const pId = Number(k);
+          if (!this.stockMap.has(pId)) {
+            this.stockMap.set(pId, allAdj[k]);
+          }
+        });
+
         this.items.controls.forEach((_, idx) => {
           this.calculateRow(idx);
         });
@@ -1110,6 +1165,13 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (event.key === 'F8') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.openSalesList();
+      return;
+    }
+
     if (event.key === 'F9') {
       event.preventDefault();
       event.stopPropagation();
@@ -1211,6 +1273,34 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         }, 300);
 
+        // Backup completed sale locally for instant offline/list retrieval
+        try {
+          const completedSale = {
+            id: res.data?.id || Date.now(),
+            order_no: res.data?.order_no || payload.order_no,
+            invoice_no: res.data?.invoice_no || payload.invoice_no,
+            receipt_date: res.data?.receipt_date || payload.receipt_date,
+            customer_name: payload.customer_name || 'Walk-in Customer',
+            customer_mobile: payload.customer_mobile || '',
+            department_id: payload.department_id,
+            total_amount: payload.total_amount,
+            discount_amount: payload.discount_amount,
+            other_charges: payload.other_charges,
+            bill_amount: payload.bill_amount,
+            payment_mode: payload.payment_mode,
+            status: 'ACTIVE',
+            total_items: payload.items?.length || 0,
+            created_at: new Date().toISOString(),
+            items: payload.items,
+          };
+          const raw = localStorage.getItem('store_completed_sales_backup');
+          const list = raw ? JSON.parse(raw) : [];
+          list.unshift(completedSale);
+          localStorage.setItem('store_completed_sales_backup', JSON.stringify(list.slice(0, 100)));
+        } catch (e) {
+          console.warn('Could not cache completed sale', e);
+        }
+
         if (this.activePendingId) {
           this.pendingBills = this.pendingBills.filter((p) => p.id !== this.activePendingId);
           this.savePendingBills();
@@ -1235,6 +1325,32 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
         console.error('Save sale error', err);
         this.notification.error(err?.error?.message || 'Error saving sale');
       },
+    });
+  }
+
+  openSalesList(): void {
+    const dialogRef = this.dialog.open(SalesListComponent, {
+      width: '1100px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: { isDialog: true },
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      // Reload stock in case a sale was cancelled from sales list
+      const deptId = this.salesForm.get('department_id')?.value || this.storeContext.selectedDepartmentId() || this.departments[0]?.id;
+      if (deptId) {
+        this.loaddepartmentstock(+deptId);
+      }
+    });
+  }
+
+  openCancelledBills(): void {
+    this.dialog.open(CancelledSalesListComponent, {
+      width: '1150px',
+      maxWidth: '96vw',
+      maxHeight: '90vh',
+      data: { isDialog: true },
     });
   }
 }

@@ -17,10 +17,11 @@
 
   <!-- ================= BILL INFO ================= -->
   <div>
-    <div>Invoice: {{ bill?.invoice_no }}</div>
-    <div>Date: {{ bill?.receipt_date | date:'short' }}</div>
-    <div>Customer: {{ bill?.customer_name || '-' }}</div>
-    <div>Mobile: {{ bill?.customer_mobile || '-' }}</div>
+    <div>Invoice: {{ bill?.invoice_no || bill?.header?.invoice_no }}</div>
+    <div>Date: {{ (bill?.receipt_date || bill?.header?.receipt_date) | date:'short' }}</div>
+    <div>Customer: {{ bill?.customer_name || bill?.header?.customer_name || '-' }}</div>
+    <div>Mobile: {{ bill?.customer_mobile || bill?.header?.customer_mobile || '-' }}</div>
+    <div>Payment: <b>{{ bill?.payment_mode || bill?.header?.payment_mode || 'Cash' }}</b></div>
   </div>
 
   <hr />
@@ -29,16 +30,16 @@
   <table class="items">
     <tr>
       <th>Item</th>
-      <th>Qty</th>
-      <th>Rate</th>
-      <th>Amt</th>
+      <th class="text-center">Qty</th>
+      <th class="text-right">Rate</th>
+      <th class="text-right">Amt</th>
     </tr>
 
     <tr *ngFor="let item of bill?.items">
       <td>{{ item.product_name }}</td>
-      <td>{{ item.qty }}</td>
-      <td>{{ item.selling_price }}</td>
-      <td>{{ item.amount }}</td>
+      <td class="text-center">{{ item.qty }}</td>
+      <td class="text-right">{{ (item.selling_price || 0) | number:'1.2-2' }}</td>
+      <td class="text-right">{{ (item.amount || 0) | number:'1.2-2' }}</td>
     </tr>
   </table>
 
@@ -46,11 +47,12 @@
 
   <!-- ================= TOTAL ================= -->
   <div class="totals">
-    <div>Subtotal: {{ bill?.total_amount }}</div>
-    <div>Discount: {{ bill?.discount_amount }}</div>
-    <div>GST: {{ bill?.gst_amount }}</div>
+    <div>Subtotal: {{ (bill?.total_amount ?? bill?.header?.total_amount ?? 0) | number:'1.2-2' }}</div>
+    <div>Discount: {{ (bill?.discount_amount ?? bill?.header?.discount_amount ?? 0) | number:'1.2-2' }}</div>
+    <div>GST: {{ (bill?.gst_amount ?? bill?.header?.gst_amount ?? 0) | number:'1.2-2' }}</div>
+    <div class="pay-info">Payment Mode: <b>{{ bill?.payment_mode || bill?.header?.payment_mode || 'Cash' }}</b></div>
 
-    <h3>Total: {{ bill?.bill_amount }}</h3>
+    <h3>Total: {{ (bill?.bill_amount ?? bill?.header?.bill_amount ?? 0) | number:'1.2-2' }}</h3>
   </div>
 
   <hr />

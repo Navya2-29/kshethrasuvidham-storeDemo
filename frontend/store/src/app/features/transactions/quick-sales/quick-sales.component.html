@@ -45,6 +45,16 @@
         <span class="btn-icon">📋</span> Pending Bills (F7)
         <span class="pending-count-badge" *ngIf="pendingBills.length > 0">{{ pendingBills.length }}</span>
       </button>
+
+      <button type="button" class="header-btn btn-sales-list" (click)="openSalesList()"
+        title="View completed sales list (F8)">
+        <span class="btn-icon">📑</span> Sales List (F8)
+      </button>
+
+      <button type="button" class="header-btn btn-cancelled" (click)="openCancelledBills()"
+        title="View cancelled bills log">
+        <span class="btn-icon">🚫</span> Cancelled Bills
+      </button>
     </div>
   </div>
 
@@ -258,6 +268,7 @@
               <th>Time</th>
               <th>Customer</th>
               <th>Items</th>
+              <th>Payment</th>
               <th>Total Amount</th>
               <th class="action-col">Actions</th>
             </tr>
@@ -270,6 +281,7 @@
               <td class="time-cell">{{ b.createdAt }}</td>
               <td>{{ b.customer_name || 'Walk-in' }}</td>
               <td>{{ b.items.length }} {{ b.items.length === 1 ? 'item' : 'items' }}</td>
+              <td><span class="pay-badge">{{ b.payment_mode || 'Cash' }}</span></td>
               <td class="amount-cell">₹{{ b.billAmount | number:'1.2-2' }}</td>
               <td class="action-cell">
                 <button type="button" class="btn-resume-sm" (click)="resumeBill(b)" title="Resume this bill">
