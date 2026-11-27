@@ -25,6 +25,7 @@ import { Category } from '../models/category.model';
 import { finalize, forkJoin, Subject, takeUntil } from 'rxjs';
 import { SettingstoreService } from '../../../core/services/setting/settingstore.service';
 import { ProductStockViewDialogComponent } from '../../../shared/components/product-stock-view-dialog/product-stock-view-dialog.component';
+import { RecordDamageDialogComponent } from '../../../shared/components/record-damage-dialog/record-damage-dialog.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -156,8 +157,8 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
             const pId = Number(it.product_id || it.id);
             const qty = Number(it.qty || 0);
             const found = this.products.find((p) => p.id === pId);
-            if (found && qty > 0) {
-              found.current_stock = (Number(found.current_stock) || 0) + qty;
+            if (found && qty !== 0) {
+              found.current_stock = Math.max(0, (Number(found.current_stock) || 0) + qty);
             }
           });
           this.dataSource.data = [...this.products];
@@ -503,6 +504,39 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         productCode: product.product_code,
         isPriceEditable: this.isProductPriceEditable(product),
       },
+    });
+  }
+
+  /* ===================================================
+     REPORT DAMAGED STOCK
+  =================================================== */
+  getDisplayStock(stock: any): number {
+    return Math.max(0, Number(stock) || 0);
+  }
+
+  openDamageDialog(product: Product): void {
+    if (!product?.id) return;
+
+    const dialogRef = this.dialog.open(RecordDamageDialogComponent, {
+      width: '500px',
+      data: {
+        productId: product.id,
+        productName: product.product_name,
+        productCode: product.product_code,
+        unit: product.unit || 'Nos',
+        costPrice: product.cost_price || 0,
+        sellingPrice: product.selling_price || 0,
+        currentStock: Number(product.current_stock ?? 0),
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res?.success) {
+        const damagedQty = Number(res.damaged_qty || 0);
+        product.current_stock = Math.max(0, (Number(product.current_stock) || 0) - damagedQty);
+        this.dataSource.data = [...this.products];
+        this.cdr.markForCheck();
+      }
     });
   }
 

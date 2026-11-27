@@ -440,8 +440,8 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-qty">Qty</th>
             <td mat-cell *matCellDef="let element" class="td-qty text-center">
               <span class="stock-badge"
-                [ngClass]="(element.current_stock || 0) > 0 ? 'badge-stock-in' : 'badge-stock-out'">
-                {{ (element.current_stock ?? 0) | number:'1.2-2' }}
+                [ngClass]="getDisplayStock(element.current_stock) > 0 ? 'badge-stock-in' : 'badge-stock-out'">
+                {{ getDisplayStock(element.current_stock) | number:'1.2-2' }}
               </span>
             </td>
           </ng-container>
@@ -465,6 +465,15 @@
                     stroke-linecap="round" stroke-linejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <!-- Damage Stock -->
+                <button type="button" class="btn-action damage" (click)="openDamageDialog(element)" title="Report Damaged Stock">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
                   </svg>
                 </button>
                 <!-- Delete -->
