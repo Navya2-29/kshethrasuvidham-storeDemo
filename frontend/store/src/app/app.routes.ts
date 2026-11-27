@@ -154,11 +154,32 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'transaction/purchase-return-list',
+        loadComponent: () =>
+          import(
+            './features/transactions/purchase-return-list/purchase-return-list.component'
+          ).then((m) => m.PurchaseReturnListComponent),
+      },
+      {
         path: 'transaction/quicksales',
         loadComponent: () =>
           import('./features/transactions/quick-sales/quick-sales.component').then(
             (m) => m.QuickSalesComponent,
           ),
+      },
+      {
+        path: 'transaction/sales-list',
+        loadComponent: () =>
+          import('./features/transactions/sales-list/sales-list.component').then(
+            (m) => m.SalesListComponent,
+          ),
+      },
+      {
+        path: 'transaction/cancelled-sales-list',
+        loadComponent: () =>
+          import(
+            './features/transactions/cancelled-sales-list/cancelled-sales-list.component'
+          ).then((m) => m.CancelledSalesListComponent),
       },
       {
         path: 'transaction/quick-sales',
