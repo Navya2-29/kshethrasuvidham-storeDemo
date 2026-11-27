@@ -180,6 +180,25 @@ export class MasterService {
     return this.http.get<any>(`${this.API}/stocks/${productId}`);
   }
 
+  // ================== DAMAGE RECORDS ==================
+  getDamageRecords(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/damage`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  createDamageRecord(data: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/damage`, data, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  deleteDamageRecord(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.API}/damage/${id}`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
   transferStock(data: any) {
     return this.http.post(`${this.API}/stocks/transfer`, data);
   }
