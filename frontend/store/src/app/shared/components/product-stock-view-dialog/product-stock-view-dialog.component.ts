@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
 import { MasterService } from '../../../core/services/masters/master.service';
+import { RecordDamageDialogComponent } from '../record-damage-dialog/record-damage-dialog.component';
 
 interface ProductSummary {
   productCode?: string;
@@ -49,9 +50,15 @@ export class ProductStockViewDialogComponent implements OnInit {
     },
     private dialogRef: MatDialogRef<ProductStockViewDialogComponent>,
     private masterService: MasterService,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
+    this.loadStockDetails();
+  }
+
+  loadStockDetails(): void {
+    this.loading = true;
     forkJoin({
       summary: this.masterService.getProductSummary(this.data.productId),
       locations: this.masterService.getProductStock(this.data.productId),
@@ -65,6 +72,25 @@ export class ProductStockViewDialogComponent implements OnInit {
         this.error = true;
         this.loading = false;
       },
+    });
+  }
+
+  openDamageDialog(): void {
+    const ref = this.dialog.open(RecordDamageDialogComponent, {
+      width: '500px',
+      data: {
+        productId: this.data.productId,
+        productName: this.summary.productName || this.data.productName,
+        productCode: this.summary.productCode || this.data.productCode,
+        unit: this.summary.unit || 'Nos',
+        currentStock: this.totalAvailable,
+      },
+    });
+
+    ref.afterClosed().subscribe((res) => {
+      if (res?.success) {
+        this.loadStockDetails();
+      }
     });
   }
 
