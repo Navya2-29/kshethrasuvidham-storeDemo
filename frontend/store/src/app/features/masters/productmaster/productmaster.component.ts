@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NamedRef, Product, ProductPayload } from '../models/product.model';
 import {
   AbstractControl,
@@ -101,6 +101,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     private masterService: MasterService,
     private settingsStore: SettingstoreService,
     private dialog: MatDialog,
+    private cdr: ChangeDetectorRef,
   ) {
     // Product codes are free-text but typically numeric ("1", "2", ... "10") -
     // plain string sort would put "10" before "2". Sort numerically when both
@@ -143,6 +144,26 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         this.isBookstore = !!settings?.is_bookstore;
         this.productForm.get('author_ids')?.updateValueAndValidity();
         this.productForm.get('publisher_ids')?.updateValueAndValidity();
+      });
+
+    // ⚡ Real-time stock update listener:
+    // When a sale is cancelled or stock changes, immediately update product quantity in product list at that moment!
+    this.masterService.stockUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((evt) => {
+        if (evt?.items && Array.isArray(evt.items)) {
+          evt.items.forEach((it: any) => {
+            const pId = Number(it.product_id || it.id);
+            const qty = Number(it.qty || 0);
+            const found = this.products.find((p) => p.id === pId);
+            if (found && qty > 0) {
+              found.current_stock = (Number(found.current_stock) || 0) + qty;
+            }
+          });
+          this.dataSource.data = [...this.products];
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+        }
       });
   }
 
@@ -213,11 +234,21 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       .subscribe({
         next: (res: any) => {
           this.products = this.sortProductsByCode(this.mergePriceEditable(res.products));
+
+          // Apply persistent stock adjustments (e.g. from cancelled/returned sales)
+          this.products.forEach((p) => {
+            const adj = this.masterService.getStockAdjustment(p.id);
+            if (adj) {
+              p.current_stock = (Number(p.current_stock) || 0) + adj;
+            }
+          });
+
           this.categories = res.categories;
           this.authors = res.authors;
           this.publishers = res.publishers;
 
-          this.dataSource.data = this.products;
+          this.dataSource.data = [...this.products];
+          this.cdr.markForCheck();
           console.log('productlist', this.products);
         },
         error: (err) => {
