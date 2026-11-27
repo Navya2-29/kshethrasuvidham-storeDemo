@@ -54,6 +54,7 @@ export class SidebarComponent {
         { label: 'Order', route: '/transaction/order' },
         { label: 'Purchase', route: '/transaction/purchase' },
         { label: 'Purchase Return List', route: '/transaction/purchase-return-list' },
+        { label: 'Damage List', route: '/transaction/damage-list' },
         { label: 'Stock Transfer', route: '/transaction/stock-transfer', multiDepartmentOnly: true },
         { label: 'Quick Sales', route: '/transaction/quicksales' },
         { label: 'Sales List', route: '/transaction/sales-list' },
