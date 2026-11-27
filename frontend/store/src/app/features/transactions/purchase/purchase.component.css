@@ -436,6 +436,28 @@
   background: #bfdbfe;
 }
 
+.btn-return-list {
+  flex: 1;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  height: 34px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.btn-return-list:hover {
+  background: #fecaca;
+  color: #991b1b;
+}
+
 /* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */

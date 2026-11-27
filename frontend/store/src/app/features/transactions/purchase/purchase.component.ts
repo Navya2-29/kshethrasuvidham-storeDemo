@@ -16,6 +16,7 @@ import { PurchasePayload } from '../models/purchase.model';
 import { NumbersOnlyDirective } from '../../../shared/directives/numbers-only.directive';
 import { MatDialog } from '@angular/material/dialog';
 import { PurchaseListDialogComponent } from '../../../shared/components/purchase-list-dialog/purchase-list-dialog.component';
+import { PurchaseReturnListComponent } from '../purchase-return-list/purchase-return-list.component';
 import { SnackbarService } from '../../../core/services/ui/snackbar.service';
 import { SettingstoreService } from '../../../core/services/setting/settingstore.service';
 import { StoreContextService } from '../../../core/services/store-context/store-context.service';
@@ -574,6 +575,15 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error(err);
       },
+    });
+  }
+
+  openPurchaseReturnList() {
+    this.dialog.open(PurchaseReturnListComponent, {
+      width: '1150px',
+      maxWidth: '96vw',
+      maxHeight: '90vh',
+      data: { isDialog: true },
     });
   }
 
