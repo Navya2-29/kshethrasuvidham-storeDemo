@@ -3,17 +3,15 @@ const router = express.Router();
 const controller = require('../controllers/salesreport.controller');
 const { verifyAccessToken } = require('../middlewares/auth.middleware');
 
+router.get('/', verifyAccessToken, controller.getSalesReport);
+router.post('/', verifyAccessToken, controller.getSalesReport);
+router.get('/salesreport', verifyAccessToken, controller.getSalesReport);
+router.post('/salesreport', verifyAccessToken, controller.getSalesReport);
+router.get('/sales-report', verifyAccessToken, controller.getSalesReport);
 router.post('/sales-report', verifyAccessToken, controller.getSalesReport);
+router.get('/item-wise', verifyAccessToken, controller.getItemWiseSalesReport);
 router.post('/item-wise', verifyAccessToken, controller.getItemWiseSalesReport);
-
-// GET routes for convenience
-router.get('/sales-report', verifyAccessToken, (req, res) => {
-  req.body = req.query;
-  controller.getSalesReport(req, res);
-});
-router.get('/item-wise', verifyAccessToken, (req, res) => {
-  req.body = req.query;
-  controller.getItemWiseSalesReport(req, res);
-});
+router.get('/itemwisesalesreport', verifyAccessToken, controller.getItemWiseSalesReport);
+router.post('/itemwisesalesreport', verifyAccessToken, controller.getItemWiseSalesReport);
 
 module.exports = router;

@@ -20,6 +20,7 @@ const publisherRoutes = require('./routes/publisher.routes');
 const directEntryRoutes=require('./routes/directentry.routes');
 const roleRoutes =require('./routes/role.routes');
 const dashboardRoutes=require('./routes/dashboard.routes')
+const reportsRoutes = require('./routes/reports.routes');
 const app = express();
 const corsOptions = {
   origin: [
@@ -45,6 +46,8 @@ app.use('/api/purchases', purchaseRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/stocks',stockTransferRoutes);
 app.use('/api/sales',salesRoutes );
+app.use('/api/reports', reportsRoutes);
+app.use('/api/report', reportsRoutes);
 app.use('/api/report/purchasereport', require('./routes/purchasereport.routes'));
 app.use('/api/report/salesreport', require('./routes/salesreport.routes'));
 app.use('/api/report/sales', require('./routes/salesreport.routes'));
