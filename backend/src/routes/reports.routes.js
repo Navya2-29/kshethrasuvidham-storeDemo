@@ -15,6 +15,12 @@ router.post('/purchasereport', verifyAccessToken, purchaseReportController.getPu
 router.get('/purchase-report', verifyAccessToken, purchaseReportController.getPurchaseReport);
 router.post('/purchase-report', verifyAccessToken, purchaseReportController.getPurchaseReport);
 
+// Purchase Bill Report (New): /api/report/purchasebillreport & /api/report/purchase-bill-report
+router.get('/purchasebillreport', verifyAccessToken, purchaseReportController.getPurchaseBillReport || purchaseReportController.getPurchaseReport);
+router.post('/purchasebillreport', verifyAccessToken, purchaseReportController.getPurchaseBillReport || purchaseReportController.getPurchaseReport);
+router.get('/purchase-bill-report', verifyAccessToken, purchaseReportController.getPurchaseBillReport || purchaseReportController.getPurchaseReport);
+router.post('/purchase-bill-report', verifyAccessToken, purchaseReportController.getPurchaseBillReport || purchaseReportController.getPurchaseReport);
+
 // =========================================================================
 // 2. Sales Report: /api/report/salesreport & /api/report/sales-report
 // =========================================================================
@@ -22,6 +28,12 @@ router.get('/salesreport', verifyAccessToken, salesReportController.getSalesRepo
 router.post('/salesreport', verifyAccessToken, salesReportController.getSalesReport);
 router.get('/sales-report', verifyAccessToken, salesReportController.getSalesReport);
 router.post('/sales-report', verifyAccessToken, salesReportController.getSalesReport);
+
+// Sales Bill Report (New): /api/report/salesbillreport & /api/report/sales-bill-report
+router.get('/salesbillreport', verifyAccessToken, salesReportController.getSalesBillReport || salesReportController.getSalesReport);
+router.post('/salesbillreport', verifyAccessToken, salesReportController.getSalesBillReport || salesReportController.getSalesReport);
+router.get('/sales-bill-report', verifyAccessToken, salesReportController.getSalesBillReport || salesReportController.getSalesReport);
+router.post('/sales-bill-report', verifyAccessToken, salesReportController.getSalesBillReport || salesReportController.getSalesReport);
 
 // =========================================================================
 // 3. Purchase Return Report: /api/report/purchasereturnreport & /api/report/purchase-return-report
