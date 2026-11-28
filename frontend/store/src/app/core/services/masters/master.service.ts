@@ -69,7 +69,7 @@ export class MasterService {
     this.stockUpdatedSubject.next(event);
   }
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ================= SUPPLIER =================
   getSuppliers() {
@@ -218,14 +218,14 @@ export class MasterService {
     );
   }
 
-  getSaleProduct(){
- return this.http.get<Product[]>(
+  getSaleProduct() {
+    return this.http.get<Product[]>(
       `${this.API}/sales/saleproduct`,
     );
   }
 
-  getStockByDepartment(deptId: number){
- return this.http.get<any[]>(
+  getStockByDepartment(deptId: number) {
+    return this.http.get<any[]>(
       `${this.API}/sales/stock/department/${deptId}`,
     );
   }
@@ -261,35 +261,56 @@ export class MasterService {
     });
   }
 
-  // ==========================report==========================
+  // ========================== Reports ==========================
 
-  getProductWiseReport(data: any): Observable<any> {
-    return this.http.post(
-      `${this.API}/report/purchasereport/product-wise`,
+  getPurchaseReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/purchasereport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getPurchaseReturnReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/purchasereturnreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getSalesReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/salesreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getItemWiseSalesReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/itemwisesalesreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getProductWisePurchaseReport(data: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.API}/report/productwisepurchasereport`,
       data,
     );
   }
 
-  getSalesReport(filter: any): Observable<any> {
-    return this.http.post<any>(`${this.API}/report/sales/sales-report`, filter, {
-      headers: { 'skip-error-notification': 'true' },
-    });
-  }
-
-  getItemWiseSalesReport(filter: any): Observable<any> {
-    return this.http.post<any>(`${this.API}/report/sales/item-wise`, filter, {
-      headers: { 'skip-error-notification': 'true' },
-    });
+  // Backward compatibility alias for product-wise purchase report
+  getProductWiseReport(data: any): Observable<any> {
+    return this.getProductWisePurchaseReport(data);
   }
 
   getStockReport(): Observable<StockReport[]> {
-    return this.http.get<StockReport[]>(`${this.API}/report/stock-report`);
+    return this.http.get<StockReport[]>(`${this.API}/report/stockreport`);
+  }
+
+  getStockTransferReport(productId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.API}/report/stocktransferreport/${productId}`,
+    );
   }
 
   getAvailableStockbystocktransferreport(productId: number) {
-    return this.http.get<any>(
-      `${this.API}/report/stock-transfer-report/${productId}`,
-    );
+    return this.getStockTransferReport(productId);
   }
 
   // ================opening ==========================
@@ -300,7 +321,7 @@ export class MasterService {
   getOpenings() {
     return this.http.get(`${this.API}/opening/list`);
   }
- updateOpening(
+  updateOpening(
     id: number,
     payload: any
   ): Observable<any> {
@@ -407,37 +428,37 @@ export class MasterService {
 
   // ================= direct entry =================
 
-  createDirectEntry(data:any){
- return this.http.post(
-   `${this.API}/direct-entry/create`,
-   data
- );
-}
+  createDirectEntry(data: any) {
+    return this.http.post(
+      `${this.API}/direct-entry/create`,
+      data
+    );
+  }
 
-getDirectEntries(){
- return this.http.get(
-   `${this.API}/direct-entry/list`
- );
-}
+  getDirectEntries() {
+    return this.http.get(
+      `${this.API}/direct-entry/list`
+    );
+  }
 
-updateDirectEntry(id:number,data:any){
- return this.http.put(
-   `${this.API}/direct-entry/update/${id}`,
-   data
- );
-}
+  updateDirectEntry(id: number, data: any) {
+    return this.http.put(
+      `${this.API}/direct-entry/update/${id}`,
+      data
+    );
+  }
 
-deleteDirectEntry(id:number,data:any){
- return this.http.request(
-   'delete',
-   `${this.API}/direct-entry/delete/${id}`,
-   { body:data }
- );
-}
+  deleteDirectEntry(id: number, data: any) {
+    return this.http.request(
+      'delete',
+      `${this.API}/direct-entry/delete/${id}`,
+      { body: data }
+    );
+  }
 
 
 
-// -------------user-----------------------
+  // -------------user-----------------------
 
 
   getRoles() {
@@ -469,18 +490,18 @@ deleteDirectEntry(id:number,data:any){
   }
 
   // -------------------change password-------------------
- changePassword(id: number, data: any) {
-  return this.http.post(
-    `${this.API}/users/change-password/${id}`,
-    data
-  );
-}
+  changePassword(id: number, data: any) {
+    return this.http.post(
+      `${this.API}/users/change-password/${id}`,
+      data
+    );
+  }
 
-// --------------------dashboard--------------
- getDashboard() {
-  return this.http.get(
-    `${this.API}/dashboard`,
+  // --------------------dashboard--------------
+  getDashboard() {
+    return this.http.get(
+      `${this.API}/dashboard`,
 
-  );
-}
+    );
+  }
 }
