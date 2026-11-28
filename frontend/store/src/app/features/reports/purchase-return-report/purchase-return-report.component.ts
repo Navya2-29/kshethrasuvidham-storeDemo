@@ -354,7 +354,7 @@ export class PurchaseReturnReportComponent implements OnInit, OnDestroy {
           p.cancelled_by_name || p.username || p.user_name || p.created_by_name || defaultUser;
 
         const disc = Number(p.discount_amount || 0);
-        let tax = Number(p.gst_amount || 0);
+        let tax = Number(p.tax_amount ?? p.gst_amount ?? 0);
         if (!tax && p.items && Array.isArray(p.items)) {
           tax = p.items.reduce((sum: number, it: any) => sum + (Number(it.cgst || 0) + Number(it.sgst || 0)), 0);
         }

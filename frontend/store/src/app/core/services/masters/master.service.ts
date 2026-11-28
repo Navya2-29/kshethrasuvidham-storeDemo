@@ -269,6 +269,12 @@ export class MasterService {
     });
   }
 
+  getPurchaseBillReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/purchasebillreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
   getPurchaseReturnReport(filter?: any): Observable<any> {
     return this.http.post<any>(`${this.API}/report/purchasereturnreport`, filter || {}, {
       headers: { 'skip-error-notification': 'true' },
@@ -277,6 +283,12 @@ export class MasterService {
 
   getSalesReport(filter?: any): Observable<any> {
     return this.http.post<any>(`${this.API}/report/salesreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getSalesBillReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/salesbillreport`, filter || {}, {
       headers: { 'skip-error-notification': 'true' },
     });
   }

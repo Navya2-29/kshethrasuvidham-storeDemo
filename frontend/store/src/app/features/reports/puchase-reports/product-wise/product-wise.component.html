@@ -1,6 +1,6 @@
 <app-report-header (formSubmitted)="receiveData($event)"></app-report-header>
 
-<div class="row" id="result">
+<div class="row" id="result" *ngIf="showResult">
   <div class="col-12">
     <div class="card">
       <div
@@ -21,37 +21,49 @@
         <div class="table-responsive">
           <table
             id="basic-datatable"
-            class="dt-responsive table-bordered nowrap"
+            class="dt-responsive table-bordered nowrap w-100"
           >
             <thead>
               <tr>
-                <th class="text-center" style="width: 2%">#</th>
-                <th class="text-center" style="width: 41%">Supplier name</th>
-                <th class="text-center" style="width: 2%">Invoice No.</th>
-                <th style="width: 2%">Invoice Date</th>
-                <th style="width: 25%">Quantity</th>
-                <th style="width: 5%">Rate</th>
-                <th style="width: 4%">Amount</th>
+                <th class="text-center" style="width: 3%">#</th>
+                <th style="width: 25%">Supplier name</th>
+                <th class="text-center" style="width: 12%">Invoice No.</th>
+                <th style="width: 12%">Invoice Date</th>
+                <th class="text-right" style="width: 10%">Quantity</th>
+                <th class="text-right" style="width: 10%">Rate</th>
+                <th class="text-right" style="width: 10%">Discount</th>
+                <th class="text-right" style="width: 10%">Tax / GST</th>
+                <th class="text-right" style="width: 10%">Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of reportData; let i = index">
-                <td>{{ i + 1 }}</td>
+                <td class="text-center">{{ i + 1 }}</td>
                 <td>{{ item.supplier_name }}</td>
-                <td>{{ item.invoice_no }}</td>
+                <td class="text-center">{{ item.invoice_no }}</td>
                 <td>{{ item.invoice_date | date:'dd-MM-yyyy' }}</td>
-                <td>{{ item.qty }}-{{item.unit}}</td>
-                <td>₹ {{ item.cost_price }}</td>
-                <td>₹ {{ item.amount }}</td>
+                <td class="text-right">{{ item.qty }} {{item.unit}}</td>
+                <td class="text-right">₹{{ item.cost_price | number:'1.2-2' }}</td>
+                <td class="text-right">₹{{ (item.discount_amount || 0) | number:'1.2-2' }}</td>
+                <td class="text-right">₹{{ (item.tax_amount || 0) | number:'1.2-2' }}</td>
+                <td class="text-right font-bold">₹{{ item.amount | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="!reportData.length">
+                <td colspan="9" class="text-center py-3 text-muted">No records found</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <div class="card-footer bg-default">
-        <h4 class="text-secondary" style="font-weight: 500">
-          Total: &#x20B9; {{totalAmount}}
-        </h4>
+      <div class="card-footer bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="text-muted">Total Records: <strong>{{ reportData.length }}</strong></div>
+        <div class="d-flex gap-4">
+          <span class="text-secondary">Total Discount: <strong>₹{{ totalDiscount | number:'1.2-2' }}</strong></span>
+          <span class="text-secondary">Total Tax / GST: <strong>₹{{ totalTax | number:'1.2-2' }}</strong></span>
+          <h4 class="text-primary mb-0" style="font-weight: 600">
+            Total Amount: ₹{{ totalAmount | number:'1.2-2' }}
+          </h4>
+        </div>
       </div>
     </div>
   </div>
