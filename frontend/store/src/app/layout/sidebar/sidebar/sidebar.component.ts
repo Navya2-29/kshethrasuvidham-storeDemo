@@ -62,21 +62,14 @@ export class SidebarComponent {
         { label: 'Sales', route: '/transaction/sales' },
       ],
     },
-    // {
-    //   label: 'Reports',
-    //   icon: 'remixicon-contacts-line',
-    //   children: [
-    //     {
-    //       label: 'Purchase Report',
-    //       children: [
-    //         { label: 'ProductWise', route: 'report/purchase/product-wise' },
-    //         { label: 'SupplierWise', route: 'report/purchase/supplier-wise' },
-    //       ],
-    //     },
-    //     { label: 'Stock Report', route: 'report/stock-report' },
-    //     { label: 'Stock Transfer', route: '/reports/stock-transfer' },
-    //   ],
-    // },
+    {
+      label: 'Reports',
+      icon: 'remixicon-file-chart-line',
+      children: [
+        { label: 'Sales Report', route: '/report/sales' },
+        { label: 'Item-Wise Sales Report', route: '/report/item-wise-sales' },
+      ],
+    },
   ];
 
   constructor(

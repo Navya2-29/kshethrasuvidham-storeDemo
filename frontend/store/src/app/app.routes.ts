@@ -203,6 +203,25 @@ export const routes: Routes = [
 
       // REPORTS
       {
+        path: 'report/sales',
+        loadComponent: () =>
+          import('./features/reports/sales-report/sales-report.component').then(
+            (m) => m.SalesReportComponent
+          ),
+      },
+      {
+        path: 'report/item-wise-sales',
+        loadComponent: () =>
+          import('./features/reports/item-wise-sales-report/item-wise-sales-report.component').then(
+            (m) => m.ItemWiseSalesReportComponent
+          ),
+      },
+      {
+        path: 'report/sales/item-wise',
+        redirectTo: 'report/item-wise-sales',
+        pathMatch: 'full',
+      },
+      {
         path: 'report/purchase/product-wise',
         loadComponent: () =>
           import('./features/reports/puchase-reports/product-wise/product-wise.component').then(

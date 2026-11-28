@@ -1291,6 +1291,8 @@ export class QuickSalesComponent implements OnInit, OnDestroy {
             status: 'ACTIVE',
             total_items: payload.items?.length || 0,
             created_at: new Date().toISOString(),
+            cashier_name: this.authState.user()?.username || this.authState.user()?.name || 'admin',
+            user_name: this.authState.user()?.username || this.authState.user()?.name || 'admin',
             items: payload.items,
           };
           const raw = localStorage.getItem('store_completed_sales_backup');
