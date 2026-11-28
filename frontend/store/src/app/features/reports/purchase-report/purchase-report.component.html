@@ -1,0 +1,110 @@
+<div class="report-wrapper">
+
+  <!-- ================= TOP HEADER & FILTERS ================= -->
+  <div class="report-top-bar">
+    <div class="top-bar-left">
+      <h2 class="page-title">Purchase Report</h2>
+      <span class="record-count" *ngIf="!loading">{{ purchaseData.length }} records</span>
+    </div>
+
+    <!-- Minimal Filter Bar & Actions -->
+    <div class="top-bar-right">
+      <div class="filter-group">
+        <div class="filter-field">
+          <label>From</label>
+          <input type="date" [(ngModel)]="fromDate" />
+        </div>
+        <div class="filter-field">
+          <label>To</label>
+          <input type="date" [(ngModel)]="toDate" />
+        </div>
+        <div class="filter-field">
+          <label>Item</label>
+          <select [(ngModel)]="selectedItem" (change)="applyFilter()">
+            <option value="">All Items</option>
+            <option *ngFor="let item of itemList" [value]="item">{{ item }}</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>User</label>
+          <select [(ngModel)]="selectedUser" (change)="applyFilter()">
+            <option value="">All Users</option>
+            <option *ngFor="let u of userList" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>Supplier</label>
+          <select [(ngModel)]="selectedSupplier" (change)="applyFilter()">
+            <option value="">All Suppliers</option>
+            <option *ngFor="let s of supplierList" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <button type="button" class="btn-filter" (click)="fetchReport()">Filter</button>
+        <button type="button" class="btn-reset" (click)="resetFilter()" title="Clear all filters">Reset</button>
+      </div>
+
+      <div class="action-btn-group">
+        <button type="button" class="btn-export" (click)="exportExcel()" title="Export Excel">Excel</button>
+        <button type="button" class="btn-print" (click)="printReport()" title="Print">Print</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LOADING SPINNER ================= -->
+  <div class="loading-box" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Loading purchase report...</span>
+  </div>
+
+  <!-- ================= DATA TABLE ================= -->
+  <div class="table-card" *ngIf="!loading">
+    <table class="minimal-table">
+      <thead>
+        <tr>
+          <th class="text-center col-sl">Sl No</th>
+          <th>Invoice Number</th>
+          <th>Supplier</th>
+          <th>Product Name</th>
+          <th>Date</th>
+          <th>User</th>
+          <th class="text-right">Discount</th>
+          <th class="text-right">Tax / GST</th>
+          <th class="text-right">Total Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of purchaseData; let i = index">
+          <td class="text-center col-sl">{{ i + 1 }}</td>
+          <td>
+            <span class="invoice-num">{{ row.invoice_no }}</span>
+          </td>
+          <td class="font-bold">{{ row.supplier_name }}</td>
+          <td class="product-cell">
+            <span class="product-text" [title]="row.product_name">{{ row.product_name }}</span>
+          </td>
+          <td>{{ formatDateDisplay(row.receipt_date) }}</td>
+          <td>
+            <span class="user-badge">{{ row.username }}</span>
+          </td>
+          <td class="text-right">₹{{ row.discount_amount | number:'1.2-2' }}</td>
+          <td class="text-right">₹{{ row.tax_amount | number:'1.2-2' }}</td>
+          <td class="text-right amount-text">₹{{ row.total_amount | number:'1.2-2' }}</td>
+        </tr>
+
+        <tr *ngIf="!purchaseData.length" class="empty-row">
+          <td colspan="9">No purchase records found for the selected filters.</td>
+        </tr>
+      </tbody>
+
+      <tfoot *ngIf="purchaseData.length">
+        <tr class="total-row">
+          <td colspan="6" class="text-right"><strong>Total:</strong></td>
+          <td class="text-right grand-total">₹{{ totalDiscount | number:'1.2-2' }}</td>
+          <td class="text-right grand-total">₹{{ totalTax | number:'1.2-2' }}</td>
+          <td class="text-right grand-total">₹{{ grandTotal | number:'1.2-2' }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+</div>

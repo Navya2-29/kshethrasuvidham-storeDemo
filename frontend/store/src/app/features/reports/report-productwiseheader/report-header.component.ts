@@ -33,8 +33,8 @@ export class ReportHeaderComponent {
     this.searchForm = this.fb.group({
       product_code: [''],
       product_name: [''],
-      from_date: [today],
-      to_date: [today],
+      from_date: [''],
+      to_date: [''],
     });
 
     this.loadProducts();
