@@ -6,7 +6,8 @@ const db = require("../config/db.config");
  */
 exports.getSalesReport = async (req, res) => {
   try {
-    const { from_date, to_date } = req.body || {};
+    const filters = req.method === "POST" ? (req.body || req.query) : req.query;
+    const { from_date, to_date, payment_mode, user_id } = filters || {};
 
     let query = `
       SELECT
@@ -39,6 +40,16 @@ exports.getSalesReport = async (req, res) => {
       params.push(to_date);
     }
 
+    if (payment_mode) {
+      query += ` AND sh.payment_mode = ?`;
+      params.push(payment_mode);
+    }
+
+    if (user_id) {
+      query += ` AND sh.created_by = ?`;
+      params.push(user_id);
+    }
+
     query += ` ORDER BY sh.receipt_date DESC, sh.id DESC`;
 
     const [rows] = await db.query(query, params);
@@ -63,12 +74,14 @@ exports.getSalesReport = async (req, res) => {
  */
 exports.getItemWiseSalesReport = async (req, res) => {
   try {
-    const { from_date, to_date } = req.body || {};
+    const filters = req.method === "POST" ? (req.body || req.query) : req.query;
+    const { from_date, to_date, product_id, payment_mode, user_id } = filters || {};
 
     let query = `
       SELECT
         si.id AS item_id,
         sh.invoice_no,
+        si.product_id,
         si.product_name,
         si.qty AS quantity,
         sh.payment_mode,
@@ -92,6 +105,21 @@ exports.getItemWiseSalesReport = async (req, res) => {
     } else if (to_date) {
       query += ` AND DATE(sh.receipt_date) <= ?`;
       params.push(to_date);
+    }
+
+    if (product_id) {
+      query += ` AND si.product_id = ?`;
+      params.push(product_id);
+    }
+
+    if (payment_mode) {
+      query += ` AND sh.payment_mode = ?`;
+      params.push(payment_mode);
+    }
+
+    if (user_id) {
+      query += ` AND sh.created_by = ?`;
+      params.push(user_id);
     }
 
     query += ` ORDER BY sh.receipt_date DESC, sh.id DESC, si.id ASC`;

@@ -78,7 +78,7 @@ exports.createPurchase = async (req, res) => {
         header.discount_amount,
         header.other_charges,
         header.bill_amount,
-        header.created_by
+        header.created_by || req.user?.id || 1
       ]
     );
 
@@ -171,13 +171,16 @@ exports.getAllPurchases = async (req, res) => {
         ph.discount_amount,
         ph.other_charges,
         ph.bill_amount,
+        (SELECT COALESCE(SUM(pi.cgst + pi.sgst), 0) FROM purchase_items pi WHERE pi.purchase_id = ph.id) AS gst_amount,
         ph.status,
         ph.cancel_reason,
         ph.cancelled_by,
         ph.cancelled_at,
         u.username AS cancelled_by_name,
         s.supplier_name,
-        s.mobile AS supplier_mobile,
+        s.mobile_number AS supplier_mobile,
+        ph.created_by,
+        u2.username AS created_by_name,
         (SELECT COUNT(*) FROM purchase_items pi WHERE pi.purchase_id = ph.id) AS total_items,
         (SELECT GROUP_CONCAT(CONCAT(p.product_name, IF(pi.qty > 1, CONCAT(' (x', pi.qty, ')'), '')) SEPARATOR ', ')
          FROM purchase_items pi
@@ -186,6 +189,7 @@ exports.getAllPurchases = async (req, res) => {
       FROM purchase_header ph
       LEFT JOIN suppliers s ON ph.supplier_id = s.id
       LEFT JOIN users u ON ph.cancelled_by = u.id
+      LEFT JOIN users u2 ON ph.created_by = u2.id
       ORDER BY ph.id DESC
     `);
 
@@ -433,7 +437,7 @@ exports.getPurchaseById = async (req, res) => {
     const { id } = req.params;
 
     const [headerRows] = await db.query(
-      `SELECT ph.*, s.supplier_name, s.mobile AS supplier_mobile, u.username AS cancelled_by_name
+      `SELECT ph.*, s.supplier_name, s.mobile_number AS supplier_mobile, u.username AS cancelled_by_name
        FROM purchase_header ph
        LEFT JOIN suppliers s ON ph.supplier_id = s.id
        LEFT JOIN users u ON ph.cancelled_by = u.id
