@@ -67,9 +67,14 @@ export class SidebarComponent {
       icon: 'remixicon-file-chart-line',
       children: [
         { label: 'Sales Report', route: '/report/sales' },
+        { label: 'Sales Bill Register', route: '/report/sales-bill-report' },
         { label: 'Item-Wise Sales Report', route: '/report/item-wise-sales' },
         { label: 'Purchase Report', route: '/report/purchase' },
+        { label: 'Purchase Bill Register', route: '/report/purchase-bill-report' },
         { label: 'Purchase Return Report', route: '/report/purchase-return' },
+        // { label: 'Product-Wise Purchase Report', route: '/report/purchase/product-wise' },
+        // { label: 'Stock Report', route: '/report/stock' },
+        // { label: 'Stock Transfer Report', route: '/report/stock-transfer', multiDepartmentOnly: true },
       ],
     },
   ];

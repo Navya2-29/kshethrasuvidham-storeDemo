@@ -210,6 +210,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'report/sales-bill-report',
+        loadComponent: () =>
+          import('./features/reports/sales-bill-report/sales-bill-report.component').then(
+            (m) => m.SalesBillReportComponent
+          ),
+      },
+      {
         path: 'report/item-wise-sales',
         loadComponent: () =>
           import('./features/reports/item-wise-sales-report/item-wise-sales-report.component').then(
@@ -226,6 +233,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/reports/purchase-report/purchase-report.component').then(
             (m) => m.PurchaseReportComponent
+          ),
+      },
+      {
+        path: 'report/purchase-bill-report',
+        loadComponent: () =>
+          import('./features/reports/purchase-bill-report/purchase-bill-report.component').then(
+            (m) => m.PurchaseBillReportComponent
           ),
       },
       {
