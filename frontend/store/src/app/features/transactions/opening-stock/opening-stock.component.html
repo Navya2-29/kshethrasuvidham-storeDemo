@@ -1,337 +1,347 @@
-<div class="row g-4">
-  <div class="col-md-5 addsupplier">
-    <div
-      class=""
-      style="
-        border: 0px solid red;
-        margin-top: -10.8px;
-        margin-left: -10.8px;
-        background: white;
-        padding: 15pt;
-        box-shadow: 1px 2px 8px silver;
-        border-radius: 5px;
-      "
-    >
-      <form [formGroup]="openingForm" (ngSubmit)="onSubmit()">
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="table-responsive" style="margin: 0px">
-              <table>
-                <tr>
-                  <td>Product Code <span class="mandatoryfiels">*</span></td>
-                  <td>
-                    <input
-                      type="text"
-                      [readonly]="editId !== null"
-                      formControlName="product_code"
-                      (input)="onProductCodeChange()"
-                      placeholder="Enter Code"
-                      style="
-                        border: 1px solid silver;
-                        width: 140px;
-                        margin-left: 6px;
-                      "
-                    />
-                  </td>
-                </tr>
-                <!-- Product -->
-                <tr>
-                  <td>Product <span class="mandatoryfiels">*</span></td>
-                  <td>
-                    <select
-                      formControlName="product_id"
-                      style="
-                        border: 1px solid silver;
-                        width: 240px;
-                        margin-left: 6px;
-                      "
-                      (change)="onProductChange($event)"
-                    >
-                      <option value="">Select Product</option>
-                      <option
-                        *ngFor="let p of products"
-                        [value]="p.id"
-                        [disabled]="editId !== null"
-                      >
-                        {{ p.product_code }} - {{ p.product_name }}
-                      </option>
-                    </select>
-                    <div
-                      class="error"
-                      *ngIf="f.product_id.touched && f.product_id.invalid"
-                    >
-                      Product is required
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Author / Publisher (Book Store only) -->
-                <ng-container *ngIf="isBookstore && selectedProduct">
-                  <tr>
-                    <td>Author <span class="mandatoryfiels">*</span></td>
-                    <td>
-                      <select
-                        formControlName="author_id"
-                        style="
-                          border: 1px solid silver;
-                          width: 240px;
-                          margin-left: 6px;
-                        "
-                      >
-                        <option [ngValue]="null">Select Author</option>
-                        <option *ngFor="let a of selectedProduct.authors" [ngValue]="a.id">
-                          {{ a.author_name }}
-                        </option>
-                      </select>
-                      <div class="error" *ngIf="!selectedProduct.authors?.length">
-                        This product has no author set. Update it in Product Master.
-                      </div>
-                      <div
-                        class="error"
-                        *ngIf="f.author_id.touched && f.author_id.hasError('required')"
-                      >
-                        Author is required
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Publisher <span class="mandatoryfiels">*</span></td>
-                    <td>
-                      <select
-                        formControlName="publisher_id"
-                        style="
-                          border: 1px solid silver;
-                          width: 240px;
-                          margin-left: 6px;
-                        "
-                      >
-                        <option [ngValue]="null">Select Publisher</option>
-                        <option *ngFor="let p of selectedProduct.publishers" [ngValue]="p.id">
-                          {{ p.publisher_name }}
-                        </option>
-                      </select>
-                      <div class="error" *ngIf="!selectedProduct.publishers?.length">
-                        This product has no publisher set. Update it in Product Master.
-                      </div>
-                      <div
-                        class="error"
-                        *ngIf="f.publisher_id.touched && f.publisher_id.hasError('required')"
-                      >
-                        Publisher is required
-                      </div>
-                    </td>
-                  </tr>
-                </ng-container>
-
-                <!-- Opening Quantity -->
-                <tr>
-                  <td>
-                    Opening Quantity <span class="mandatoryfiels">*</span>
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      formControlName="qty"
-                      min="0"
-                      step="0.01"
-                      style="
-                        border: 1px solid silver;
-                        width: 120px;
-                        margin-left: 6px;
-                      "
-                    />
-
-                    <div class="error" *ngIf="f.qty.touched && f.qty.invalid">
-                      Quantity is required
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Opening Date -->
-                <tr>
-                  <td>Opening Date <span class="mandatoryfiels">*</span></td>
-                  <td>
-                    <input
-                      type="date"
-                      formControlName="opening_date"
-                      style="
-                        border: 1px solid silver;
-                        width: 140px;
-                        margin-left: 6px;
-                      "
-                    />
-
-                    <div
-                      class="error"
-                      *ngIf="f.opening_date.touched && f.opening_date.invalid"
-                    >
-                      Opening date required
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Remark</td>
-                  <td>
-                    <input
-                      type="text"
-                      formControlName="remarks"
-                      placeholder="Remark"
-                      style="
-                        border: 1px solid silver;
-                        width: 140px;
-                        margin-left: 6px;
-                      "
-                    />
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-          <!-- Save Button -->
-          <div class="col-sm-12 mt-3">
-            <button
-              type="submit"
-              class="btn btn-theme waves-effect waves-light"
-              [disabled]="openingForm.invalid"
-            >
-              <i class="remixicon-save-2-fill mr-1"></i>
-              {{buttonText}}
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
+<div class="opening-stock-wrapper">
+  <!-- TOP HEADER TITLE -->
+  <div class="page-header-bar">
+    <h1 class="header-title">Welcome !</h1>
   </div>
 
-  <div class="col-md-7 supplier-lists">
-    <div class="card">
-      <div
-        class="card-header border-bottom-0"
-        style="font-size: 12.3pt; padding: 9px"
-      >
-        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
-          &nbsp;&nbsp;<span class="fa fa-list"></span>&nbsp;&nbsp;Opening List
+  <div class="opening-grid">
+    <!-- LEFT CARD: ADD / UPDATE OPENING STOCK -->
+    <div class="card form-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-header-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <h2 class="card-title">{{ editId !== null ? 'Update Opening Stock' : 'Add Opening Stock' }}</h2>
         </div>
       </div>
-      <div class="card-body" style="padding: 15px">
-        <div class="table-responsive" style="margin: 0px">
-          <div class="table-container">
-            <!-- Filter -->
-            <div class="search-container">
-              <input
-                class="searchiput"
-                matInput
-                placeholder="Search..."
-                (keyup)="applyFilter($event)"
-              />
-            </div>
-            <table
-              mat-table
-              [dataSource]="dataSource"
-              matSort
-              class="custom-table"
-            >
-              <!-- Index Column -->
-              <ng-container matColumnDef="index">
-                <th mat-header-cell *matHeaderCellDef>#</th>
-                <td mat-cell *matCellDef="let element; let i = index">
-                  {{ i + 1 }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="product_code">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  P.Code
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.product_code }}
-                </td>
-              </ng-container>
-              <!-- Supplier ID -->
-              <ng-container matColumnDef="product_name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Product
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.product_name }}
-                </td>
-              </ng-container>
 
-              <ng-container matColumnDef="author_name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Author
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.author_name }}
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="publisher_name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Publisher
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.publisher_name }}
-                </td>
-              </ng-container>
-
-              <!-- Company Name -->
-              <ng-container matColumnDef="qty">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Qty</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.qty }}
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="transaction_date">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.opening_date | date: "dd-MM-yyyy" }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Action
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  <a
-                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                    data-toggle="tooltip"
-                    data-placement="top"
-                    title="Edit"
-                    data-original-title="Edit Details"
-                    (click)="editRow(element)"
-                    ><i class="fa fa-edit"></i
-                  ></a>
-                  <a
-                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                    data-toggle="modal"
-                    data-placement="top"
-                    title="Delete Details"
-                    data-original-title="Delete"
-                    (click)="deleteRow(element)"
-                    ><i class="fa fa-times"></i
-                  ></a>
-                </td>
-              </ng-container>
-              <!-- Header & Row -->
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-              <!-- No Data -->
-              <tr *matNoDataRow>
-                <td colspan="5" class="text-center">No qty found</td>
-              </tr>
-            </table>
-
-            <!-- Pagination -->
-            <mat-paginator
-              [pageSize]="5"
-              [pageSizeOptions]="[5, 10, 20]"
-              showFirstLastButtons
-            >
-            </mat-paginator>
+      <div class="card-body">
+        <form [formGroup]="openingForm" (ngSubmit)="onSubmit()" class="opening-form">
+          <!-- 1. Product Code -->
+          <div class="form-group">
+            <label class="form-label" for="product_code">
+              Product Code <span class="mandatory">*</span>
+            </label>
+            <input
+              type="text"
+              id="product_code"
+              class="form-control"
+              [readonly]="editId !== null"
+              formControlName="product_code"
+              (input)="onProductCodeChange()"
+              placeholder="Enter Code"
+            />
           </div>
+
+          <!-- 2. Product -->
+          <div class="form-group">
+            <label class="form-label" for="product_id">
+              Product <span class="mandatory">*</span>
+            </label>
+            <select
+              id="product_id"
+              class="form-control form-select"
+              formControlName="product_id"
+              (change)="onProductChange($event)"
+            >
+              <option value="">Select Product</option>
+              <option
+                *ngFor="let p of products"
+                [value]="p.id"
+                [disabled]="editId !== null"
+              >
+                {{ p.product_code }} - {{ p.product_name }}
+              </option>
+            </select>
+            <div class="error-msg" *ngIf="f.product_id.touched && f.product_id.invalid">
+              Product is required
+            </div>
+          </div>
+
+          <!-- Author / Publisher (Book Store only) -->
+          <ng-container *ngIf="isBookstore && selectedProduct">
+            <div class="form-group">
+              <label class="form-label" for="author_id">
+                Author <span class="mandatory">*</span>
+              </label>
+              <select
+                id="author_id"
+                class="form-control form-select"
+                formControlName="author_id"
+              >
+                <option [ngValue]="null">Select Author</option>
+                <option *ngFor="let a of selectedProduct.authors" [ngValue]="a.id">
+                  {{ a.author_name }}
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="!selectedProduct.authors?.length">
+                This product has no author set. Update it in Product Master.
+              </div>
+              <div class="error-msg" *ngIf="f.author_id.touched && f.author_id.hasError('required')">
+                Author is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="publisher_id">
+                Publisher <span class="mandatory">*</span>
+              </label>
+              <select
+                id="publisher_id"
+                class="form-control form-select"
+                formControlName="publisher_id"
+              >
+                <option [ngValue]="null">Select Publisher</option>
+                <option *ngFor="let p of selectedProduct.publishers" [ngValue]="p.id">
+                  {{ p.publisher_name }}
+                </option>
+              </select>
+              <div class="error-msg" *ngIf="!selectedProduct.publishers?.length">
+                This product has no publisher set. Update it in Product Master.
+              </div>
+              <div class="error-msg" *ngIf="f.publisher_id.touched && f.publisher_id.hasError('required')">
+                Publisher is required
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- 3. Opening Quantity -->
+          <div class="form-group">
+            <label class="form-label" for="qty">
+              Opening Quantity <span class="mandatory">*</span>
+            </label>
+            <input
+              type="number"
+              id="qty"
+              class="form-control"
+              formControlName="qty"
+              min="0"
+              step="0.01"
+              placeholder="1"
+            />
+            <div class="error-msg" *ngIf="f.qty.touched && f.qty.invalid">
+              Quantity is required
+            </div>
+          </div>
+
+          <!-- 4. Opening Date -->
+          <div class="form-group">
+            <label class="form-label" for="opening_date">
+              Opening Date <span class="mandatory">*</span>
+            </label>
+            <input
+              type="date"
+              id="opening_date"
+              class="form-control"
+              formControlName="opening_date"
+            />
+            <div class="error-msg" *ngIf="f.opening_date.touched && f.opening_date.invalid">
+              Opening date required
+            </div>
+          </div>
+
+          <!-- 5. Remark -->
+          <div class="form-group">
+            <label class="form-label" for="remarks">Remark</label>
+            <input
+              type="text"
+              id="remarks"
+              class="form-control"
+              formControlName="remarks"
+              placeholder="Remark"
+            />
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn-save"
+              [disabled]="openingForm.invalid || isSaving"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span>{{ buttonText }}</span>
+            </button>
+
+            <button
+              type="button"
+              class="btn-clear"
+              (click)="reset()"
+            >
+              Clear
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT CARD: OPENING LIST -->
+    <div class="card list-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-header-icon-list">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+          </div>
+          <h2 class="card-title">Opening List</h2>
         </div>
+
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <input
+            type="text"
+            matInput
+            (keyup)="applyFilter($event)"
+            placeholder="Search..."
+            class="search-input"
+          />
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="table-container">
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            matSort
+            class="custom-opening-table"
+          >
+            <!-- 1. Index -->
+            <ng-container matColumnDef="index">
+              <th mat-header-cell *matHeaderCellDef class="th-index">#</th>
+              <td mat-cell *matCellDef="let element; let i = index" class="td-index">
+                {{ i + 1 }}
+              </td>
+            </ng-container>
+
+            <!-- 2. P.Code -->
+            <ng-container matColumnDef="product_code">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-pcode">
+                P.Code
+              </th>
+              <td mat-cell *matCellDef="let element" class="td-pcode">
+                {{ element.product_code }}
+              </td>
+            </ng-container>
+
+            <!-- 3. Product -->
+            <ng-container matColumnDef="product_name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-product">
+                Product
+              </th>
+              <td mat-cell *matCellDef="let element" class="td-product">
+                {{ element.product_name }}
+              </td>
+            </ng-container>
+
+            <!-- Author (Bookstore only) -->
+            <ng-container matColumnDef="author_name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-author">
+                Author
+              </th>
+              <td mat-cell *matCellDef="let element" class="td-author">
+                {{ element.author_name }}
+              </td>
+            </ng-container>
+
+            <!-- Publisher (Bookstore only) -->
+            <ng-container matColumnDef="publisher_name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-publisher">
+                Publisher
+              </th>
+              <td mat-cell *matCellDef="let element" class="td-publisher">
+                {{ element.publisher_name }}
+              </td>
+            </ng-container>
+
+            <!-- 4. Qty -->
+            <ng-container matColumnDef="qty">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-qty">Qty</th>
+              <td mat-cell *matCellDef="let element" class="td-qty">
+                {{ element.qty | number:'1.2-2' }}
+              </td>
+            </ng-container>
+
+            <!-- 5. Date -->
+            <ng-container matColumnDef="transaction_date">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-date">Date</th>
+              <td mat-cell *matCellDef="let element" class="td-date">
+                {{ element.opening_date | date: 'dd-MM-yyyy' }}
+              </td>
+            </ng-container>
+
+            <!-- 6. Action -->
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef class="th-action">Action</th>
+              <td mat-cell *matCellDef="let element" class="td-action">
+                <div class="action-btn-group">
+                  <!-- Edit -->
+                  <button
+                    type="button"
+                    class="btn-action edit"
+                    (click)="editRow(element)"
+                    title="Edit"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+                  <!-- Delete -->
+                  <button
+                    type="button"
+                    class="btn-action delete"
+                    (click)="deleteRow(element)"
+                    title="Delete"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Header & Row -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+            <!-- No Data -->
+            <tr *matNoDataRow>
+              <td [attr.colspan]="displayedColumns.length" class="empty-state">No qty found</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <mat-paginator
+          [pageSize]="5"
+          [pageSizeOptions]="[5, 10, 20]"
+          showFirstLastButtons
+        >
+        </mat-paginator>
       </div>
     </div>
   </div>

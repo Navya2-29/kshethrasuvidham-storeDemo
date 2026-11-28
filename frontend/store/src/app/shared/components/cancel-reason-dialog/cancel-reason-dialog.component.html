@@ -1,16 +1,33 @@
 <div class="cancel-dialog">
-  <h2>Cancel Purchase</h2>
-  <p>
-    You're about to cancel invoice <b>{{ data.invoice_no }}</b>. This will
-    reverse the stock it added. Please state the reason.
+  <h2>{{ data.title || (data.type === 'sale' ? 'Cancel Sale Bill' : 'Cancel Purchase') }}</h2>
+  <p *ngIf="data.type === 'sale'">
+    You are cancelling invoice <b>{{ data.invoice_no }}</b>. Sold products will be <b>immediately restored to stock</b>.
+  </p>
+  <p *ngIf="data.type !== 'sale'">
+    You're about to cancel invoice <b>{{ data.invoice_no }}</b>. This will reverse the stock it added.
   </p>
 
-  <textarea
-    rows="3"
-    placeholder="Reason for cancellation"
-    [(ngModel)]="reason"
-    autofocus
-  ></textarea>
+  <div class="field-box" *ngIf="data.type === 'sale'">
+    <label>Payment Return Via Method:</label>
+    <select [(ngModel)]="paymentReturnMethod" class="select-return-mode">
+      <option value="Cash">Cash Return</option>
+      <option value="UPI">UPI / Google Pay / PhonePe</option>
+      <option value="Card">Card Refund</option>
+      <option value="Bank Transfer">Bank Account Transfer</option>
+      <option value="Store Credit">Store Credit</option>
+      <option value="Not Refunded">No Refund / None</option>
+    </select>
+  </div>
+
+  <div class="field-box">
+    <label>Cancellation Reason <span class="required">*</span>:</label>
+    <textarea
+      rows="3"
+      placeholder="Why is this bill being cancelled?"
+      [(ngModel)]="reason"
+      autofocus
+    ></textarea>
+  </div>
 
   <div class="cancel-dialog-actions">
     <button type="button" class="btn-secondary" (click)="dismiss()">
@@ -22,7 +39,7 @@
       [disabled]="!reason.trim()"
       (click)="confirm()"
     >
-      Cancel Purchase
+      {{ data.type === 'sale' ? 'Cancel & Restore Stock' : 'Cancel Purchase' }}
     </button>
   </div>
 </div>

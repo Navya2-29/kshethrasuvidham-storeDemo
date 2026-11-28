@@ -1,11 +1,26 @@
 <div class="dialog-header">
-  <h2>
-    <span class="code" *ngIf="summary.productCode">{{ summary.productCode }} |</span>
-    {{ summary.productName || data.productName }}
-  </h2>
-  <button type="button" class="close-btn" title="Close" (click)="close()">
-    <i class="fa fa-times"></i>
-  </button>
+  <div class="header-title-wrap">
+    <h2>
+      <span class="code" *ngIf="summary.productCode || data.productCode">{{ summary.productCode || data.productCode }} |</span>
+      {{ summary.productName || data.productName }}
+    </h2>
+    <span *ngIf="data.isPriceEditable" class="badge-price-change-dialog" title="Rate is editable during sales">
+      Price Change Allowed
+    </span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn-damage" title="Report Damaged Stock" (click)="openDamageDialog()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <span>Damage</span>
+    </button>
+    <button type="button" class="close-btn" title="Close" (click)="close()">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
 </div>
 
 <div class="dialog-body">

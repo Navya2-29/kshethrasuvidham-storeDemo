@@ -20,6 +20,7 @@ const publisherRoutes = require('./routes/publisher.routes');
 const directEntryRoutes=require('./routes/directentry.routes');
 const roleRoutes =require('./routes/role.routes');
 const dashboardRoutes=require('./routes/dashboard.routes')
+const reportsRoutes = require('./routes/reports.routes');
 const app = express();
 const corsOptions = {
   origin: [
@@ -45,7 +46,11 @@ app.use('/api/purchases', purchaseRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/stocks',stockTransferRoutes);
 app.use('/api/sales',salesRoutes );
+app.use('/api/reports', reportsRoutes);
+app.use('/api/report', reportsRoutes);
 app.use('/api/report/purchasereport', require('./routes/purchasereport.routes'));
+app.use('/api/report/salesreport', require('./routes/salesreport.routes'));
+app.use('/api/report/sales', require('./routes/salesreport.routes'));
 app.use('/api/report', stockRoutes);
 app.use('/api/report', stockTransferReportRoutes);
 app.use('/api/opening', require('./routes/openingbalance.routes'));
@@ -58,4 +63,6 @@ app.use('/api/users',userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/client-settings', require('./routes/settings.routes'));
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/damage', require('./routes/damage.routes'));
+app.use('/api/damages', require('./routes/damage.routes'));
 module.exports = app;

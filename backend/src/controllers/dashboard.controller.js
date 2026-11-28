@@ -98,6 +98,7 @@ exports.getDashboard = async (req, res) => {
         todayPurchase: Number(todayPurchase.total),
 
         totalOrders: Number(orders.totalOrders),
+        totalBills: Number(orders.totalOrders),
         totalPurchaseBills: Number(purchaseBills.totalPurchaseBills),
 
         totalProducts: Number(products.totalProducts),

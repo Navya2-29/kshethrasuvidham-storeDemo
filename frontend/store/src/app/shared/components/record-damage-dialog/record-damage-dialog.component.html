@@ -1,0 +1,147 @@
+<div class="damage-dialog-container">
+
+  <!-- DIALOG HEADER -->
+  <div class="dialog-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div>
+        <h3 class="dialog-title">Report Damaged Stock</h3>
+        <p class="dialog-subtitle">
+          <span class="p-code" *ngIf="data.productCode">[{{ data.productCode }}]</span>
+          {{ data.productName }}
+        </p>
+      </div>
+    </div>
+    <button type="button" class="btn-close" (click)="close()" title="Close dialog">✕</button>
+  </div>
+
+  <!-- DIALOG BODY -->
+  <div class="dialog-body">
+
+    <!-- In-Hand Stock Banner -->
+    <div class="stock-banner">
+      <div class="stock-info">
+        <span class="stock-label">Current Available Stock:</span>
+        <span class="stock-val font-bold" [class.text-danger]="availableStock <= 0" [class.text-success]="availableStock > 0">
+          {{ availableStock }} {{ data.unit || 'Nos' }}
+        </span>
+      </div>
+      <div class="cost-info" *ngIf="data.costPrice">
+        <span class="stock-label">Cost:</span>
+        <span class="stock-val">₹{{ data.costPrice | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Negative Stock Prevention Warning -->
+    <div class="stock-warning-alert" *ngIf="availableStock <= 0">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span><strong>Out of Stock:</strong> Current quantity is 0. Damaged stock cannot be deducted as product quantity cannot be negative.</span>
+    </div>
+
+    <div class="stock-warning-alert" *ngIf="availableStock > 0 && damagedQty > availableStock">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span><strong>Quantity Exceeded:</strong> Max allowed is {{ availableStock }} {{ data.unit || 'Nos' }}. Quantity cannot be negative.</span>
+    </div>
+
+    <!-- FORM FIELDS -->
+    <div class="form-row">
+      <!-- Damaged Qty -->
+      <div class="form-group flex-1">
+        <label class="input-label">Damaged Quantity <span class="required">*</span></label>
+        <input
+          type="number"
+          min="0.01"
+          [max]="availableStock"
+          step="any"
+          class="custom-input"
+          [(ngModel)]="damagedQty"
+          placeholder="e.g. 5"
+          required
+        />
+      </div>
+
+      <!-- Damage Reason / Type -->
+      <div class="form-group flex-1">
+        <label class="input-label">Reason / Category <span class="required">*</span></label>
+        <select class="custom-select" [(ngModel)]="damageType">
+          <option *ngFor="let r of damageReasons" [value]="r.value">
+            {{ r.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <!-- Date -->
+      <div class="form-group flex-1">
+        <label class="input-label">Date of Damage <span class="required">*</span></label>
+        <input
+          type="date"
+          class="custom-input"
+          [(ngModel)]="damageDate"
+          required
+        />
+      </div>
+
+      <!-- Estimated Loss -->
+      <div class="form-group flex-1">
+        <label class="input-label">Estimated Loss</label>
+        <div class="loss-box">
+          <span class="loss-amount">₹{{ estimatedLoss | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remarks / Details -->
+    <div class="form-group">
+      <label class="input-label">Remarks / Description</label>
+      <textarea
+        rows="2"
+        class="custom-textarea"
+        [(ngModel)]="remarks"
+        placeholder="e.g. Box dropped in storage, water leakage from roof, defective seal..."
+      ></textarea>
+    </div>
+
+    <div class="stock-deduct-notice">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>Submitting will record this item in the <strong>Damage List</strong> and immediately deduct <strong>{{ damagedQty || 0 }} {{ data.unit || 'Nos' }}</strong> from available stock.</span>
+    </div>
+
+  </div>
+
+  <!-- DIALOG FOOTER -->
+  <div class="dialog-footer">
+    <button type="button" class="btn-cancel" (click)="close()" [disabled]="saving">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn-submit"
+      (click)="submitDamage()"
+      [disabled]="saving || !damagedQty || damagedQty <= 0 || damagedQty > availableStock || availableStock <= 0"
+    >
+      <span *ngIf="saving" class="spinner-small"></span>
+      <span>{{ saving ? 'Saving...' : 'Add to Damage List' }}</span>
+    </button>
+  </div>
+
+</div>

@@ -154,6 +154,46 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'transaction/purchase-return-list',
+        loadComponent: () =>
+          import(
+            './features/transactions/purchase-return-list/purchase-return-list.component'
+          ).then((m) => m.PurchaseReturnListComponent),
+      },
+      {
+        path: 'transaction/damage-list',
+        loadComponent: () =>
+          import(
+            './features/transactions/damage-list/damage-list.component'
+          ).then((m) => m.DamageListComponent),
+      },
+      {
+        path: 'transaction/quicksales',
+        loadComponent: () =>
+          import('./features/transactions/quick-sales/quick-sales.component').then(
+            (m) => m.QuickSalesComponent,
+          ),
+      },
+      {
+        path: 'transaction/sales-list',
+        loadComponent: () =>
+          import('./features/transactions/sales-list/sales-list.component').then(
+            (m) => m.SalesListComponent,
+          ),
+      },
+      {
+        path: 'transaction/cancelled-sales-list',
+        loadComponent: () =>
+          import(
+            './features/transactions/cancelled-sales-list/cancelled-sales-list.component'
+          ).then((m) => m.CancelledSalesListComponent),
+      },
+      {
+        path: 'transaction/quick-sales',
+        redirectTo: 'transaction/quicksales',
+        pathMatch: 'full',
+      },
+      {
         path: 'transaction/sales',
         loadComponent: () =>
           import('./features/transactions/sales/sales.component').then(
@@ -162,6 +202,53 @@ export const routes: Routes = [
       },
 
       // REPORTS
+      {
+        path: 'report/sales',
+        loadComponent: () =>
+          import('./features/reports/sales-report/sales-report.component').then(
+            (m) => m.SalesReportComponent
+          ),
+      },
+      {
+        path: 'report/sales-bill-report',
+        loadComponent: () =>
+          import('./features/reports/sales-bill-report/sales-bill-report.component').then(
+            (m) => m.SalesBillReportComponent
+          ),
+      },
+      {
+        path: 'report/item-wise-sales',
+        loadComponent: () =>
+          import('./features/reports/item-wise-sales-report/item-wise-sales-report.component').then(
+            (m) => m.ItemWiseSalesReportComponent
+          ),
+      },
+      {
+        path: 'report/sales/item-wise',
+        redirectTo: 'report/item-wise-sales',
+        pathMatch: 'full',
+      },
+      {
+        path: 'report/purchase',
+        loadComponent: () =>
+          import('./features/reports/purchase-report/purchase-report.component').then(
+            (m) => m.PurchaseReportComponent
+          ),
+      },
+      {
+        path: 'report/purchase-bill-report',
+        loadComponent: () =>
+          import('./features/reports/purchase-bill-report/purchase-bill-report.component').then(
+            (m) => m.PurchaseBillReportComponent
+          ),
+      },
+      {
+        path: 'report/purchase-return',
+        loadComponent: () =>
+          import('./features/reports/purchase-return-report/purchase-return-report.component').then(
+            (m) => m.PurchaseReturnReportComponent
+          ),
+      },
       {
         path: 'report/purchase/product-wise',
         loadComponent: () =>

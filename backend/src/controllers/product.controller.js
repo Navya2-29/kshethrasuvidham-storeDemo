@@ -1,6 +1,19 @@
 const db = require("../config/db.config");
 const { getSoleDepartmentId } = require("../utils/stockSync.util");
 
+// Ensure is_price_editable column exists in products table
+(async () => {
+  try {
+    const [cols] = await db.query("SHOW COLUMNS FROM products LIKE 'is_price_editable'");
+    if (!cols || cols.length === 0) {
+      await db.query("ALTER TABLE products ADD COLUMN is_price_editable TINYINT(1) NOT NULL DEFAULT 0");
+      console.log("Added column is_price_editable to products table");
+    }
+  } catch (err) {
+    // Database connection or table not yet initialized
+  }
+})();
+
 async function isBookstore() {
   const [[row]] = await db.query(
     "SELECT is_bookstore FROM client_settings WHERE id = 1"
@@ -35,6 +48,14 @@ function validateProductInput(body, bookstore) {
     body.min_qty === undefined || body.min_qty === "" ? 0 : Number(body.min_qty);
   const max_qty =
     body.max_qty === undefined || body.max_qty === "" ? 0 : Number(body.max_qty);
+
+  const is_price_editable =
+    body.is_price_editable === 1 ||
+    body.is_price_editable === true ||
+    body.is_price_editable === "1" ||
+    body.is_price_editable === "Y"
+      ? 1
+      : 0;
 
   const author_ids = toIdArray(body.author_ids);
   const publisher_ids = toIdArray(body.publisher_ids);
@@ -87,6 +108,7 @@ function validateProductInput(body, bookstore) {
       unit,
       category,
       sale_item,
+      is_price_editable,
       cost_price,
       mrp,
       selling_price,
@@ -145,6 +167,7 @@ async function fetchProducts({ activeOnly }) {
        p.selling_price,
        p.gst_percent,
        p.sale_item,
+       COALESCE(p.is_price_editable, 0) AS is_price_editable,
        p.hsn_code,
        p.is_active,
        p.created_by,
@@ -247,8 +270,8 @@ exports.createProduct = async (req, res) => {
         `INSERT INTO products (
           product_code, product_name, product_nameml, unit, category_id,
           author_id, publisher_id, min_qty, max_qty, cost_price, selling_price,
-          mrp, gst_percent, sale_item, hsn_code, created_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          mrp, gst_percent, sale_item, is_price_editable, hsn_code, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           product_code,
           values.product_name,
@@ -264,6 +287,7 @@ exports.createProduct = async (req, res) => {
           values.mrp,
           values.gst_percent,
           values.sale_item,
+          values.is_price_editable,
           values.hsn_code,
           req.user?.id || null,
         ]
@@ -342,6 +366,7 @@ exports.updateProduct = async (req, res) => {
           mrp=?,
           gst_percent=?,
           sale_item=?,
+          is_price_editable=?,
           hsn_code=?
         WHERE id=? AND is_active=1`,
         [
@@ -358,6 +383,7 @@ exports.updateProduct = async (req, res) => {
           values.mrp,
           values.gst_percent,
           values.sale_item,
+          values.is_price_editable,
           values.hsn_code,
           id,
         ]

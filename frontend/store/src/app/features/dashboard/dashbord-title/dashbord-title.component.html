@@ -9,13 +9,13 @@
       </div> -->
       <h4 class="page-title">Welcome {{ username }} !</h4>
       <ng-container *ngIf="settings$ | async as settings">
-      <div class="notification-ticker" *ngIf="settings?.notification?.trim()" >
-        <div class="ticker-content" >
-          <span>
-            ⚠ {{ settings.notification }} &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
-          </span>
+        <div class="notification-ticker" *ngIf="settings?.notification?.trim()">
+          <div class="ticker-content">
+            <span>
+              ⚠ {{ settings.notification }} &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
+            </span>
+          </div>
         </div>
-      </div>
       </ng-container>
     </div>
   </div>

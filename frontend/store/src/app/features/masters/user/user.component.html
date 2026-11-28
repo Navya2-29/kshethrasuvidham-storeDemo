@@ -1,27 +1,53 @@
-<app-master-layout
-  title="User List"
-  [formTitle]="editMode ? 'Update User' : 'Add User'">
+<div class="user-page-wrapper">
 
-  <!-- FORM -->
-  <div form>
-    <app-dynamic-form
-      [form]="form"
-      [fields]="fields"
-      [editMode]="editMode"
-      [loading]="loading"
-      (submit)="save($event)"
-      (cancel)="reset()">
-    </app-dynamic-form>
+  <!-- TOP HEADER BAR -->
+  <div class="user-header-bar">
+    <div class="header-left">
+      <h1 class="header-title">User Management</h1>
+      <div class="breadcrumbs">
+        <span>Masters</span>
+        <span class="separator">></span>
+        <span class="current">User Management</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button type="button" class="btn-add-user" (click)="reset()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Add User</span>
+      </button>
+    </div>
   </div>
 
-  <!-- TABLE -->
-  <div table>
-    <app-dynamic-table
-      [columns]="columns"
-      [data]="users"
-      (edit)="editUser($event)"
-      (delete)="deleteUser($event)">
-    </app-dynamic-table>
-  </div>
+  <!-- MASTER LAYOUT (WITH PRESERVED ARCHITECTURE & DATA BINDINGS) -->
+  <app-master-layout
+    title="User List"
+    [formTitle]="editMode ? 'Update User' : 'Add User'">
 
-</app-master-layout>
+    <!-- FORM -->
+    <div form>
+      <app-dynamic-form
+        [form]="form"
+        [fields]="fields"
+        [editMode]="editMode"
+        [loading]="loading"
+        (submit)="save($event)"
+        (cancel)="reset()">
+      </app-dynamic-form>
+    </div>
+
+    <!-- TABLE -->
+    <div table>
+      <app-dynamic-table
+        [columns]="columns"
+        [data]="users"
+        (edit)="editUser($event)"
+        (delete)="deleteUser($event)">
+      </app-dynamic-table>
+    </div>
+
+  </app-master-layout>
+
+</div>

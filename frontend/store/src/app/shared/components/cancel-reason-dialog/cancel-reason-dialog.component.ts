@@ -3,6 +3,13 @@ import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
+export interface CancelDialogData {
+  invoice_no: string;
+  type?: 'sale' | 'purchase';
+  title?: string;
+  payment_mode?: string;
+}
+
 @Component({
   selector: 'app-cancel-reason-dialog',
   standalone: true,
@@ -12,15 +19,23 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 })
 export class CancelReasonDialogComponent {
   reason = '';
+  paymentReturnMethod = 'Cash';
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { invoice_no: string },
+    @Inject(MAT_DIALOG_DATA) public data: CancelDialogData,
     private dialogRef: MatDialogRef<CancelReasonDialogComponent>,
-  ) {}
+  ) {
+    if (this.data?.payment_mode) {
+      this.paymentReturnMethod = this.data.payment_mode;
+    }
+  }
 
   confirm(): void {
     if (!this.reason.trim()) return;
-    this.dialogRef.close(this.reason.trim());
+    this.dialogRef.close({
+      reason: this.reason.trim(),
+      payment_return_method: this.paymentReturnMethod,
+    });
   }
 
   dismiss(): void {

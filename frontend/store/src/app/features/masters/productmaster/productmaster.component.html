@@ -1,556 +1,510 @@
-﻿<div class="row productmaster-page">
-  <div
-    class="col-md-4 collapse show"
-    id="collapseTwo"
-    aria-labelledby="headingTwo"
-    data-parent="#accordion"
-  >
-    <div class="card" style="background: #ffdbab">
-      <div
-        class="card-header border-bottom-0"
-        style="font-size: 12.3pt; padding: 9px"
-      >
-        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
-          &nbsp;&nbsp;<span class="fas fa-plus-square"></span>&nbsp;&nbsp;Add
-          New Product
+<div class="product-page-wrapper">
+
+  <!-- TOP HEADER TITLE -->
+  <div class="product-header-bar">
+    <h1 class="header-title">Product Master</h1>
+  </div>
+
+  <!-- TOP CARD: ADD / EDIT PRODUCT -->
+  <div class="card form-card">
+    <div class="card-header">
+      <div class="card-title-group">
+        <div class="card-header-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
         </div>
+        <h2 class="card-title">{{ editMode ? 'Update Product' : 'Add New Product' }}</h2>
       </div>
-      <div class="card-body" style="padding: 15px">
-        <form name="frmsearch" [formGroup]="productForm">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="row">
-                <div class="col-md-4">
-                  <p class="mb-0">
-                    Pr. Code<span class="mandatoryfiels">*</span>
-                  </p>
-                  <input
-                    type="text"
-                    id="product_code"
-                    name="product_code"
-                    class="form-control mb-1"
-                    formControlName="product_code"
-                    [readonly]="editMode"
-                  />
-                  <div
-                    class="text-danger"
-                    *ngIf="
-                      f['product_code'].touched &&
-                      f['product_code'].hasError('required')
-                    "
-                  >
-                    Product Code is required
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <p class="mb-0">
-                    Product Name<span class="mandatoryfiels">*</span>
-                  </p>
-                  <input
-                    type="text"
-                    id="product_name"
-                    name="product_name"
-                    class="form-control mb-1"
-                    formControlName="product_name"
-                  />
-                  <div
-                    class="text-danger"
-                    *ngIf="
-                      f['product_name'].touched &&
-                      f['product_name'].hasError('required')
-                    "
-                  >
-                    Product Name is required
-                  </div>
-                </div>
+    </div>
 
-                <div class="col-md-8">
-                  <p class="mb-0">
-                    Prod Name(Mal)<span class="mandatoryfiels">*</span>
-                  </p>
-                  <input
-                    type="text"
-                    class="form-control mb-1"
-                    formControlName="product_nameml"
-                    appMalayalamInput
-                  />
-                  <div
-                    class="text-danger"
-                    *ngIf="
-                      f['product_nameml'].touched &&
-                      f['product_nameml'].hasError('required')
-                    "
-                  >
-                    Product Name(Mal)is required
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <p class="mb-0">Unit<span class="mandatoryfiels">*</span></p>
-                  <select
-                    id="unit"
-                    name="unit"
-                    class="form-control mb-1"
-                    formControlName="unit"
-                  >
-                    <option value="">Select</option>
-                    <option value="Nos">Nos</option>
-                    <option value="Ltr">Ltr</option>
-                    <option value="Bdl">Bdl</option>
-                    <option value="others">Others</option>
-                  </select>
-                  <div
-                    class="text-danger"
-                    *ngIf="f['unit'].touched && f['unit'].hasError('required')"
-                  >
-                    Unit Name is required
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <p class="mb-0">
-                    Category<span class="mandatoryfiels">*</span>
-                  </p>
-                  <select
-                    class="form-control mb-1"
-                    id="category"
-                    name="category"
-                    formControlName="category"
-                  >
-                    <option>Select</option>
-                    <option *ngFor="let cat of categories" [value]="cat.id">
-                      {{ cat.category_name }}
-                    </option>
-                  </select>
-                  <div
-                    class="text-danger"
-                    *ngIf="
-                      f['category'].touched &&
-                      f['category'].hasError('required')
-                    "
-                  >
-                    Category is required
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <p class="mb-0">Hsn code</p>
-                  <input
-                    type="text"
-                    id="hsn_code"
-                    name="hsn_code"
-                    class="form-control mb-1"
-                    formControlName="hsn_code"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <p class="mb-0">
-                    Cost Amount<span class="mandatoryfiels">*</span>
-                  </p>
-                  <input
-                    type="text"
-                    id="cost_price"
-                    name="cost_price"
-                    inputmode="numeric"
-                    class="form-control mb-1"
-                    formControlName="cost_price"
-                    appNumbersOnly
-                  />
-                  <div
-                    class="text-danger"
-                    *ngIf="
-                      f['cost_price'].touched &&
-                      f['cost_price'].hasError('required')
-                    "
-                  >
-                    Cost_price is required
-                  </div>
-                  <ng-container *ngIf="pricesTouched()">
-                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanSelling']">
-                      Cost Price must be less than Selling Price
-                    </div>
-                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanMrp']">
-                      Cost Price must be less than MRP
-                    </div>
-                  </ng-container>
-                </div>
-                <div class="col-md-6">
-                  <p class="mb-0">MRP<span class="mandatoryfiels">*</span></p>
-                  <input
-                    type="text"
-                    inputmode="decimal"
-                    id="mrp"
-                    name="mrp"
-                    class="form-control mb-1"
-                    formControlName="mrp"
-                    appNumbersOnly
-                  />
-                  <div
-                    class="text-danger"
-                    *ngIf="f['mrp'].touched && f['mrp'].hasError('required')"
-                  >
-                    Mrp is required
-                  </div>
-                  <ng-container *ngIf="pricesTouched()">
-                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanMrp']">
-                      MRP must be greater than Cost Price
-                    </div>
-                    <div class="text-danger" *ngIf="productForm.errors?.['sellingNotLessThanMrp']">
-                      MRP must be greater than Selling Price
-                    </div>
-                  </ng-container>
-                </div>
+    <div class="card-body">
+      <form [formGroup]="productForm" class="product-form">
 
-                <div class="col-md-6">
-                  <p class="mb-0">
-                    Selling Price<span class="mandatoryfiels">*</span>
-                  </p>
-                  <input
-                    type="text"
-                    inputmode="decimal"
-                    class="form-control mb-1"
-                    formControlName="selling_price"
-                    appNumbersOnly
-                  />
-                  <div
-                    class="text-danger"
-                    *ngIf="
-                      f['selling_price'].touched &&
-                      f['selling_price'].hasError('required')
-                    "
-                  >
-                    Selling price is required
-                  </div>
-                  <ng-container *ngIf="pricesTouched()">
-                    <div class="text-danger" *ngIf="productForm.errors?.['costNotLessThanSelling']">
-                      Selling price must be greater than Cost Price
-                    </div>
-                    <div class="text-danger" *ngIf="productForm.errors?.['sellingNotLessThanMrp']">
-                      Selling price must be less than MRP
-                    </div>
-                  </ng-container>
-                </div>
-                <div class="col-md-6">
-                  <p class="mb-0">Gst%</p>
-                  <input
-                    type="text"
-                    class="form-control mb-1"
-                    formControlName="gst_percent"
-                    appNumbersOnly
-                  />
-                  <div class="text-danger" *ngIf="f['gst_percent'].touched && (f['gst_percent'].hasError('min') || f['gst_percent'].hasError('max'))">
-                    GST % must be between 0 and 100
-                  </div>
-                </div>
+        <!-- FIELDS IN ORIGINAL ORDER IN A CLEAN RESPONSIVE GRID -->
+        <div class="form-grid-4">
 
-                <div class="col-md-4">
-                  <p class="mb-0">Min. Qty</p>
-                  <input
-                    type="text"
-                    appNumbersOnly
-                    id="min_qty"
-                    name="min_qty"
-                    class="form-control mb-1"
-                    formControlName="min_qty"
-                    inputmode="numeric"
-                  />
-                </div>
+          <!-- 1. Pr. Code -->
+          <div class="form-group">
+            <label class="form-label" for="product_code">
+              Pr. Code<span class="required">*</span>
+            </label>
+            <input type="text" id="product_code" class="form-input" formControlName="product_code"
+              placeholder="Enter product code" [readonly]="editMode" />
+            <div class="error-msg" *ngIf="f['product_code'].touched && f['product_code'].hasError('required')">
+              Product Code is required
+            </div>
+          </div>
 
-                <div class="col-md-4">
-                  <p class="mb-0">Max. Qty</p>
-                  <input
-                    type="text"
-                    appNumbersOnly
-                    id="max_qty"
-                    name="max_qty"
-                    class="form-control mb-1"
-                    formControlName="max_qty"
-                    inputmode="decimal"
-                  />
-                  <div class="text-danger" *ngIf="productForm.errors?.['minQtyGreaterThanMax']">
-                    Min. Qty cannot be greater than Max. Qty
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <p class="mb-0">Sale<span class="mandatoryfiels">*</span></p>
-                  <select
-                    id="unit"
-                    name="unit"
-                    class="form-control mb-1"
-                    formControlName="sale_item"
-                  >
-                    <option value="">Select</option>
-                    <option value="Y">Yes</option>
-                    <option value="N">No</option>
-                  </select>
-                  <div
-                    class="text-danger"
-                    *ngIf="
-                      f['sale_item'].touched &&
-                      f['sale_item'].hasError('required')
-                    "
-                  >
-                    sale item is required
-                  </div>
-                </div>
+          <!-- 2. Product Name -->
+          <div class="form-group">
+            <label class="form-label" for="product_name">
+              Product Name<span class="required">*</span>
+            </label>
+            <input type="text" id="product_name" class="form-input" formControlName="product_name"
+              placeholder="Enter product name" />
+            <div class="error-msg" *ngIf="f['product_name'].touched && f['product_name'].hasError('required')">
+              Product Name is required
+            </div>
+          </div>
 
-                <ng-container *ngIf="isBookstore">
-                  <div class="col-md-12">
-                    <hr />
-                  </div>
+          <!-- 3. Prod Name (Mal) -->
+          <div class="form-group">
+            <label class="form-label" for="product_nameml">
+              Prod Name(Mal)<span class="required">*</span>
+            </label>
+            <input type="text" id="product_nameml" class="form-input" formControlName="product_nameml"
+              placeholder="Enter product name (Mal)" />
+            <div class="error-msg" *ngIf="f['product_nameml'].touched && f['product_nameml'].hasError('required')">
+              Product Name(Mal) is required
+            </div>
+          </div>
 
-                  <!-- AUTHORS (multi) -->
-                  <div class="col-md-10">
-                    <p class="mb-0">
-                      Author<span class="mandatoryfiels">*</span>
-                    </p>
-                    <select class="form-control mb-1" [(ngModel)]="pickedAuthorId" [ngModelOptions]="{standalone: true}">
-                      <option [ngValue]="null">Select Author</option>
-                      <option *ngFor="let a of authors" [ngValue]="a.id">
-                        {{ a.author_name }}
-                      </option>
-                    </select>
-                  </div>
-                  <div class="col-md-2 mt-3">
-                    <button
-                      type="button"
-                      class="btn btn-success btn-sm"
-                      (click)="addAuthor()"
-                      title="Add Author"
-                    >
-                      <i class="fa fa-plus"></i>
-                    </button>
-                  </div>
-                  <div class="col-md-12 mb-1">
-                    <span class="chip" *ngFor="let a of selectedAuthors">
-                      {{ a.author_name }}
-                      <i class="fa fa-times" (click)="removeAuthor(a.id)" title="Remove"></i>
-                    </span>
-                  </div>
-                  <div
-                    class="text-danger"
-                    *ngIf="f['author_ids'].touched && f['author_ids'].hasError('required')"
-                  >
-                    At least one author is required
-                  </div>
+          <!-- 4. Unit -->
+          <div class="form-group">
+            <label class="form-label" for="unit">
+              Unit<span class="required">*</span>
+            </label>
+            <select id="unit" class="form-select" formControlName="unit">
+              <option value="">Select</option>
+              <option value="Nos">Nos</option>
+              <option value="Ltr">Ltr</option>
+              <option value="Bdl">Bdl</option>
+              <option value="others">Others</option>
+            </select>
+            <div class="error-msg" *ngIf="f['unit'].touched && f['unit'].hasError('required')">
+              Unit Name is required
+            </div>
+          </div>
 
-                  <!-- PUBLISHERS (multi) -->
-                  <div class="col-md-10">
-                    <p class="mb-0">
-                      Publisher<span class="mandatoryfiels">*</span>
-                    </p>
-                    <select class="form-control mb-1" [(ngModel)]="pickedPublisherId" [ngModelOptions]="{standalone: true}">
-                      <option [ngValue]="null">Select Publisher</option>
-                      <option *ngFor="let p of publishers" [ngValue]="p.id">
-                        {{ p.publisher_name }}
-                      </option>
-                    </select>
-                  </div>
-                  <div class="col-md-2 mt-3">
-                    <button
-                      type="button"
-                      class="btn btn-success btn-sm"
-                      (click)="addPublisher()"
-                      title="Add Publisher"
-                    >
-                      <i class="fa fa-plus"></i>
-                    </button>
-                  </div>
-                  <div class="col-md-12 mb-1">
-                    <span class="chip" *ngFor="let p of selectedPublishers">
-                      {{ p.publisher_name }}
-                      <i class="fa fa-times" (click)="removePublisher(p.id)" title="Remove"></i>
-                    </span>
-                  </div>
-                  <div
-                    class="text-danger"
-                    *ngIf="f['publisher_ids'].touched && f['publisher_ids'].hasError('required')"
-                  >
-                    At least one publisher is required
-                  </div>
-                </ng-container>
+          <!-- 5. Category -->
+          <div class="form-group">
+            <label class="form-label" for="category">
+              Category<span class="required">*</span>
+            </label>
+            <select id="category" class="form-select" formControlName="category">
+              <option value="">Select</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">
+                {{ cat.category_name }}
+              </option>
+            </select>
+            <div class="error-msg" *ngIf="f['category'].touched && f['category'].hasError('required')">
+              Category is required
+            </div>
+          </div>
+
+          <!-- 6. Hsn code -->
+          <div class="form-group">
+            <label class="form-label" for="hsn_code">Hsn code</label>
+            <input type="text" id="hsn_code" class="form-input" formControlName="hsn_code"
+              placeholder="Enter HSN code" />
+          </div>
+
+          <!-- 7. Cost Amount -->
+          <div class="form-group">
+            <label class="form-label" for="cost_price">
+              Cost Amount<span class="required">*</span>
+            </label>
+            <input type="text" id="cost_price" class="form-input" formControlName="cost_price"
+              placeholder="Enter cost amount" appNumbersOnly />
+            <div class="error-msg" *ngIf="f['cost_price'].touched && f['cost_price'].hasError('required')">
+              Cost price is required
+            </div>
+          </div>
+
+          <!-- 8. MRP -->
+          <div class="form-group">
+            <label class="form-label" for="mrp">
+              MRP<span class="required">*</span>
+            </label>
+            <input type="text" id="mrp" class="form-input" formControlName="mrp" placeholder="Enter mrp"
+              appNumbersOnly />
+            <div class="error-msg" *ngIf="f['mrp'].touched && f['mrp'].hasError('required')">
+              MRP is required
+            </div>
+          </div>
+
+          <!-- 9. Selling Price -->
+          <div class="form-group">
+            <label class="form-label" for="selling_price">
+              Selling Price<span class="required">*</span>
+            </label>
+            <input type="text" id="selling_price" class="form-input" formControlName="selling_price"
+              placeholder="Enter selling price" appNumbersOnly />
+            <div class="error-msg" *ngIf="f['selling_price'].touched && f['selling_price'].hasError('required')">
+              Selling price is required
+            </div>
+          </div>
+
+          <!-- 10. Gst% -->
+          <div class="form-group">
+            <label class="form-label" for="gst_percent">Gst%</label>
+            <input type="text" id="gst_percent" class="form-input" formControlName="gst_percent" placeholder="0"
+              appNumbersOnly />
+            <div class="error-msg"
+              *ngIf="f['gst_percent'].touched && (f['gst_percent'].hasError('min') || f['gst_percent'].hasError('max'))">
+              GST % must be between 0 and 100
+            </div>
+          </div>
+
+          <!-- 11. Min. Qty -->
+          <div class="form-group">
+            <label class="form-label" for="min_qty">Min. Qty</label>
+            <input type="text" id="min_qty" class="form-input" formControlName="min_qty" placeholder="0"
+              appNumbersOnly />
+          </div>
+
+          <!-- 12. Max. Qty -->
+          <div class="form-group">
+            <label class="form-label" for="max_qty">Max. Qty</label>
+            <input type="text" id="max_qty" class="form-input" formControlName="max_qty" placeholder="0"
+              appNumbersOnly />
+            <div class="error-msg" *ngIf="productForm.errors?.['minQtyGreaterThanMax']">
+              Min. Qty cannot be greater than Max. Qty
+            </div>
+          </div>
+
+          <!-- 13. Sale -->
+          <div class="form-group">
+            <label class="form-label" for="sale_item">
+              Sale<span class="required">*</span>
+            </label>
+            <select id="sale_item" class="form-select" formControlName="sale_item">
+              <option value="">Select</option>
+              <option value="Y">Yes</option>
+              <option value="N">No</option>
+            </select>
+            <div class="error-msg" *ngIf="f['sale_item'].touched && f['sale_item'].hasError('required')">
+              sale item is required
+            </div>
+          </div>
+
+          <!-- 14. Price Change -->
+          <div class="form-group price-change-group">
+            <label class="form-label" for="is_price_editable">
+              Price Change
+            </label>
+            <div class="toggle-control-wrapper">
+              <label class="switch-toggle" title="Allow rate change in sales">
+                <input type="checkbox" id="is_price_editable" formControlName="is_price_editable" />
+                <span class="slider round"></span>
+              </label>
+              <span class="toggle-status-text" [class.active]="f['is_price_editable'].value">
+                {{ f['is_price_editable'].value ? 'Editable in Sales' : ' in Sales' }}
+              </span>
+            </div>
+            <small class="helper-text">Allow cashier to edit rate during sales</small>
+          </div>
+
+        </div>
+
+        <!-- BOOKSTORE AUTHORS & PUBLISHERS -->
+        <ng-container *ngIf="isBookstore">
+          <div class="bookstore-section-divider">
+            <span class="divider-label">Bookstore Information</span>
+          </div>
+
+          <div class="form-grid-4">
+            <!-- Author -->
+            <div class="form-group col-span-2">
+              <label class="form-label">
+                Author<span class="required">*</span>
+              </label>
+              <div class="inline-picker-row">
+                <select class="form-select" [(ngModel)]="pickedAuthorId" [ngModelOptions]="{standalone: true}">
+                  <option [ngValue]="null">Select Author</option>
+                  <option *ngFor="let a of authors" [ngValue]="a.id">
+                    {{ a.author_name }}
+                  </option>
+                </select>
+                <button type="button" class="btn-picker-add" (click)="addAuthor()" title="Add Author">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </div>
+              <div class="selected-chips-row" *ngIf="selectedAuthors.length">
+                <span class="chip chip-author" *ngFor="let a of selectedAuthors">
+                  {{ a.author_name }}
+                  <i class="fa fa-times" (click)="removeAuthor(a.id)" title="Remove"></i>
+                </span>
+              </div>
+              <div class="error-msg" *ngIf="f['author_ids'].touched && f['author_ids'].hasError('required')">
+                At least one author is required
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="form-group mt-2 sbmt">
-                <button
-                  type="submit"
-                  name="master_search"
-                  id="master_search"
-                  class="btn btn-theme waves-effect w-100 waves-effect waves-light btnsubmt"
-                  style="background: #d88e25"
-                  (click)="saveProduct()"
-                >
-                  <i class="fa fa-save mr-1"></i>
-                  {{ editMode ? "Update" : "Save" }}
+
+            <!-- Publisher -->
+            <div class="form-group col-span-2">
+              <label class="form-label">
+                Publisher<span class="required">*</span>
+              </label>
+              <div class="inline-picker-row">
+                <select class="form-select" [(ngModel)]="pickedPublisherId" [ngModelOptions]="{standalone: true}">
+                  <option [ngValue]="null">Select Publisher</option>
+                  <option *ngFor="let p of publishers" [ngValue]="p.id">
+                    {{ p.publisher_name }}
+                  </option>
+                </select>
+                <button type="button" class="btn-picker-add" (click)="addPublisher()" title="Add Publisher">
+                  <i class="fa fa-plus"></i>
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary w-100 waves-effect waves-light btnsubmt"
-                  (click)="resetForm()"
-                >
-                  Clear
-                </button>
+              </div>
+              <div class="selected-chips-row" *ngIf="selectedPublishers.length">
+                <span class="chip chip-publisher" *ngFor="let p of selectedPublishers">
+                  {{ p.publisher_name }}
+                  <i class="fa fa-times" (click)="removePublisher(p.id)" title="Remove"></i>
+                </span>
+              </div>
+              <div class="error-msg" *ngIf="f['publisher_ids'].touched && f['publisher_ids'].hasError('required')">
+                At least one publisher is required
               </div>
             </div>
           </div>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-8">
-    <div class="card">
-      <div
-        class="card-header border-bottom-0"
-        style="font-size: 12.3pt; padding: 9px"
-      >
-        <div class="card-title" style="font-size: 12.3pt; padding: 0px">
-          &nbsp;&nbsp;<span class="fa fa-list"></span>&nbsp;&nbsp;Products List
-        </div>
-      </div>
-      <div class="card-body" style="padding: 15px">
-        <div class="table-responsive" style="margin: 0px">
-          <div class="table-container">
-            <!-- Filter + Export -->
-            <div class="search-container">
-              <button
-                type="button"
-                class="btn btn-success btn-sm mr-2"
-                (click)="exportCsv()"
-                title="Export the currently visible product list to CSV"
-              >
-                <i class="fa fa-download mr-1"></i>CSV
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger btn-sm mr-2"
-                [disabled]="exportingReport"
-                (click)="exportPdfReport()"
-                title="Download full product report (active + inactive) as PDF"
-              >
-                <i class="fa fa-file-pdf-o mr-1"></i>{{ exportingReport ? 'Working...' : 'PDF Report' }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary btn-sm mr-2"
-                [disabled]="exportingReport"
-                (click)="exportExcelReport()"
-                title="Download full product report (active + inactive) as Excel"
-              >
-                <i class="fa fa-file-excel-o mr-1"></i>{{ exportingReport ? 'Working...' : 'Excel Report' }}
-              </button>
-              <input
-                class="searchiput"
-                matInput
-                (keyup)="applyFilter($event)"
-                placeholder="Search..."
-              />
-            </div>
-            <table
-              mat-table
-              [dataSource]="dataSource"
-              matSort
-              matSortActive="p-code"
-              matSortDirection="asc"
-              class="custom-table"
-            >
-              <!-- Index Column -->
-              <ng-container matColumnDef="index">
-                <th mat-header-cell *matHeaderCellDef>#</th>
-                <td mat-cell *matCellDef="let element; let i = index">
-                  {{ i + 1 }}
-                </td>
-              </ng-container>
-              <!-- P-Code -->
-              <ng-container matColumnDef="p-code">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  P-Code
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.product_code }}
-                </td>
-              </ng-container>
-              <!-- Product -->
-              <ng-container matColumnDef="product">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Product
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  <b> {{ element.product_name }}</b>
-                  <ng-container *ngIf="element.publishers?.length">
-                    <br /><i>{{ joinNames(element.publishers, 'publisher_name') }}</i>
-                  </ng-container>
-                  <ng-container *ngIf="element.authors?.length">
-                    <br />{{ joinNames(element.authors, 'author_name') }}
-                  </ng-container>
-                </td>
-              </ng-container>
-              <!-- Category -->
-              <ng-container matColumnDef="Category">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                  Category
-                </th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.category }}
-                </td>
-              </ng-container>
-              <!-- Price (Cost / Selling / MRP combined) -->
-              <ng-container matColumnDef="Price">
-                <th mat-header-cell *matHeaderCellDef>Price</th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="price-cell">
-                    <span><b>Cost:</b> {{ element.cost_price }}</span>
-                    <span><b>Selling:</b> {{ element.selling_price }}</span>
-                    <span><b>MRP:</b> {{ element.mrp }}</span>
-                  </div>
-                </td>
-              </ng-container>
-              <!-- Action -->
-              <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef>Action</th>
-                <td mat-cell *matCellDef="let element">
-                  <a
-                    (click)="editProduct(element)"
-                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                    data-toggle="tooltip"
-                    data-placement="top"
-                    title="Edit"
-                    data-original-title="Edit Details"
-                    ><i class="fa fa-edit"></i
-                  ></a>
-                  <a
-                    (click)="deleteProduct(element.id)"
-                    class="btn btn-theme-light btn-xs btn-icon waves-effect waves-light action-col"
-                    data-toggle="modal"
-                    data-placement="top"
-                    title="Delete Details"
-                    data-original-title="Delete"
-                    ><i class="fa fa-times"></i
-                  ></a>
-                  <a
-                    (click)="viewProductStock(element)"
-                    class="btn btn-info btn-xs btn-icon"
-                    title="View Stock"
-                  >
-                    <i class="fa fa-eye"></i>
-                  </a>
-                </td>
-              </ng-container>
-              <!-- Header & Row -->
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-              <!-- No Data -->
-              <tr *matNoDataRow>
-                <td colspan="9" class="text-center">No products found</td>
-              </tr>
-            </table>
-            <!-- Pagination -->
-            <mat-paginator
-              [pageSize]="5"
-              [pageSizeOptions]="[5, 10, 20]"
-              showFirstLastButtons
-            >
-            </mat-paginator>
+        </ng-container>
+
+        <!-- VALIDATION WARNINGS -->
+        <div class="price-validation-box" *ngIf="pricesTouched() && productForm.errors">
+          <div class="error-msg" *ngIf="productForm.errors?.['costNotLessThanSelling']">
+            Cost Price must be less than Selling Price
+          </div>
+          <div class="error-msg" *ngIf="productForm.errors?.['costNotLessThanMrp']">
+            Cost Price must be less than MRP
+          </div>
+          <div class="error-msg" *ngIf="productForm.errors?.['sellingNotLessThanMrp']">
+            Selling Price must be less than MRP
           </div>
         </div>
-      </div>
+
+        <!-- FORM ACTIONS -->
+        <div class="form-actions-row">
+          <button type="button" class="btn-save" [disabled]="saving" (click)="saveProduct()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>{{ saving ? 'Saving...' : (editMode ? 'Update' : 'Save') }}</span>
+          </button>
+          <button type="button" class="btn-clear" (click)="resetForm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Clear</span>
+          </button>
+        </div>
+
+      </form>
     </div>
   </div>
+
+  <!-- BOTTOM CARD: PRODUCTS LIST -->
+  <div class="card list-card">
+    <div class="card-header list-card-header">
+      <div class="card-title-group">
+        <div class="card-header-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+        </div>
+        <h2 class="card-title">Products List</h2>
+      </div>
+
+      <!-- EXPORT & SEARCH ACTIONS -->
+      <div class="header-actions">
+        <!-- CSV -->
+        <button type="button" class="btn-export-pill btn-csv" (click)="exportCsv()" title="Export CSV">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>CSV</span>
+        </button>
+
+        <!-- PDF -->
+        <button type="button" class="btn-export-pill btn-pdf" [disabled]="exportingReport" (click)="exportPdfReport()"
+          title="Download PDF Report">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>PDF Report</span>
+        </button>
+
+        <!-- Excel -->
+        <button type="button" class="btn-export-pill btn-excel" [disabled]="exportingReport"
+          (click)="exportExcelReport()" title="Download Excel Report">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
+          </svg>
+          <span>Excel Report</span>
+        </button>
+
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+          <input type="text" matInput (keyup)="applyFilter($event)" placeholder="Search..." class="search-input" />
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body list-card-body">
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort matSortActive="p-code" matSortDirection="asc"
+          class="custom-product-table">
+          <!-- 1. Index Column -->
+          <ng-container matColumnDef="index">
+            <th mat-header-cell *matHeaderCellDef class="th-index">#</th>
+            <td mat-cell *matCellDef="let element; let i = index" class="td-index">
+              {{ i + 1 }}
+            </td>
+          </ng-container>
+
+          <!-- 2. P-Code -->
+          <ng-container matColumnDef="p-code">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-pcode">
+              P-Code
+            </th>
+            <td mat-cell *matCellDef="let element" class="td-pcode">
+              {{ element.product_code }}
+            </td>
+          </ng-container>
+
+          <!-- 3. Product -->
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-product">
+              Product
+            </th>
+            <td mat-cell *matCellDef="let element" class="td-product">
+              <div class="product-title-wrap">
+                <span class="product-name">{{ element.product_name }}</span>
+                <span class="product-meta" *ngIf="element.publishers?.length">
+                  ({{ joinNames(element.publishers, 'publisher_name') }})
+                </span>
+                <span class="product-meta author-meta" *ngIf="element.authors?.length">
+                  {{ joinNames(element.authors, 'author_name') }}
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- 4. Category -->
+          <ng-container matColumnDef="Category">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-category">
+              Category
+            </th>
+            <td mat-cell *matCellDef="let element" class="td-category">
+              {{ element.category }}
+            </td>
+          </ng-container>
+
+          <!-- 5. Price (Cost / Selling / MRP original combined) -->
+          <ng-container matColumnDef="Price">
+            <th mat-header-cell *matHeaderCellDef class="th-price">Price</th>
+            <td mat-cell *matCellDef="let element" class="td-price">
+              <div class="price-cell">
+                <span><b>Cost:</b> {{ element.cost_price | number:'1.2-2' }}</span>
+                <span><b>Selling:</b> {{ element.selling_price | number:'1.2-2' }}</span>
+                <span><b>MRP:</b> {{ element.mrp | number:'1.2-2' }}</span>
+                <span *ngIf="isProductPriceEditable(element)" class="badge-price-change"
+                  title="Rate can be edited during sales">
+                  Price Change Allowed
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- 6. Quantity -->
+          <ng-container matColumnDef="Quantity">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-qty">Qty</th>
+            <td mat-cell *matCellDef="let element" class="td-qty text-center">
+              <span class="stock-badge"
+                [ngClass]="getDisplayStock(element.current_stock) > 0 ? 'badge-stock-in' : 'badge-stock-out'">
+                {{ getDisplayStock(element.current_stock) | number:'1.2-2' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- 7. Action -->
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef class="th-action">Action</th>
+            <td mat-cell *matCellDef="let element" class="td-action">
+              <div class="action-btn-group">
+                <!-- Edit -->
+                <button type="button" class="btn-action edit" (click)="editProduct(element)" title="Edit">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <!-- View Stock -->
+                <button type="button" class="btn-action view" (click)="viewProductStock(element)" title="View Stock">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <!-- Damage Stock -->
+                <button type="button" class="btn-action damage" (click)="openDamageDialog(element)" title="Report Damaged Stock">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                </button>
+                <!-- Delete -->
+                <button type="button" class="btn-action delete" (click)="deleteProduct(element.id)" title="Delete">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Header & Row -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+          <!-- No Data -->
+          <tr *matNoDataRow>
+            <td colspan="7" class="empty-state">No products found</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons>
+      </mat-paginator>
+    </div>
+  </div>
+
 </div>

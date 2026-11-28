@@ -31,6 +31,19 @@ hr {
   font-size: 11px;
 }
 
+.items th.text-right, .items td.text-right {
+  text-align: right;
+}
+
+.items th.text-center, .items td.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
 .totals {
   text-align: right;
+  line-height: 1.4;
 }

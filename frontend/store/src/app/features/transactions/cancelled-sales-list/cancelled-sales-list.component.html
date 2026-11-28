@@ -1,0 +1,349 @@
+<div class="cancelled-list-wrapper" [class.is-dialog-mode]="isDialog">
+
+  <!-- ================= TOP HEADER ================= -->
+  <div class="list-header">
+    <div class="header-title-group">
+      <div class="header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      </div>
+      <div>
+        <h2 class="title-text">Cancelled Bills Log</h2>
+        <span class="subtitle-text">Audit history of cancelled sales, refunded amounts, and stock restoration</span>
+      </div>
+    </div>
+
+    <!-- SUMMARY METRIC PILLS -->
+    <div class="header-stats-row">
+      <div class="stat-pill stat-count">
+        <span class="stat-label">Cancelled Bills:</span>
+        <strong class="stat-value">{{ totalCancelledCount }}</strong>
+      </div>
+      <div class="stat-pill stat-refund">
+        <span class="stat-label">Total Refunded:</span>
+        <strong class="stat-value">₹ {{ totalRefundAmount | number:'1.2-2' }}</strong>
+      </div>
+      <div class="stat-pill stat-cash" *ngIf="cashRefundCount > 0">
+        <span class="stat-label">Cash Returns:</span>
+        <strong class="stat-value">{{ cashRefundCount }}</strong>
+      </div>
+      <div class="stat-pill stat-upi" *ngIf="upiRefundCount > 0">
+        <span class="stat-label">UPI Returns:</span>
+        <strong class="stat-value">{{ upiRefundCount }}</strong>
+      </div>
+
+      <button type="button" class="close-modal-btn" *ngIf="isDialog" (click)="close()" title="Close (Esc)">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= TOOLBAR & FILTERS ================= -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" placeholder="Search invoice, customer, cancelled by, reason, refund method..."
+        [(ngModel)]="searchText" (input)="onSearchChange()" class="search-input" />
+      <button *ngIf="searchText" class="clear-search-btn" (click)="searchText = ''; onSearchChange()">✕</button>
+    </div>
+
+    <div class="filter-group">
+      <!-- Return Method Tabs -->
+      <div class="filter-pills">
+        <button type="button" class="pill-btn" [class.active]="selectedReturnMethod === 'ALL'"
+          (click)="setReturnMethodFilter('ALL')">
+          All
+        </button>
+        <button type="button" class="pill-btn" [class.active]="selectedReturnMethod === 'Cash'"
+          (click)="setReturnMethodFilter('Cash')">
+          Cash
+        </button>
+        <button type="button" class="pill-btn" [class.active]="selectedReturnMethod === 'UPI'"
+          (click)="setReturnMethodFilter('UPI')">
+          UPI
+        </button>
+        <button type="button" class="pill-btn" [class.active]="selectedReturnMethod === 'Card'"
+          (click)="setReturnMethodFilter('Card')">
+          Card
+        </button>
+      </div>
+
+      <button type="button" class="btn-refresh" (click)="loadCancelledSales()" title="Refresh Cancelled List">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= LOADING STATE ================= -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Loading cancelled bills log...</span>
+  </div>
+
+  <!-- ================= CANCELLED TABLE ================= -->
+  <div class="table-container" *ngIf="!loading">
+    <table mat-table [dataSource]="dataSource" class="cancelled-table">
+
+      <!-- 1. Index -->
+      <ng-container matColumnDef="index">
+        <th mat-header-cell *matHeaderCellDef class="th-index">#</th>
+        <td mat-cell *matCellDef="let row; let i = index" class="td-index">{{ i + 1 }}</td>
+      </ng-container>
+
+      <!-- 2. Invoice No -->
+      <ng-container matColumnDef="invoice_no">
+        <th mat-header-cell *matHeaderCellDef class="th-invoice">Invoice No</th>
+        <td mat-cell *matCellDef="let row" class="td-invoice">
+          <span class="invoice-badge">{{ row.invoice_no }}</span>
+          <small class="dept-sub" *ngIf="row.dept_name">{{ row.dept_name }}</small>
+        </td>
+      </ng-container>
+
+      <!-- 3. Customer -->
+      <ng-container matColumnDef="customer">
+        <th mat-header-cell *matHeaderCellDef class="th-customer">Customer</th>
+        <td mat-cell *matCellDef="let row" class="td-customer">
+          <div class="customer-info">
+            <span class="cust-name">{{ row.customer_name || 'Walk-in Customer' }}</span>
+            <small class="cust-mobile" *ngIf="row.customer_mobile">{{ row.customer_mobile }}</small>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 4. Products -->
+      <ng-container matColumnDef="products">
+        <th mat-header-cell *matHeaderCellDef class="th-products">Products</th>
+        <td mat-cell *matCellDef="let row" class="td-products">
+          <div class="prod-summary" [title]="getProductTooltip(row)" (click)="viewReturnedDetails(row)">
+            <span class="main-prod">{{ getPrimaryProduct(row) }}</span>
+            <span class="more-prods-badge" *ngIf="getExtraProductsCount(row) > 0">
+              +{{ getExtraProductsCount(row) }} more
+            </span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 5. Sale Date -->
+      <ng-container matColumnDef="receipt_date">
+        <th mat-header-cell *matHeaderCellDef class="th-date">Bill Date</th>
+        <td mat-cell *matCellDef="let row" class="td-date">
+          {{ row.receipt_date | date:'dd-MM-yyyy' }}
+        </td>
+      </ng-container>
+
+      <!-- 5. Cancelled Date & Time -->
+      <ng-container matColumnDef="cancelled_at">
+        <th mat-header-cell *matHeaderCellDef class="th-cancel-time">Cancelled At</th>
+        <td mat-cell *matCellDef="let row" class="td-cancel-time">
+          <div class="time-col">
+            <span class="cancel-date">{{ (row.cancelled_at || row.updated_at || row.receipt_date) | date:'dd-MM-yyyy'
+              }}</span>
+            <span class="cancel-hour">{{ (row.cancelled_at || row.updated_at) | date:'hh:mm a' }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 6. Cancelled By -->
+      <ng-container matColumnDef="cancelled_by">
+        <th mat-header-cell *matHeaderCellDef class="th-user">Cancelled By</th>
+        <td mat-cell *matCellDef="let row" class="td-user">
+          <span class="user-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            {{ row.cancelled_by_name || 'Admin' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- 7. Payment Return Via Method -->
+      <ng-container matColumnDef="payment_return_method">
+        <th mat-header-cell *matHeaderCellDef class="th-return-method">Return Via</th>
+        <td mat-cell *matCellDef="let row" class="td-return-method">
+          <span class="return-method-badge" [ngClass]="'return-' + (row.payment_return_method || 'Cash').toLowerCase()">
+            {{ row.payment_return_method || 'Cash' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- 8. Cancel Reason -->
+      <ng-container matColumnDef="cancel_reason">
+        <th mat-header-cell *matHeaderCellDef class="th-reason">Reason</th>
+        <td mat-cell *matCellDef="let row" class="td-reason">
+          <span class="reason-pill" [title]="row.cancel_reason || 'No reason specified'">
+            {{ row.cancel_reason || 'No reason provided' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- 9. Refund Amount -->
+      <ng-container matColumnDef="refund_amount">
+        <th mat-header-cell *matHeaderCellDef class="th-amount text-right">Refund Amount</th>
+        <td mat-cell *matCellDef="let row" class="td-amount text-right number">
+          <span class="refund-value">₹ {{ row.bill_amount | number:'1.2-2' }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 10. Actions -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef class="th-action text-center">Actions</th>
+        <td mat-cell *matCellDef="let row" class="td-action text-center">
+          <div class="action-buttons">
+            <!-- View Returned Items -->
+            <button type="button" class="btn-table-action btn-view" (click)="viewReturnedDetails(row)"
+              title="View Returned Products Breakdown">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+
+            <!-- Print Cancellation Voucher -->
+            <button type="button" class="btn-table-action btn-print" (click)="printCancellationSlip(row)"
+              title="Print Cancellation & Return Voucher">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="cancelled-row"></tr>
+
+      <!-- Empty State -->
+      <tr *matNoDataRow>
+        <td [attr.colspan]="displayedColumns.length" class="no-records-row">
+          <div class="empty-state-wrap">
+            <span class="empty-icon">✅</span>
+            <p>No cancelled bills found.</p>
+            <small *ngIf="searchText">No cancelled records matching your filter criteria.</small>
+          </div>
+        </td>
+      </tr>
+
+    </table>
+  </div>
+
+  <!-- ================= RETURNED PRODUCTS BREAKDOWN MODAL ================= -->
+  <div class="details-modal-backdrop" *ngIf="selectedSale" (click)="closeDetailsModal()">
+    <div class="details-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="invoice-pill">{{ selectedSale.invoice_no }}</span>
+          <h3>Cancelled Bill & Returned Items</h3>
+          <span class="status-cancelled-badge">CANCELLED & RESTORED</span>
+        </div>
+        <button type="button" class="btn-modal-close" (click)="closeDetailsModal()" title="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Audit Meta Grid -->
+        <div class="audit-meta-grid">
+          <div>
+            <label>Customer:</label>
+            <strong>{{ selectedSale.customer_name || 'Walk-in Customer' }}</strong>
+            <small *ngIf="selectedSale.customer_mobile">{{ selectedSale.customer_mobile }}</small>
+          </div>
+          <div>
+            <label>Cancelled By:</label>
+            <strong class="user-name-highlight">👤 {{ selectedSale.cancelled_by_name || 'Admin' }}</strong>
+          </div>
+          <div>
+            <label>Cancelled Date & Time:</label>
+            <span>{{ (selectedSale.cancelled_at || selectedSale.receipt_date) | date:'dd-MM-yyyy, hh:mm a' }}</span>
+          </div>
+          <div>
+            <label>Payment Return Method:</label>
+            <strong class="return-method-text">💳 {{ selectedSale.payment_return_method || selectedSale.payment_mode ||
+              'Cash' }}</strong>
+          </div>
+        </div>
+
+        <!-- Reason Banner -->
+        <div class="reason-banner">
+          <div class="reason-icon">⚠️</div>
+          <div>
+            <strong>Cancellation Reason:</strong>
+            <p>{{ selectedSale.cancel_reason || 'No reason specified' }}</p>
+          </div>
+        </div>
+
+        <!-- Returned Products Table -->
+        <div class="items-table-wrapper">
+          <div class="table-subheading">Products Restored Back to Inventory:</div>
+          <div class="loading-items" *ngIf="loadingItems">Loading returned items...</div>
+          <table class="items-table" *ngIf="!loadingItems">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product Restored</th>
+                <th class="text-center">Restored Qty</th>
+                <th class="text-right">Rate</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of saleItems; let i = index">
+                <td class="text-center">{{ i + 1 }}</td>
+                <td>
+                  <b>{{ it.product_name }}</b>
+                  <small class="item-code" *ngIf="it.product_code">({{ it.product_code }})</small>
+                </td>
+                <td class="text-center">
+                  <span class="restored-qty-badge">+ {{ it.qty }} {{ it.unit || 'Nos' }}</span>
+                </td>
+                <td class="text-right number">₹ {{ it.selling_price | number:'1.2-2' }}</td>
+                <td class="text-right number">₹ {{ it.amount | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="!saleItems?.length">
+                <td colspan="5" class="no-items-data">No product breakdown available for this bill</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Totals & Actions -->
+        <div class="modal-totals-footer">
+          <div class="totals-col">
+            <div class="tot-row grand-refund-row">
+              <span>Total Refunded Amount:</span>
+              <strong class="refund-total-value">₹ {{ selectedSale.bill_amount | number:'1.2-2' }}</strong>
+            </div>
+          </div>
+          <div class="modal-footer-actions">
+            <button type="button" class="btn-footer-print" (click)="printCancellationSlip(selectedSale)">
+              Print Return Voucher
+            </button>
+            <button type="button" class="btn-footer-close" (click)="closeDetailsModal()">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thermal Receipt Generator (Hidden) -->
+  <app-receipt-print *ngIf="showReceipt" [bill]="receiptData"></app-receipt-print>
+
+</div>

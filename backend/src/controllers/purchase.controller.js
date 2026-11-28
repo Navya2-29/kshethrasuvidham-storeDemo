@@ -78,7 +78,7 @@ exports.createPurchase = async (req, res) => {
         header.discount_amount,
         header.other_charges,
         header.bill_amount,
-        header.created_by
+        header.created_by || req.user?.id || 1
       ]
     );
 
@@ -156,27 +156,46 @@ exports.createPurchase = async (req, res) => {
   }
 };
 
-// Get All Purchases (with supplier name)
+// Get All Purchases (with supplier name, cancelled info, and product names)
 exports.getAllPurchases = async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT
         ph.id,
+        ph.order_no,
         ph.invoice_no,
+        ph.supplier_id,
         ph.invoice_date,
         ph.receipt_date,
+        ph.total_amount,
+        ph.discount_amount,
+        ph.other_charges,
         ph.bill_amount,
+        (SELECT COALESCE(SUM(pi.cgst + pi.sgst), 0) FROM purchase_items pi WHERE pi.purchase_id = ph.id) AS gst_amount,
         ph.status,
         ph.cancel_reason,
-        s.supplier_name
+        ph.cancelled_by,
+        ph.cancelled_at,
+        u.username AS cancelled_by_name,
+        s.supplier_name,
+        s.mobile_number AS supplier_mobile,
+        ph.created_by,
+        u2.username AS created_by_name,
+        (SELECT COUNT(*) FROM purchase_items pi WHERE pi.purchase_id = ph.id) AS total_items,
+        (SELECT GROUP_CONCAT(CONCAT(p.product_name, IF(pi.qty > 1, CONCAT(' (x', pi.qty, ')'), '')) SEPARATOR ', ')
+         FROM purchase_items pi
+         LEFT JOIN products p ON pi.product_id = p.id
+         WHERE pi.purchase_id = ph.id) AS product_names
       FROM purchase_header ph
       LEFT JOIN suppliers s ON ph.supplier_id = s.id
+      LEFT JOIN users u ON ph.cancelled_by = u.id
+      LEFT JOIN users u2 ON ph.created_by = u2.id
       ORDER BY ph.id DESC
     `);
 
     res.json(rows);
   } catch (err) {
-    console.error(err);
+    console.error("GET ALL PURCHASES ERROR:", err);
     res.status(500).json({ message: "Error fetching purchases" });
   }
 };
@@ -418,7 +437,11 @@ exports.getPurchaseById = async (req, res) => {
     const { id } = req.params;
 
     const [headerRows] = await db.query(
-      `SELECT * FROM purchase_header WHERE id = ?`,
+      `SELECT ph.*, s.supplier_name, s.mobile_number AS supplier_mobile, u.username AS cancelled_by_name
+       FROM purchase_header ph
+       LEFT JOIN suppliers s ON ph.supplier_id = s.id
+       LEFT JOIN users u ON ph.cancelled_by = u.id
+       WHERE ph.id = ?`,
       [id]
     );
 
@@ -427,8 +450,9 @@ exports.getPurchaseById = async (req, res) => {
     }
 
     const [items] = await db.query(
-      `SELECT pi.*, a.author_name, pub.publisher_name
+      `SELECT pi.*, p.product_name, p.product_code, a.author_name, pub.publisher_name
        FROM purchase_items pi
+       LEFT JOIN products p ON pi.product_id = p.id
        LEFT JOIN authors a ON a.id = pi.author_id
        LEFT JOIN publishers pub ON pub.id = pi.publisher_id
        WHERE pi.purchase_id = ?`,

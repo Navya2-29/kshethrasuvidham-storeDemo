@@ -37,7 +37,7 @@ export class SidebarComponent {
       icon: 'remixicon-contacts-line',
       children: [
         { label: 'Supplier Details', route: '/master/supplier' },
-        { label: 'Department Master', route: '/master/department' },
+        // { label: 'Department Master', route: '/master/department' },
         { label: 'Category Master', route: '/master/category' },
         { label: 'Product Master', route: '/master/productmaster' },
         { label: 'Author / Publisher Master', route: '/master/book', bookstoreOnly: true },
@@ -53,25 +53,30 @@ export class SidebarComponent {
         { label: 'Direct-entry', route: '/transaction/direct-entry' },
         { label: 'Order', route: '/transaction/order' },
         { label: 'Purchase', route: '/transaction/purchase' },
+        { label: 'Purchase Return List', route: '/transaction/purchase-return-list' },
+        { label: 'Damage List', route: '/transaction/damage-list' },
         { label: 'Stock Transfer', route: '/transaction/stock-transfer', multiDepartmentOnly: true },
+        { label: 'Quick Sales', route: '/transaction/quicksales' },
+        { label: 'Sales List', route: '/transaction/sales-list' },
+        { label: 'Cancelled Bills', route: '/transaction/cancelled-sales-list' },
         { label: 'Sales', route: '/transaction/sales' },
       ],
     },
-    // {
-    //   label: 'Reports',
-    //   icon: 'remixicon-contacts-line',
-    //   children: [
-    //     {
-    //       label: 'Purchase Report',
-    //       children: [
-    //         { label: 'ProductWise', route: 'report/purchase/product-wise' },
-    //         { label: 'SupplierWise', route: 'report/purchase/supplier-wise' },
-    //       ],
-    //     },
-    //     { label: 'Stock Report', route: 'report/stock-report' },
-    //     { label: 'Stock Transfer', route: '/reports/stock-transfer' },
-    //   ],
-    // },
+    {
+      label: 'Reports',
+      icon: 'remixicon-file-chart-line',
+      children: [
+        { label: 'Sales Report', route: '/report/sales' },
+        { label: 'Sales Bill Register', route: '/report/sales-bill-report' },
+        { label: 'Item-Wise Sales Report', route: '/report/item-wise-sales' },
+        { label: 'Purchase Report', route: '/report/purchase' },
+        { label: 'Purchase Bill Register', route: '/report/purchase-bill-report' },
+        { label: 'Purchase Return Report', route: '/report/purchase-return' },
+        // { label: 'Product-Wise Purchase Report', route: '/report/purchase/product-wise' },
+        // { label: 'Stock Report', route: '/report/stock' },
+        // { label: 'Stock Transfer Report', route: '/report/stock-transfer', multiDepartmentOnly: true },
+      ],
+    },
   ];
 
   constructor(

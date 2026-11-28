@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NamedRef, Product, ProductPayload } from '../models/product.model';
 import {
   AbstractControl,
@@ -25,6 +25,7 @@ import { Category } from '../models/category.model';
 import { finalize, forkJoin, Subject, takeUntil } from 'rxjs';
 import { SettingstoreService } from '../../../core/services/setting/settingstore.service';
 import { ProductStockViewDialogComponent } from '../../../shared/components/product-stock-view-dialog/product-stock-view-dialog.component';
+import { RecordDamageDialogComponent } from '../../../shared/components/record-damage-dialog/record-damage-dialog.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -61,6 +62,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     'product',
     'Category',
     'Price',
+    'Quantity',
     'action',
   ];
 
@@ -100,6 +102,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     private masterService: MasterService,
     private settingsStore: SettingstoreService,
     private dialog: MatDialog,
+    private cdr: ChangeDetectorRef,
   ) {
     // Product codes are free-text but typically numeric ("1", "2", ... "10") -
     // plain string sort would put "10" before "2". Sort numerically when both
@@ -111,6 +114,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       }
       if (property === 'product') return item.product_name;
       if (property === 'Category') return item.category as any;
+      if (property === 'Quantity') return Number(item.current_stock ?? 0);
       return (item as any)[property];
     };
   }
@@ -141,6 +145,26 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         this.isBookstore = !!settings?.is_bookstore;
         this.productForm.get('author_ids')?.updateValueAndValidity();
         this.productForm.get('publisher_ids')?.updateValueAndValidity();
+      });
+
+    // ⚡ Real-time stock update listener:
+    // When a sale is cancelled or stock changes, immediately update product quantity in product list at that moment!
+    this.masterService.stockUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((evt) => {
+        if (evt?.items && Array.isArray(evt.items)) {
+          evt.items.forEach((it: any) => {
+            const pId = Number(it.product_id || it.id);
+            const qty = Number(it.qty || 0);
+            const found = this.products.find((p) => p.id === pId);
+            if (found && qty !== 0) {
+              found.current_stock = Math.max(0, (Number(found.current_stock) || 0) + qty);
+            }
+          });
+          this.dataSource.data = [...this.products];
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+        }
       });
   }
 
@@ -182,6 +206,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         gst_percent: [0, [Validators.min(0), Validators.max(100)]],
 
         sale_item: ['', Validators.required],
+        is_price_editable: [false],
         hsn_code: [''],
 
         author_ids: [[] as number[], [this.requiredForBookstore()]],
@@ -209,12 +234,23 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       )
       .subscribe({
         next: (res: any) => {
-          this.products = this.sortProductsByCode(res.products);
+          this.products = this.sortProductsByCode(this.mergePriceEditable(res.products));
+
+          // Apply persistent stock adjustments (e.g. from cancelled/returned sales)
+          this.products.forEach((p) => {
+            const adj = this.masterService.getStockAdjustment(p.id);
+            if (adj) {
+              p.current_stock = (Number(p.current_stock) || 0) + adj;
+            }
+          });
+
           this.categories = res.categories;
           this.authors = res.authors;
           this.publishers = res.publishers;
 
-          this.dataSource.data = this.products;
+          this.dataSource.data = [...this.products];
+          this.cdr.markForCheck();
+          console.log('productlist', this.products);
         },
         error: (err) => {
           console.error(err);
@@ -286,9 +322,13 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     }
 
     const raw = this.productForm.getRawValue();
+    const isPriceEditable = !!raw.is_price_editable;
+    const targetEditId = this.editId;
+    const isEditing = this.editMode && !!targetEditId;
+    const prodCode = raw.product_code?.trim();
 
     const payload: ProductPayload = {
-      product_code: raw.product_code?.trim(),
+      product_code: prodCode,
       product_name: raw.product_name?.trim(),
       product_nameml: raw.product_nameml?.trim(),
 
@@ -305,6 +345,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       gst_percent: Number(raw.gst_percent || 0),
 
       sale_item: raw.sale_item,
+      is_price_editable: isPriceEditable ? 1 : 0,
       hsn_code: raw.hsn_code?.trim() || '',
 
       author_ids: this.isBookstore ? raw.author_ids : [],
@@ -314,8 +355,8 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
     this.saving = true;
 
     const request$ =
-      this.editMode && this.editId
-        ? this.masterService.updateProduct(this.editId, payload)
+      isEditing
+        ? this.masterService.updateProduct(targetEditId, payload)
         : this.masterService.addProduct(payload);
 
     request$
@@ -324,7 +365,9 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         finalize(() => (this.saving = false))
       )
       .subscribe({
-        next: () => {
+        next: (res: any) => {
+          const savedId = isEditing ? targetEditId : (res?.id || res?.data?.id);
+          this.savePriceEditableState(savedId, prodCode, isPriceEditable);
           this.resetForm();
           this.refreshProductsOnly();
         },
@@ -343,8 +386,9 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: Product[]) => {
-          this.products = this.sortProductsByCode(res);
+          this.products = this.sortProductsByCode(this.mergePriceEditable(res));
           this.dataSource.data = this.products;
+          console.log('productlist', this.products);
         },
         error: (err) => console.error(err),
       });
@@ -377,6 +421,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       gst_percent: product.gst_percent,
 
       sale_item: product.sale_item,
+      is_price_editable: this.isProductPriceEditable(product),
       hsn_code: product.hsn_code,
 
       author_ids: this.selectedAuthors.map((a) => a.id),
@@ -418,6 +463,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       mrp: 0,
       selling_price: 0,
       gst_percent: 0,
+      is_price_editable: false,
       author_ids: [],
       publisher_ids: [],
     });
@@ -452,7 +498,130 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
 
     this.dialog.open(ProductStockViewDialogComponent, {
       width: '650px',
-      data: { productId: product.id, productName: product.product_name },
+      data: {
+        productId: product.id,
+        productName: product.product_name,
+        productCode: product.product_code,
+        isPriceEditable: this.isProductPriceEditable(product),
+      },
+    });
+  }
+
+  /* ===================================================
+     REPORT DAMAGED STOCK
+  =================================================== */
+  getDisplayStock(stock: any): number {
+    return Math.max(0, Number(stock) || 0);
+  }
+
+  openDamageDialog(product: Product): void {
+    if (!product?.id) return;
+
+    const dialogRef = this.dialog.open(RecordDamageDialogComponent, {
+      width: '500px',
+      data: {
+        productId: product.id,
+        productName: product.product_name,
+        productCode: product.product_code,
+        unit: product.unit || 'Nos',
+        costPrice: product.cost_price || 0,
+        sellingPrice: product.selling_price || 0,
+        currentStock: Number(product.current_stock ?? 0),
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res?.success) {
+        const damagedQty = Number(res.damaged_qty || 0);
+        product.current_stock = Math.max(0, (Number(product.current_stock) || 0) - damagedQty);
+        this.dataSource.data = [...this.products];
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  /* ===================================================
+     PRICE EDITABLE STATE PERSISTENCE (LOCAL & BACKEND)
+  =================================================== */
+  private getPriceEditableMap(): Record<string, boolean> {
+    try {
+      const raw = localStorage.getItem('store_product_price_editable_overrides');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private savePriceEditableState(
+    id: number | string | undefined,
+    code: string | undefined,
+    editable: boolean
+  ): void {
+    try {
+      const map = this.getPriceEditableMap();
+      if (id != null && id !== '') {
+        map[String(id)] = editable;
+      }
+      if (code) {
+        map[String(code).trim().toLowerCase()] = editable;
+      }
+      localStorage.setItem(
+        'store_product_price_editable_overrides',
+        JSON.stringify(map)
+      );
+    } catch (err) {
+      console.error('Error saving price editable override', err);
+    }
+  }
+
+  isProductPriceEditable(product: Product): boolean {
+    if (!product) return false;
+    const map = this.getPriceEditableMap();
+    const idKey = String(product.id);
+    const codeKey = product.product_code
+      ? String(product.product_code).trim().toLowerCase()
+      : '';
+
+    if (idKey && map[idKey] !== undefined) {
+      return !!map[idKey];
+    }
+    if (codeKey && map[codeKey] !== undefined) {
+      return !!map[codeKey];
+    }
+    return !!(
+      product.is_price_editable === 1 ||
+      product.is_price_editable === true ||
+      (product.is_price_editable as any) === '1' ||
+      (product.is_price_editable as any) === 'Y'
+    );
+  }
+
+  private mergePriceEditable(products: Product[]): Product[] {
+    const map = this.getPriceEditableMap();
+    return (products || []).map((p) => {
+      const idKey = String(p.id);
+      const codeKey = p.product_code
+        ? String(p.product_code).trim().toLowerCase()
+        : '';
+      let isEditable = false;
+
+      if (idKey && map[idKey] !== undefined) {
+        isEditable = !!map[idKey];
+      } else if (codeKey && map[codeKey] !== undefined) {
+        isEditable = !!map[codeKey];
+      } else {
+        isEditable = !!(
+          p.is_price_editable === 1 ||
+          p.is_price_editable === true ||
+          (p.is_price_editable as any) === '1' ||
+          (p.is_price_editable as any) === 'Y'
+        );
+      }
+
+      return {
+        ...p,
+        is_price_editable: isEditable ? 1 : 0,
+      };
     });
   }
 
@@ -486,6 +655,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       'Unit',
       'Min Qty',
       'Max Qty',
+      'Stock Qty',
       'Cost Price',
       'Selling Price',
       'MRP',
@@ -511,6 +681,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
         p.unit,
         p.min_qty,
         p.max_qty,
+        p.current_stock ?? 0,
         p.cost_price,
         p.selling_price,
         p.mrp,
@@ -542,7 +713,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
   =================================================== */
   private readonly reportHeaders = [
     'Code', 'Name', 'Regional Name', 'Category', 'Unit',
-    'Min Qty', 'Max Qty', 'Cost', 'Selling', 'MRP', 'GST %',
+    'Min Qty', 'Max Qty', 'Stock Qty', 'Cost', 'Selling', 'MRP', 'GST %',
     'HSN', 'Sale Item', 'Authors', 'Publishers', 'Status', 'Created By',
   ];
 
@@ -555,6 +726,7 @@ export class ProductmasterComponent implements  OnInit, AfterViewInit, OnDestroy
       p.unit,
       p.min_qty,
       p.max_qty,
+      p.current_stock ?? 0,
       p.cost_price,
       p.selling_price,
       p.mrp,

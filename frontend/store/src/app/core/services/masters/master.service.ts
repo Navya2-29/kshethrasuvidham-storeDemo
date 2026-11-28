@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Supplier } from '../../../features/masters/models/supplier.model';
-import {  Observable} from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Department } from '../../../features/masters/models/department.model';
 import { Product, ProductPayload } from '../../../features/masters/models/product.model';
 import { PurchasePayload } from '../../../features/transactions/models/purchase.model';
@@ -14,8 +14,62 @@ import { API_BASE_URL } from '../../constants/api.constants';
 })
 export class MasterService {
   private readonly API = API_BASE_URL;
+  private readonly STOCK_ADJ_KEY = 'store_local_stock_adjustments';
 
-  constructor(private http: HttpClient) {}
+  // Real-time stock change event stream across Quick Sales, Product Master, and Cancelled Bills
+  private stockUpdatedSubject = new Subject<{
+    type: 'SALE_CANCELLED' | 'SALE_CREATED' | 'STOCK_CHANGED';
+    departmentId?: number;
+    items?: any[];
+  }>();
+
+  readonly stockUpdated$ = this.stockUpdatedSubject.asObservable();
+
+  getAllStockAdjustments(): Record<string, number> {
+    try {
+      const raw = localStorage.getItem(this.STOCK_ADJ_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  getStockAdjustment(productId: number | string): number {
+    if (!productId) return 0;
+    const map = this.getAllStockAdjustments();
+    return Number(map[String(productId)]) || 0;
+  }
+
+  recordStockAdjustment(productId: number | string, deltaQty: number): void {
+    if (!productId || !deltaQty) return;
+    try {
+      const map = this.getAllStockAdjustments();
+      const current = Number(map[String(productId)]) || 0;
+      map[String(productId)] = current + deltaQty;
+      localStorage.setItem(this.STOCK_ADJ_KEY, JSON.stringify(map));
+    } catch (e) {
+      console.warn('Failed to record stock adjustment', e);
+    }
+  }
+
+  notifyStockUpdated(event: {
+    type: 'SALE_CANCELLED' | 'SALE_CREATED' | 'STOCK_CHANGED';
+    departmentId?: number;
+    items?: any[];
+  }): void {
+    if (event.type === 'SALE_CANCELLED' && event.items && Array.isArray(event.items)) {
+      event.items.forEach((it: any) => {
+        const pId = Number(it.product_id || it.id);
+        const qty = Number(it.qty || 0);
+        if (pId && qty > 0) {
+          this.recordStockAdjustment(pId, qty);
+        }
+      });
+    }
+    this.stockUpdatedSubject.next(event);
+  }
+
+  constructor(private http: HttpClient) { }
 
   // ================= SUPPLIER =================
   getSuppliers() {
@@ -86,8 +140,10 @@ export class MasterService {
     return this.http.post(`${this.API}/purchases`, payload);
   }
 
-  getAllPurchases() {
-    return this.http.get(`${this.API}/purchases/allpurchase`);
+  getAllPurchases(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/purchases/allpurchase`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
   }
   getPurchaseById(id: number) {
     return this.http.get<any>(`${this.API}/purchases/${id}`);
@@ -124,6 +180,25 @@ export class MasterService {
     return this.http.get<any>(`${this.API}/stocks/${productId}`);
   }
 
+  // ================== DAMAGE RECORDS ==================
+  getDamageRecords(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/damage`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  createDamageRecord(data: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/damage`, data, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  deleteDamageRecord(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.API}/damage/${id}`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
   transferStock(data: any) {
     return this.http.post(`${this.API}/stocks/transfer`, data);
   }
@@ -143,35 +218,111 @@ export class MasterService {
     );
   }
 
-  getSaleProduct(){
- return this.http.get<Product[]>(
+  getSaleProduct() {
+    return this.http.get<Product[]>(
       `${this.API}/sales/saleproduct`,
     );
   }
 
-  getStockByDepartment(deptId: number){
- return this.http.get<any[]>(
+  getStockByDepartment(deptId: number) {
+    return this.http.get<any[]>(
       `${this.API}/sales/stock/department/${deptId}`,
     );
   }
 
-  // ==========================report==========================
+  getAllSales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/sales/all`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
 
-  getProductWiseReport(data: any): Observable<any> {
-    return this.http.post(
-      `${this.API}/report/purchasereport/product-wise`,
+  getSaleById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.API}/sales/${id}`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  cancelSale(
+    id: number,
+    data: {
+      cancel_reason: string;
+      cancelled_by?: string | null;
+      payment_return_method?: string;
+    },
+  ): Observable<any> {
+    return this.http.put(`${this.API}/sales/cancel/${id}`, data, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getCancelledSales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API}/sales/cancelled`, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  // ========================== Reports ==========================
+
+  getPurchaseReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/purchasereport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getPurchaseBillReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/purchasebillreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getPurchaseReturnReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/purchasereturnreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getSalesReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/salesreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getSalesBillReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/salesbillreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getItemWiseSalesReport(filter?: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/itemwisesalesreport`, filter || {}, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getProductWisePurchaseReport(data: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.API}/report/productwisepurchasereport`,
       data,
     );
   }
 
+  // Backward compatibility alias for product-wise purchase report
+  getProductWiseReport(data: any): Observable<any> {
+    return this.getProductWisePurchaseReport(data);
+  }
+
   getStockReport(): Observable<StockReport[]> {
-    return this.http.get<StockReport[]>(`${this.API}/report/stock-report`);
+    return this.http.get<StockReport[]>(`${this.API}/report/stockreport`);
+  }
+
+  getStockTransferReport(productId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.API}/report/stocktransferreport/${productId}`,
+    );
   }
 
   getAvailableStockbystocktransferreport(productId: number) {
-    return this.http.get<any>(
-      `${this.API}/report/stock-transfer-report/${productId}`,
-    );
+    return this.getStockTransferReport(productId);
   }
 
   // ================opening ==========================
@@ -182,7 +333,7 @@ export class MasterService {
   getOpenings() {
     return this.http.get(`${this.API}/opening/list`);
   }
- updateOpening(
+  updateOpening(
     id: number,
     payload: any
   ): Observable<any> {
@@ -289,37 +440,37 @@ export class MasterService {
 
   // ================= direct entry =================
 
-  createDirectEntry(data:any){
- return this.http.post(
-   `${this.API}/direct-entry/create`,
-   data
- );
-}
+  createDirectEntry(data: any) {
+    return this.http.post(
+      `${this.API}/direct-entry/create`,
+      data
+    );
+  }
 
-getDirectEntries(){
- return this.http.get(
-   `${this.API}/direct-entry/list`
- );
-}
+  getDirectEntries() {
+    return this.http.get(
+      `${this.API}/direct-entry/list`
+    );
+  }
 
-updateDirectEntry(id:number,data:any){
- return this.http.put(
-   `${this.API}/direct-entry/update/${id}`,
-   data
- );
-}
+  updateDirectEntry(id: number, data: any) {
+    return this.http.put(
+      `${this.API}/direct-entry/update/${id}`,
+      data
+    );
+  }
 
-deleteDirectEntry(id:number,data:any){
- return this.http.request(
-   'delete',
-   `${this.API}/direct-entry/delete/${id}`,
-   { body:data }
- );
-}
+  deleteDirectEntry(id: number, data: any) {
+    return this.http.request(
+      'delete',
+      `${this.API}/direct-entry/delete/${id}`,
+      { body: data }
+    );
+  }
 
 
 
-// -------------user-----------------------
+  // -------------user-----------------------
 
 
   getRoles() {
@@ -351,18 +502,18 @@ deleteDirectEntry(id:number,data:any){
   }
 
   // -------------------change password-------------------
- changePassword(id: number, data: any) {
-  return this.http.post(
-    `${this.API}/users/change-password/${id}`,
-    data
-  );
-}
+  changePassword(id: number, data: any) {
+    return this.http.post(
+      `${this.API}/users/change-password/${id}`,
+      data
+    );
+  }
 
-// --------------------dashboard--------------
- getDashboard() {
-  return this.http.get(
-    `${this.API}/dashboard`,
+  // --------------------dashboard--------------
+  getDashboard() {
+    return this.http.get(
+      `${this.API}/dashboard`,
 
-  );
-}
+    );
+  }
 }

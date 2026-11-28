@@ -1,42 +1,41 @@
-<app-master-layout title="Details" formTitle="Client Configuration">
-  <!-- LEFT SIDE FORM -->
+<div class="settings-page-wrapper">
+  <app-master-layout title="Details" formTitle="Client Configuration">
+    <!-- LEFT SIDE FORM -->
+    <div form>
+      <app-dynamic-form [form]="form" [fields]="fields" [editMode]="true" [loading]="loading" (submit)="save($event)"
+        (cancel)="reset()">
+      </app-dynamic-form>
+    </div>
 
-  <div form>
-    <app-dynamic-form
-      [form]="form"
-      [fields]="fields"
-      [editMode]="true"
-      [loading]="loading"
-      (submit)="save($event)"
-      (cancel)="reset()"
-    >
-    </app-dynamic-form>
-  </div>
-  <div table>
-    <div class="right-panel">
-      <div class="preview-card">
+    <!-- RIGHT SIDE PREVIEW -->
+    <div table>
+      <div class="right-panel">
+        <!-- PROFILE HEADER -->
         <div class="profile-header">
-          <!-- LEFT: LOGO -->
+          <!-- LEFT: LOGO / AVATAR -->
           <div class="logo-box">
-            <img
-              *ngIf="logoPreview || form.value.logo"
-              [src]="logoPreview || getLogoUrl(form.value.logo)"
-              class="logo"
-            />
-            <div *ngIf="!logoPreview" class="no-logo">No Logo</div>
+            <img *ngIf="logoPreview || form.value.logo" [src]="logoPreview || getLogoUrl(form.value.logo)" class="logo"
+              alt="Client Logo" />
+            <div *ngIf="!logoPreview && !form.value.logo" class="no-logo">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
           </div>
 
           <!-- CENTER: INFO -->
           <div class="client-info">
-            <h3>{{ form.value.client_name || "Client Name" }}</h3>
-            <p>{{ form.value.email || "-" }}</p>
-            <p>{{ form.value.phone || "-" }}</p>
+            <h3 class="client-name">{{ form.value.client_name || "Client Name" }}</h3>
+            <p class="client-meta">{{ form.value.email || "-" }}</p>
+            <p class="client-meta">{{ form.value.phone || "-" }}</p>
           </div>
 
-          <!-- RIGHT: STATUS -->
+          <!-- RIGHT: STATUS BADGE -->
           <div class="status-box">
-            <span class="status-badge" [ngClass]="form.value.status">
-              {{ form.value.status || "ACTIVE" }}
+            <span class="status-badge" [ngClass]="statusText.toLowerCase()">
+              {{ statusText }}
             </span>
           </div>
         </div>
@@ -44,44 +43,47 @@
         <!-- INFO GRID -->
         <div class="info-grid">
           <div class="info-card">
-            <label>Address</label>
-            <span>{{ form.value.address || "-" }}</span>
+            <label class="info-label">Address</label>
+            <span class="info-value">{{ form.value.address || "-" }}</span>
           </div>
 
           <div class="info-card">
-            <label>Printer</label>
-            <span>{{ form.value.printer || "-" }}</span>
+            <label class="info-label">Printer</label>
+            <span class="info-value">{{ form.value.printer || "-" }}</span>
           </div>
 
-          <div class="info-card">
-            <label>Departments</label>
-            <span>{{ form.value.department_count || 0 }}</span>
-          </div>
+          <!-- <div class="info-card">
+            <label class="info-label">Departments</label>
+            <span class="info-value">{{ form.value.department_count ?? 1 }}</span>
+          </div> -->
 
           <div class="info-card">
-            <label>Version</label>
-            <span>{{ form.value.version_no || "-" }}</span>
+            <label class="info-label">Version</label>
+            <span class="info-value">{{ form.value.version_no || "1" }}</span>
           </div>
         </div>
 
         <!-- DATE SECTION -->
         <div class="date-section">
-          <div class="date-card">
-            <span>Installation Date</span>
-            <strong>{{ form.value.installation_date | date }}</strong>
+          <div class="date-card installation">
+            <span class="date-label">Installation Date</span>
+            <strong class="date-value">{{ form.value.installation_date | date:'MMM d, y' }}</strong>
           </div>
 
-          <div class="date-card danger">
-            <span>Expiry Date</span>
-            <strong>{{ form.value.expiry_date | date }}</strong>
+          <div class="date-card expiry danger">
+            <span class="date-label">Expiry Date</span>
+            <strong class="date-value">{{ form.value.expiry_date | date:'MMM d, y' }}</strong>
           </div>
         </div>
 
         <!-- ACTION BUTTON -->
-        <button class="update-btn" (click)="save(form.value)">
-          Save & Update Settings
+        <button type="button" class="update-btn" (click)="save(form.value)">
+          <span>Save &amp; Update Settings</span>
+          <svg class="dropdown-caret" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 10l5 5 5-5z" />
+          </svg>
         </button>
       </div>
     </div>
-  </div>
-</app-master-layout>
+  </app-master-layout>
+</div>
