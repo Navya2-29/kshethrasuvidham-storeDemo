@@ -46,6 +46,8 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/stocks',stockTransferRoutes);
 app.use('/api/sales',salesRoutes );
 app.use('/api/report/purchasereport', require('./routes/purchasereport.routes'));
+app.use('/api/report/salesreport', require('./routes/salesreport.routes'));
+app.use('/api/report/sales', require('./routes/salesreport.routes'));
 app.use('/api/report', stockRoutes);
 app.use('/api/report', stockTransferReportRoutes);
 app.use('/api/opening', require('./routes/openingbalance.routes'));

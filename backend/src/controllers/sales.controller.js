@@ -122,7 +122,7 @@ exports.createSale = async (req, res) => {
         payload.gst_amount || 0,
         payload.other_charges || 0,
         payload.bill_amount || 0,
-        payload.created_by || 1,
+        payload.created_by || req.user?.id || 1,
       ],
     );
 
