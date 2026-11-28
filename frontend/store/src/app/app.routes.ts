@@ -222,6 +222,20 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
       {
+        path: 'report/purchase',
+        loadComponent: () =>
+          import('./features/reports/purchase-report/purchase-report.component').then(
+            (m) => m.PurchaseReportComponent
+          ),
+      },
+      {
+        path: 'report/purchase-return',
+        loadComponent: () =>
+          import('./features/reports/purchase-return-report/purchase-return-report.component').then(
+            (m) => m.PurchaseReturnReportComponent
+          ),
+      },
+      {
         path: 'report/purchase/product-wise',
         loadComponent: () =>
           import('./features/reports/puchase-reports/product-wise/product-wise.component').then(
