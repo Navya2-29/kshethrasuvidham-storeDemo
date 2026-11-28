@@ -270,6 +270,18 @@ export class MasterService {
     );
   }
 
+  getSalesReport(filter: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/sales/sales-report`, filter, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
+  getItemWiseSalesReport(filter: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/report/sales/item-wise`, filter, {
+      headers: { 'skip-error-notification': 'true' },
+    });
+  }
+
   getStockReport(): Observable<StockReport[]> {
     return this.http.get<StockReport[]>(`${this.API}/report/stock-report`);
   }
