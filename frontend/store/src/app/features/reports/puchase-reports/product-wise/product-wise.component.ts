@@ -21,9 +21,11 @@ export class ProductWiseComponent {
     console.log('Received from child:', data);
     const productcode = data.product_code;
     this.productname = data.product_name;
-    const fromDate = this.formatDate(data.from_date);
-    const toDate = this.formatDate(data.to_date);
-    this.reportTitle = `Purchase Report for the Period from ${fromDate} to ${toDate}`;
+    const fromDate = data.from_date ? this.formatDate(data.from_date) : '';
+    const toDate = data.to_date ? this.formatDate(data.to_date) : '';
+    this.reportTitle = fromDate && toDate
+      ? `Purchase Report for the Period from ${fromDate} to ${toDate}`
+      : `Purchase Report`;
     this.reportService.getProductWiseReport(data).subscribe((res) => {
       if (res.success) {
         this.reportData = res.data;
@@ -34,7 +36,9 @@ export class ProductWiseComponent {
   }
 
   formatDate(date: string): string {
+    if (!date) return '';
     const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();

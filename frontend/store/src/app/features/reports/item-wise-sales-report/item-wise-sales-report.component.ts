@@ -13,6 +13,7 @@ import { MasterService } from '../../../core/services/masters/master.service';
 import { SettingstoreService } from '../../../core/services/setting/settingstore.service';
 import { SettingService } from '../../../core/services/setting/setting.service';
 import { AuthStateService } from '../../../core/services/auth/auth-state.service';
+import { SnackbarService } from '../../../core/services/ui/snackbar.service';
 import * as XLSX from 'xlsx';
 
 export interface ItemWiseRow {
@@ -23,6 +24,8 @@ export interface ItemWiseRow {
   payment_mode: string;
   username: string;
   receipt_date: string;
+  discount_amount: number;
+  tax_amount: number;
   total_amount: number;
 }
 
@@ -37,7 +40,7 @@ export interface ItemWiseRow {
 export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
   loading = false;
 
-  // Filters
+  // Filters (empty by default to show all records, user can filter by dates)
   fromDate: string = '';
   toDate: string = '';
   selectedProduct: string = '';
@@ -58,6 +61,7 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
     private settingStore: SettingstoreService,
     private settingService: SettingService,
     private authState: AuthStateService,
+    private notification: SnackbarService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -78,12 +82,54 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         if (res) {
-          this.storeSettings = {
-            ...res,
-            logo: res.logo ? this.settingService.getLogoUrl(res.logo) : '',
-          };
+          this.applySettings(res);
         }
       });
+
+    const snapshot = this.settingStore.getSettingsSnapshot();
+    if (snapshot) {
+      this.applySettings(snapshot);
+    } else {
+      this.settingService.getSettings().subscribe({
+        next: (res) => this.applySettings(res),
+        error: () => {},
+      });
+    }
+  }
+
+  private applySettings(res: any): void {
+    if (!res) return;
+    this.storeSettings = {
+      ...res,
+      logo: res.logo ? this.settingService.getLogoUrl(res.logo) : '',
+    };
+    this.cdr.markForCheck();
+  }
+
+  getStoreName(): string {
+    return (
+      this.storeSettings?.client_name ||
+      this.storeSettings?.company_name ||
+      this.storeSettings?.store_name ||
+      this.storeSettings?.app_title ||
+      this.storeSettings?.name ||
+      'STORE MANAGEMENT SYSTEM'
+    );
+  }
+
+  getStartOfMonthDate(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}-01`;
+  }
+
+  getTodayDate(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   getCurrentUsername(): string {
@@ -161,10 +207,11 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     this.masterService
-      .getAllSales()
+      .getItemWiseSalesReport({ from_date: this.fromDate, to_date: this.toDate })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (all: any[]) => {
+        next: (res: any) => {
+          const all = Array.isArray(res) ? res : (res?.data || []);
           this.rawSales = this.mergeWithLocalBackup(all || []);
           this.extractUsersFromSales();
           this.applyFilter();
@@ -172,7 +219,7 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (err) => {
-          console.warn('API getAllSales error in ItemWiseReport, loading local backup:', err);
+          console.warn('API getItemWiseSalesReport error in ItemWiseReport, loading local backup:', err);
           this.rawSales = this.mergeWithLocalBackup([]);
           this.extractUsersFromSales();
           this.applyFilter();
@@ -183,11 +230,7 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
   }
 
   fetchReport(): void {
-    if (this.rawSales && this.rawSales.length > 0) {
-      this.applyFilter();
-    } else {
-      this.loadSales();
-    }
+    this.loadSales();
   }
 
   resetFilter(): void {
@@ -196,7 +239,7 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
     this.selectedProduct = '';
     this.selectedUser = '';
     this.selectedPaymentMode = '';
-    this.applyFilter();
+    this.loadSales();
   }
 
   applyFilter(): void {
@@ -224,6 +267,14 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
             const amt = Number(
               it.amount ?? (it.selling_price ? Number(it.selling_price) * qty : 0) ?? 0,
             );
+            const disc = Number(it.discount ?? it.discount_amount ?? 0);
+            const tax = Number(
+              it.tax_amount ??
+              (Number(it.cgst || 0) + Number(it.sgst || 0)) ??
+              (it.gst_percent ? (amt * Number(it.gst_percent)) / 100 : 0) ??
+              0
+            );
+
             allRows.push({
               item_id: it.id,
               invoice_no: inv,
@@ -232,6 +283,8 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
               payment_mode: pMode,
               username: user,
               receipt_date: rDate,
+              discount_amount: disc,
+              tax_amount: tax,
               total_amount: amt,
             });
           });
@@ -239,6 +292,8 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
           const names = String(s.product_names).split(',');
           const pieceCount = names.length;
           const billAmt = Number(s.bill_amount ?? s.total_amount ?? 0);
+          const totalDisc = Number(s.discount_amount || 0);
+          const totalTax = Number(s.gst_amount || 0);
 
           names.forEach((name) => {
             const trimmed = name.trim();
@@ -247,6 +302,8 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
             const prodName = match && match[1] ? match[1].trim() : trimmed;
             const prodQty = match && match[2] ? parseInt(match[2], 10) : 1;
             const itemAmt = pieceCount > 0 ? billAmt / pieceCount : billAmt;
+            const itemDisc = pieceCount > 0 ? totalDisc / pieceCount : totalDisc;
+            const itemTax = pieceCount > 0 ? totalTax / pieceCount : totalTax;
             prodSet.add(prodName);
 
             allRows.push({
@@ -256,6 +313,8 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
               payment_mode: pMode,
               username: user,
               receipt_date: rDate,
+              discount_amount: itemDisc,
+              tax_amount: itemTax,
               total_amount: itemAmt,
             });
           });
@@ -265,11 +324,13 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
           allRows.push({
             invoice_no: inv,
             product_name: pName,
-            quantity: Number(s.total_items || 1),
+            quantity: Number(s.quantity ?? s.total_items ?? 1),
             payment_mode: pMode,
             username: user,
             receipt_date: rDate,
-            total_amount: Number(s.bill_amount ?? s.total_amount ?? 0),
+            discount_amount: Number(s.discount_amount || 0),
+            tax_amount: Number(s.gst_amount || 0),
+            total_amount: Number(s.total_amount ?? s.bill_amount ?? 0),
           });
         }
       });
@@ -413,6 +474,14 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
     return this.itemsData.reduce((sum, r) => sum + Number(r.quantity || 0), 0);
   }
 
+  get totalDiscount(): number {
+    return this.itemsData.reduce((sum, r) => sum + Number(r.discount_amount || 0), 0);
+  }
+
+  get totalTax(): number {
+    return this.itemsData.reduce((sum, r) => sum + Number(r.tax_amount || 0), 0);
+  }
+
   get totalAmount(): number {
     return this.itemsData.reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
   }
@@ -428,7 +497,7 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
 
   exportExcel(): void {
     if (!this.itemsData.length) {
-      alert('No data to export.');
+      this.notification.warning('No data to export.');
       return;
     }
 
@@ -440,7 +509,9 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
       'Payment Mode': this.getPaymentLabel(r.payment_mode),
       'User': r.username,
       'Date': this.formatDateDisplay(r.receipt_date),
-      'Total Amount': Number(r.total_amount || 0),
+      'Discount (₹)': Number(r.discount_amount || 0),
+      'Tax / GST (₹)': Number(r.tax_amount || 0),
+      'Total Amount (₹)': Number(r.total_amount || 0),
     }));
 
     rows.push({
@@ -451,7 +522,9 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
       'Payment Mode': '' as any,
       'User': '' as any,
       'Date': '' as any,
-      'Total Amount': this.totalAmount,
+      'Discount (₹)': this.totalDiscount,
+      'Tax / GST (₹)': this.totalTax,
+      'Total Amount (₹)': this.totalAmount,
     });
 
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -462,26 +535,29 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
   }
 
   printReport(): void {
-    const storeName = this.storeSettings?.company_name || this.storeSettings?.store_name || 'STORE MANAGEMENT SYSTEM';
+    const storeName = this.getStoreName();
     const storeAddress = this.storeSettings?.address || '';
+    const storePhone = this.storeSettings?.phone || '';
     const dateRange = (this.fromDate || this.toDate) ? `${this.fromDate || 'Start'} to ${this.toDate || 'Present'}` : 'All Dates';
     const itemLabel = this.selectedProduct ? ` | Item: ${this.selectedProduct}` : '';
     const userLabel = this.selectedUser ? ` | User: ${this.selectedUser}` : '';
     const payLabel = this.selectedPaymentMode ? ` | Payment: ${this.getPaymentLabel(this.selectedPaymentMode)}` : '';
 
-    const win = window.open('', '_blank', 'width=840,height=800');
+    const win = window.open('', '_blank', 'width=920,height=800');
     if (!win) return;
 
     win.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Item-Wise Sales Report - ${dateRange}</title>
+        <title>Item-Wise Sales Report - ${storeName}</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 24px; color: #1e293b; font-size: 13px; }
           .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
-          .title { font-size: 18px; font-weight: bold; text-transform: uppercase; }
-          .subtitle { font-size: 14px; font-weight: 600; color: #2563eb; margin-top: 4px; }
+          .title { font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #0f172a; }
+          .address { font-size: 12px; color: #475569; margin-top: 3px; }
+          .phone { font-size: 11px; color: #64748b; margin-top: 2px; }
+          .subtitle { font-size: 14px; font-weight: 700; color: #2563eb; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
           .period { font-size: 12px; color: #64748b; margin-top: 4px; }
           table { width: 100%; border-collapse: collapse; margin-top: 14px; }
           th, td { border: 1px solid #cbd5e1; padding: 7px 10px; font-size: 12px; }
@@ -495,21 +571,24 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
       <body>
         <div class="header">
           <div class="title">${storeName}</div>
-          ${storeAddress ? `<div style="font-size: 12px; color: #64748b;">${storeAddress}</div>` : ''}
+          ${storeAddress ? `<div class="address">${storeAddress}</div>` : ''}
+          ${storePhone ? `<div class="phone">Phone: ${storePhone}</div>` : ''}
           <div class="subtitle">Item-Wise Sales Report</div>
-          <div class="period">Date: ${dateRange}${itemLabel}${userLabel}${payLabel} | Total Items: ${this.itemsData.length}</div>
+          <div class="period">Period: ${dateRange}${itemLabel}${userLabel}${payLabel} | Total Items: ${this.itemsData.length}</div>
         </div>
 
         <table>
           <thead>
             <tr>
-              <th class="text-center" style="width: 50px;">Sl No</th>
+              <th class="text-center" style="width: 45px;">Sl No</th>
               <th>Invoice</th>
               <th>Product Name</th>
-              <th class="text-right">Quantity</th>
-              <th>Payment Mode</th>
+              <th class="text-right">Qty</th>
+              <th>Payment</th>
               <th>User</th>
               <th>Date</th>
+              <th class="text-right">Discount (₹)</th>
+              <th class="text-right">Tax / GST (₹)</th>
               <th class="text-right">Total Amount (₹)</th>
             </tr>
           </thead>
@@ -525,7 +604,9 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
                 <td>${this.getPaymentLabel(r.payment_mode)}</td>
                 <td>${r.username}</td>
                 <td>${this.formatDateDisplay(r.receipt_date)}</td>
-                <td class="text-right">₹${Number(r.total_amount || 0).toFixed(2)}</td>
+                <td class="text-right">₹${Number(r.discount_amount || 0).toFixed(2)}</td>
+                <td class="text-right">₹${Number(r.tax_amount || 0).toFixed(2)}</td>
+                <td class="text-right font-bold">₹${Number(r.total_amount || 0).toFixed(2)}</td>
               </tr>
             `
               )
@@ -536,6 +617,8 @@ export class ItemWiseSalesReportComponent implements OnInit, OnDestroy {
               <td colspan="3">Total</td>
               <td class="text-right">${this.totalQty}</td>
               <td colspan="3"></td>
+              <td class="text-right">₹${this.totalDiscount.toFixed(2)}</td>
+              <td class="text-right">₹${this.totalTax.toFixed(2)}</td>
               <td class="text-right">₹${this.totalAmount.toFixed(2)}</td>
             </tr>
           </tfoot>

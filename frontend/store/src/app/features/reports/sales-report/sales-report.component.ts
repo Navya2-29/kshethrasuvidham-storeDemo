@@ -13,6 +13,7 @@ import { MasterService } from '../../../core/services/masters/master.service';
 import { SettingstoreService } from '../../../core/services/setting/settingstore.service';
 import { SettingService } from '../../../core/services/setting/setting.service';
 import { AuthStateService } from '../../../core/services/auth/auth-state.service';
+import { SnackbarService } from '../../../core/services/ui/snackbar.service';
 import * as XLSX from 'xlsx';
 
 export interface SalesReportRow {
@@ -22,6 +23,8 @@ export interface SalesReportRow {
   product_name: string;
   receipt_date: string;
   payment_mode: string;
+  discount_amount: number;
+  tax_amount: number;
   total_amount: number;
 }
 
@@ -36,7 +39,7 @@ export interface SalesReportRow {
 export class SalesReportComponent implements OnInit, OnDestroy {
   loading = false;
 
-  // Filters
+  // Filters (empty by default to show all records, user can filter by dates)
   fromDate: string = '';
   toDate: string = '';
   selectedUser: string = '';
@@ -55,8 +58,9 @@ export class SalesReportComponent implements OnInit, OnDestroy {
     private settingStore: SettingstoreService,
     private settingService: SettingService,
     private authState: AuthStateService,
+    private notification: SnackbarService,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadSettings();
@@ -74,12 +78,54 @@ export class SalesReportComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         if (res) {
-          this.storeSettings = {
-            ...res,
-            logo: res.logo ? this.settingService.getLogoUrl(res.logo) : '',
-          };
+          this.applySettings(res);
         }
       });
+
+    const snapshot = this.settingStore.getSettingsSnapshot();
+    if (snapshot) {
+      this.applySettings(snapshot);
+    } else {
+      this.settingService.getSettings().subscribe({
+        next: (res) => this.applySettings(res),
+        error: () => { },
+      });
+    }
+  }
+
+  private applySettings(res: any): void {
+    if (!res) return;
+    this.storeSettings = {
+      ...res,
+      logo: res.logo ? this.settingService.getLogoUrl(res.logo) : '',
+    };
+    this.cdr.markForCheck();
+  }
+
+  getStoreName(): string {
+    return (
+      this.storeSettings?.client_name ||
+      this.storeSettings?.company_name ||
+      this.storeSettings?.store_name ||
+      this.storeSettings?.app_title ||
+      this.storeSettings?.name ||
+      'STORE MANAGEMENT SYSTEM'
+    );
+  }
+
+  getStartOfMonthDate(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}-01`;
+  }
+
+  getTodayDate(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   getCurrentUsername(): string {
@@ -92,7 +138,7 @@ export class SalesReportComponent implements OnInit, OnDestroy {
         const parsed = JSON.parse(raw);
         return parsed?.username || parsed?.name || '';
       }
-    } catch {}
+    } catch { }
     return '';
   }
 
@@ -138,10 +184,11 @@ export class SalesReportComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     this.masterService
-      .getAllSales()
+      .getSalesReport({ from_date: this.fromDate, to_date: this.toDate })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (all: any[]) => {
+        next: (res: any) => {
+          const all = Array.isArray(res) ? res : (res?.data || []);
           this.rawSales = this.mergeWithLocalBackup(all || []);
           this.extractUsersFromSales();
           this.applyFilter();
@@ -149,7 +196,7 @@ export class SalesReportComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (err) => {
-          console.warn('API getAllSales error in SalesReport, loading local backup:', err);
+          console.warn('API getSalesReport error in SalesReport, loading local backup:', err);
           this.rawSales = this.mergeWithLocalBackup([]);
           this.extractUsersFromSales();
           this.applyFilter();
@@ -160,11 +207,7 @@ export class SalesReportComponent implements OnInit, OnDestroy {
   }
 
   fetchReport(): void {
-    if (this.rawSales && this.rawSales.length > 0) {
-      this.applyFilter();
-    } else {
-      this.loadSales();
-    }
+    this.loadSales();
   }
 
   resetFilter(): void {
@@ -172,7 +215,7 @@ export class SalesReportComponent implements OnInit, OnDestroy {
     this.toDate = '';
     this.selectedUser = '';
     this.selectedPaymentMode = '';
-    this.applyFilter();
+    this.loadSales();
   }
 
   applyFilter(): void {
@@ -201,6 +244,8 @@ export class SalesReportComponent implements OnInit, OnDestroy {
           product_name: prods || 'General Sale',
           receipt_date: s.receipt_date || s.created_at || '',
           payment_mode: s.payment_mode || 'Cash',
+          discount_amount: Number(s.discount_amount || 0),
+          tax_amount: Number(s.gst_amount || 0),
           total_amount: Number(s.bill_amount ?? s.total_amount ?? 0),
         };
       })
@@ -330,6 +375,14 @@ export class SalesReportComponent implements OnInit, OnDestroy {
     }
   }
 
+  get totalDiscount(): number {
+    return this.salesData.reduce((sum, r) => sum + Number(r.discount_amount || 0), 0);
+  }
+
+  get totalTax(): number {
+    return this.salesData.reduce((sum, r) => sum + Number(r.tax_amount || 0), 0);
+  }
+
   get grandTotal(): number {
     return this.salesData.reduce((sum, r) => sum + Number(r.total_amount || 0), 0);
   }
@@ -345,7 +398,7 @@ export class SalesReportComponent implements OnInit, OnDestroy {
 
   exportExcel(): void {
     if (!this.salesData.length) {
-      alert('No data to export.');
+      this.notification.warning('No data to export.');
       return;
     }
 
@@ -356,7 +409,9 @@ export class SalesReportComponent implements OnInit, OnDestroy {
       'Product Name': r.product_name,
       'Date': this.formatDateDisplay(r.receipt_date),
       'Payment Mode': this.getPaymentLabel(r.payment_mode),
-      'Total Amount': Number(r.total_amount || 0),
+      'Discount (₹)': Number(r.discount_amount || 0),
+      'Tax / GST (₹)': Number(r.tax_amount || 0),
+      'Total Amount (₹)': Number(r.total_amount || 0),
     }));
 
     rows.push({
@@ -366,7 +421,9 @@ export class SalesReportComponent implements OnInit, OnDestroy {
       'Product Name': 'Total',
       'Date': '' as any,
       'Payment Mode': '' as any,
-      'Total Amount': this.grandTotal,
+      'Discount (₹)': this.totalDiscount,
+      'Tax / GST (₹)': this.totalTax,
+      'Total Amount (₹)': this.grandTotal,
     });
 
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -377,25 +434,28 @@ export class SalesReportComponent implements OnInit, OnDestroy {
   }
 
   printReport(): void {
-    const storeName = this.storeSettings?.company_name || this.storeSettings?.store_name || 'STORE MANAGEMENT SYSTEM';
+    const storeName = this.getStoreName();
     const storeAddress = this.storeSettings?.address || '';
+    const storePhone = this.storeSettings?.phone || '';
     const dateRange = (this.fromDate || this.toDate) ? `${this.fromDate || 'Start'} to ${this.toDate || 'Present'}` : 'All Dates';
     const userLabel = this.selectedUser ? ` | User: ${this.selectedUser}` : '';
     const payLabel = this.selectedPaymentMode ? ` | Payment: ${this.getPaymentLabel(this.selectedPaymentMode)}` : '';
 
-    const win = window.open('', '_blank', 'width=800,height=800');
+    const win = window.open('', '_blank', 'width=900,height=800');
     if (!win) return;
 
     win.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Sales Report - ${dateRange}</title>
+        <title>Sales Report - ${storeName}</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 24px; color: #1e293b; font-size: 13px; }
           .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
-          .title { font-size: 18px; font-weight: bold; text-transform: uppercase; }
-          .subtitle { font-size: 14px; font-weight: 600; color: #2563eb; margin-top: 4px; }
+          .title { font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #0f172a; }
+          .address { font-size: 12px; color: #475569; margin-top: 3px; }
+          .phone { font-size: 11px; color: #64748b; margin-top: 2px; }
+          .subtitle { font-size: 14px; font-weight: 700; color: #2563eb; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
           .period { font-size: 12px; color: #64748b; margin-top: 4px; }
           table { width: 100%; border-collapse: collapse; margin-top: 14px; }
           th, td { border: 1px solid #cbd5e1; padding: 7px 10px; font-size: 12px; }
@@ -409,27 +469,30 @@ export class SalesReportComponent implements OnInit, OnDestroy {
       <body>
         <div class="header">
           <div class="title">${storeName}</div>
-          ${storeAddress ? `<div style="font-size: 12px; color: #64748b;">${storeAddress}</div>` : ''}
+          ${storeAddress ? `<div class="address">${storeAddress}</div>` : ''}
+          ${storePhone ? `<div class="phone">Phone: ${storePhone}</div>` : ''}
           <div class="subtitle">Sales Report</div>
-          <div class="period">Date: ${dateRange}${userLabel}${payLabel} | Total Records: ${this.salesData.length}</div>
+          <div class="period">Period: ${dateRange}${userLabel}${payLabel} | Total Records: ${this.salesData.length}</div>
         </div>
 
         <table>
           <thead>
             <tr>
-              <th class="text-center" style="width: 50px;">Sl No</th>
+              <th class="text-center" style="width: 45px;">Sl No</th>
               <th>Invoice Number</th>
               <th>Username</th>
               <th>Product Name</th>
               <th>Date</th>
               <th>Payment Mode</th>
+              <th class="text-right">Discount (₹)</th>
+              <th class="text-right">Tax / GST (₹)</th>
               <th class="text-right">Total Amount (₹)</th>
             </tr>
           </thead>
           <tbody>
             ${this.salesData
-              .map(
-                (r, i) => `
+        .map(
+          (r, i) => `
               <tr>
                 <td class="text-center">${i + 1}</td>
                 <td><strong>${r.invoice_no}</strong></td>
@@ -437,15 +500,19 @@ export class SalesReportComponent implements OnInit, OnDestroy {
                 <td>${r.product_name}</td>
                 <td>${this.formatDateDisplay(r.receipt_date)}</td>
                 <td>${this.getPaymentLabel(r.payment_mode)}</td>
-                <td class="text-right">₹${Number(r.total_amount || 0).toFixed(2)}</td>
+                <td class="text-right">₹${Number(r.discount_amount || 0).toFixed(2)}</td>
+                <td class="text-right">₹${Number(r.tax_amount || 0).toFixed(2)}</td>
+                <td class="text-right font-bold">₹${Number(r.total_amount || 0).toFixed(2)}</td>
               </tr>
             `
-              )
-              .join('')}
+        )
+        .join('')}
           </tbody>
           <tfoot>
             <tr class="total-row">
-              <td colspan="6">Total Amount</td>
+              <td colspan="6">Total</td>
+              <td class="text-right">₹${this.totalDiscount.toFixed(2)}</td>
+              <td class="text-right">₹${this.totalTax.toFixed(2)}</td>
               <td class="text-right">₹${this.grandTotal.toFixed(2)}</td>
             </tr>
           </tfoot>

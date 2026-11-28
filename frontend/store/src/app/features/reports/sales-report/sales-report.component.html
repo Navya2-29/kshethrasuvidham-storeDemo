@@ -63,6 +63,8 @@
           <th>Product Name</th>
           <th>Date</th>
           <th>Payment Mode</th>
+          <th class="text-right">Discount</th>
+          <th class="text-right">Tax / GST</th>
           <th class="text-right">Total Amount</th>
         </tr>
       </thead>
@@ -82,17 +84,21 @@
           <td>
             <span class="pay-badge">{{ getPaymentLabel(row.payment_mode) }}</span>
           </td>
+          <td class="text-right">₹{{ row.discount_amount | number:'1.2-2' }}</td>
+          <td class="text-right">₹{{ row.tax_amount | number:'1.2-2' }}</td>
           <td class="text-right amount-text">₹{{ row.total_amount | number:'1.2-2' }}</td>
         </tr>
 
         <tr *ngIf="!salesData.length" class="empty-row">
-          <td colspan="7">No sales records found for the selected filters.</td>
+          <td colspan="9">No sales records found for the selected filters.</td>
         </tr>
       </tbody>
 
       <tfoot *ngIf="salesData.length">
         <tr class="total-row">
-          <td colspan="6" class="text-right"><strong>Total Amount:</strong></td>
+          <td colspan="6" class="text-right"><strong>Total:</strong></td>
+          <td class="text-right grand-total">₹{{ totalDiscount | number:'1.2-2' }}</td>
+          <td class="text-right grand-total">₹{{ totalTax | number:'1.2-2' }}</td>
           <td class="text-right grand-total">₹{{ grandTotal | number:'1.2-2' }}</td>
         </tr>
       </tfoot>
